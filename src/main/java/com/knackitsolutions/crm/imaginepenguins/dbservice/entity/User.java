@@ -3,11 +3,14 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity(name = "user")
 @Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,14 +37,17 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserProfile userProfile;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Employee employee;
+    @OneToMany(mappedBy = "user")
+    private Set<UserDepartment> userDepartments = new HashSet<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Parent parent;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Student student;
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Employee employee;
+//
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Parent parent;
+//
+//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Student student;
 
     @OneToMany(mappedBy = "user", cascade = {
             CascadeType.MERGE,
@@ -146,29 +152,29 @@ public class User {
         return Objects.hash(id, username, userType, isAdmin, isSuperAdmin, isActive, isVerified, userProfile);
     }
 
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
-
-    public Parent getParent() {
-        return parent;
-    }
-
-    public void setParent(Parent parent) {
-        this.parent = parent;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
-    }
+//    public Employee getEmployee() {
+//        return employee;
+//    }
+//
+//    public void setEmployee(Employee employee) {
+//        this.employee = employee;
+//    }
+//
+//    public Parent getParent() {
+//        return parent;
+//    }
+//
+//    public void setParent(Parent parent) {
+//        this.parent = parent;
+//    }
+//
+//    public Student getStudent() {
+//        return student;
+//    }
+//
+//    public void setStudent(Student student) {
+//        this.student = student;
+//    }
 
     public List<UserPrivilege> getUserPrivileges() {
         return userPrivileges;
@@ -202,5 +208,17 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Set<UserDepartment> getUserDepartments() {
+        return userDepartments;
+    }
+
+    public void setUserDepartments(Set<UserDepartment> userDepartments) {
+        this.userDepartments = userDepartments;
+    }
+
+    public void setUserDepartment(UserDepartment userDepartment){
+        userDepartments.add(userDepartment);
     }
 }

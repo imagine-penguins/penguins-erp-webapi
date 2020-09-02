@@ -1,50 +1,81 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "employees")
-public class Employee{
+@PrimaryKeyJoinColumn(name = "employee_id")
+public class Employee extends User{
 
     private static final Logger log = LoggerFactory.getLogger(Employee.class);
 
-    @Id
-    @Column(name = "employee_id", updatable = false)
-    private Long id;
+//    @Id
+//    @Column(name = "employee_id", updatable = false)
+//    private Long id;
 
     @Column(name = "employee_type")
     private EmployeeType employeeType;
 
-    @OneToOne(mappedBy = "employee")
-    private Teacher teacher;
+    private String designation;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
-    @MapsId
-    @JoinColumn(name = "employee_id", nullable = false)
-    private User user;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "institute_id")
+    private Institute institute;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "manager_id")
     private Employee manager;
 
     @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
-    private Set<Employee> subordinates;
+    private Set<Employee> subordinates = new HashSet<>();
 
-    @OneToMany(mappedBy = "employee")
-    private Set<EmployeeDepartment> employeeDepartments;
-
-    public Long getId() {
-        return id;
+    public Employee() {
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Employee(Long id, String username, UserType userType, Boolean isAdmin, Boolean isSuperAdmin
+            , EmployeeType employeeType, String designation) {
+        super(id, username, userType, isAdmin, isSuperAdmin);
+        this.employeeType = employeeType;
+        this.designation = designation;
+    }
+
+    public Employee(EmployeeType employeeType, String designation, Institute institute, Employee manager, Set<Employee> subordinates) {
+        this.employeeType = employeeType;
+        this.designation = designation;
+        this.institute = institute;
+        this.manager = manager;
+        this.subordinates = subordinates;
+    }
+
+    public Employee(Long id, String username, UserType userType, Boolean isAdmin, Boolean isSuperAdmin, EmployeeType employeeType, String designation, Institute institute, Employee manager, Set<Employee> subordinates) {
+        super(id, username, userType, isAdmin, isSuperAdmin);
+        this.employeeType = employeeType;
+        this.designation = designation;
+        this.institute = institute;
+        this.manager = manager;
+        this.subordinates = subordinates;
+    }
+
+    public Employee(Long id, String username, String password, UserType userType, Boolean isAdmin, Boolean isSuperAdmin, UserProfile userProfile, EmployeeType employeeType, String designation) {
+        super(id, username, password, userType, isAdmin, isSuperAdmin, userProfile);
+        this.employeeType = employeeType;
+        this.designation = designation;
+    }
+
+    public Employee(Long id, String username, String password, UserType userType, Boolean isAdmin, Boolean isSuperAdmin, UserProfile userProfile, EmployeeType employeeType, String designation, Institute institute, Employee manager, Set<Employee> subordinates) {
+        super(id, username, password, userType, isAdmin, isSuperAdmin, userProfile);
+        this.employeeType = employeeType;
+        this.designation = designation;
+        this.institute = institute;
+        this.manager = manager;
+        this.subordinates = subordinates;
     }
 
     public EmployeeType getEmployeeType() {
@@ -53,24 +84,6 @@ public class Employee{
 
     public void setEmployeeType(EmployeeType employeeType) {
         this.employeeType = employeeType;
-    }
-
-    public Teacher getTeacher() {
-        return teacher;
-    }
-
-    public void setTeacher(Teacher teacher) {
-        this.teacher = teacher;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-        log.info("User Id: {}", user.getId());
-        this.id = user.getId();
     }
 
     public Employee getManager() {
@@ -85,61 +98,27 @@ public class Employee{
         return subordinates;
     }
 
+    public void setSubordinates(Employee subordinate) {
+        subordinates.add(subordinate);
+    }
+
     public void setSubordinates(Set<Employee> subordinates) {
         this.subordinates = subordinates;
     }
 
-    public Set<EmployeeDepartment> getEmployeeDepartments() {
-        return employeeDepartments;
+    public String getDesignation() {
+        return designation;
     }
 
-    public void setEmployeeDepartments(Set<EmployeeDepartment> employeeDepartments) {
-        this.employeeDepartments = employeeDepartments;
+    public void setDesignation(String designation) {
+        this.designation = designation;
     }
 
-    public Employee() {
+    public Institute getInstitute() {
+        return institute;
     }
 
-    public Employee(Long id, User user, EmployeeType employeeType){
-        this.id = id;
-        this.employeeType = employeeType;
-        this.user = user;
-    }
-
-    public Employee(Long id, EmployeeType employeeType, Teacher teacher, User user, Employee manager, Set<Employee> subordiantes) {
-        this(id, user, employeeType);
-        this.teacher = teacher;
-        this.manager = manager;
-        this.subordinates = subordiantes;
-    }
-
-    @Override
-    public String toString() {
-        return "Employee{" +
-                "id=" + id +
-                ", employeeType=" + employeeType +
-                ", teacher=" + teacher +
-                ", user=" + user +
-                ", manager=" + manager +
-                ", subordinates=" + subordinates +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Employee)) return false;
-        Employee employee = (Employee) o;
-        return Objects.equals(getId(), employee.getId()) &&
-                getEmployeeType() == employee.getEmployeeType() &&
-                Objects.equals(getTeacher(), employee.getTeacher()) &&
-                Objects.equals(getUser(), employee.getUser()) &&
-                Objects.equals(getManager(), employee.getManager()) &&
-                Objects.equals(getSubordinates(), employee.getSubordinates());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), getEmployeeType(), getTeacher(), getUser(), getManager(), getSubordinates());
+    public void setInstitute(Institute institute) {
+        this.institute = institute;
     }
 }

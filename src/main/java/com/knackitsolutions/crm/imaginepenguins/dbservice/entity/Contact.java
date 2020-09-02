@@ -45,7 +45,7 @@ public class Contact {
         this.phone = phone;
     }
 
-    protected Contact(){
+    public Contact(){
 
     }
 

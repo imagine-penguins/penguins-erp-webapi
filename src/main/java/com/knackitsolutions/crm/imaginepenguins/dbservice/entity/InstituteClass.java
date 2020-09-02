@@ -10,27 +10,26 @@ public class InstituteClass {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "institute_class_id")
-    Long id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "institute_id")
-    Institute institute;
+    private Institute institute;
 
     @ManyToOne
     @JoinColumn(name = "class_id")
-    Class classs;
+    private Class classs;
 
     @OneToMany(mappedBy = "instituteClass")
-    Set<ClassSubject> classSubject;
+    private Set<InstituteClassSection> classSections;
 
     public InstituteClass() {
     }
 
-    public InstituteClass(Long id, Institute institute, Class classs, Set<ClassSubject> classSubject) {
+    public InstituteClass(Long id, Institute institute, Class classs) {
         this.id = id;
         this.institute = institute;
         this.classs = classs;
-        this.classSubject = classSubject;
     }
 
     public Long getId() {
@@ -57,11 +56,19 @@ public class InstituteClass {
         this.classs = classs;
     }
 
-    public Set<ClassSubject> getClassSubject() {
-        return classSubject;
+//    public Set<InstituteClassSectionSubject> getClassSubject() {
+//        return classSubject;
+//    }
+//
+//    public void setClassSubject(Set<InstituteClassSectionSubject> classSubject) {
+//        this.classSubject = classSubject;
+//    }
+
+    public Set<InstituteClassSection> getClassSections() {
+        return classSections;
     }
 
-    public void setClassSubject(Set<ClassSubject> classSubject) {
-        this.classSubject = classSubject;
+    public void setClassSections(Set<InstituteClassSection> classSections) {
+        this.classSections = classSections;
     }
 }

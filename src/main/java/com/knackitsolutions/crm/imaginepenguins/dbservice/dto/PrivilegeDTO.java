@@ -3,25 +3,25 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 import javax.persistence.Id;
 
 public class PrivilegeDTO {
-    @Id
-    Integer id;
 
-    String privilegeName;
+    private Integer id;
 
-    String privilegeDesc;
+    private String name;
 
     public PrivilegeDTO() {
     }
 
-    public PrivilegeDTO(String privilegeName, String privilegeDesc) {
-        this.privilegeName = privilegeName;
-        this.privilegeDesc = privilegeDesc;
+    public PrivilegeDTO(Integer id, String name, String desc) {
+        this.id = id;
+        this.name = name;
     }
 
-    public PrivilegeDTO(Integer id, String privilegeName, String privilegeDesc) {
-        this(privilegeName, privilegeDesc);
-        this.id = id;
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Integer getId() {
@@ -30,21 +30,5 @@ public class PrivilegeDTO {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getPrivilegeName() {
-        return privilegeName;
-    }
-
-    public void setPrivilegeName(String privilegeName) {
-        this.privilegeName = privilegeName;
-    }
-
-    public String getPrivilegeDesc() {
-        return privilegeDesc;
-    }
-
-    public void setPrivilegeDesc(String privilegeDesc) {
-        this.privilegeDesc = privilegeDesc;
     }
 }

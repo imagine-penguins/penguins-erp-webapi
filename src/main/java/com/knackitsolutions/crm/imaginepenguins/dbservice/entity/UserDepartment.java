@@ -1,28 +1,26 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
-import org.hibernate.annotations.LazyToOne;
-
 import javax.persistence.*;
 
 @Entity
-@Table(name = "employee_departments")
-public class EmployeeDepartment {
+@Table(name = "user_departments")
+public class UserDepartment {
 
     @Id
-    @Column(name = "employee_department_id")
+    @Column(name = "user_department_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
-    private Employee employee;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "institute_department_id")
     private InstituteDepartment instituteDepartment;
 
-    public EmployeeDepartment(Employee employee, InstituteDepartment instituteDepartment) {
-        this.employee = employee;
+    public UserDepartment(User User, InstituteDepartment instituteDepartment) {
+        this.user = user;
         this.instituteDepartment = instituteDepartment;
     }
 
@@ -34,12 +32,12 @@ public class EmployeeDepartment {
         this.id = id;
     }
 
-    public Employee getEmployee() {
-        return employee;
+    public User getUser() {
+        return user;
     }
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public InstituteDepartment getInstituteDepartment() {

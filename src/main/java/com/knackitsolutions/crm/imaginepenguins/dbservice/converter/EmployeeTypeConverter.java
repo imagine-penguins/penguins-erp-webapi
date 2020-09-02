@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Converter(autoApply = true)
-public class EmployeeTypeConverter implements AttributeConverter<EmployeeType, Character> {
+public class EmployeeTypeConverter implements AttributeConverter<EmployeeType, String> {
     @Override
-    public Character convertToDatabaseColumn(EmployeeType attribute) {
+    public String convertToDatabaseColumn(EmployeeType attribute) {
         return attribute.getEmployeeTypeValue();
     }
 
     @Override
-    public EmployeeType convertToEntityAttribute(Character dbData) {
+    public EmployeeType convertToEntityAttribute(String dbData) {
         return EmployeeType.of(dbData);
     }
 }

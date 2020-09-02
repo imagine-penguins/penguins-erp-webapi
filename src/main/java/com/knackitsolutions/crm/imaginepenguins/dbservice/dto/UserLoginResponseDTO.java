@@ -1,183 +1,39 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.persistence.Id;
-import java.util.List;
-
 public class UserLoginResponseDTO {
 
-    @Id
-    Long id;
+    private String apiKey;
 
-    String username;
+    private Long userId;
 
-    String firstName;
-
-    String lastName;
-
-    Boolean isAdmin;
-
-    Boolean isSuperAdmin;
-
-    String phone;
-
-    String email;
-
-    String alternatePhone;
-
-    String alternateEmail;
-
-    String addressLine1;
-
-    String addressLine2;
-
-    String state;
-
-    String zipcode;
-
-    String country;
-
-    List<PrivilegeDTO> privileges;
-
-    Character userType;
+    private String responseMessage;
 
     public UserLoginResponseDTO() {
+
     }
 
-    public Long getId() {
-        return id;
+    public String getApiKey() {
+        return apiKey;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
-    public String getUsername() {
-        return username;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getResponseMessage() {
+        return responseMessage;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setResponseMessage(String responseMessage) {
+        this.responseMessage = responseMessage;
     }
 
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public Boolean getAdmin() {
-        return isAdmin;
-    }
-
-    public void setAdmin(Boolean admin) {
-        isAdmin = admin;
-    }
-
-    public Boolean getSuperAdmin() {
-        return isSuperAdmin;
-    }
-
-    public void setSuperAdmin(Boolean superAdmin) {
-        isSuperAdmin = superAdmin;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAlternatePhone() {
-        return alternatePhone;
-    }
-
-    public void setAlternatePhone(String alternatePhone) {
-        this.alternatePhone = alternatePhone;
-    }
-
-    public String getAlternateEmail() {
-        return alternateEmail;
-    }
-
-    public void setAlternateEmail(String alternateEmail) {
-        this.alternateEmail = alternateEmail;
-    }
-
-    public String getAddressLine1() {
-        return addressLine1;
-    }
-
-    public void setAddressLine1(String addressLine1) {
-        this.addressLine1 = addressLine1;
-    }
-
-    public String getAddressLine2() {
-        return addressLine2;
-    }
-
-    public void setAddressLine2(String addressLine2) {
-        this.addressLine2 = addressLine2;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getZipcode() {
-        return zipcode;
-    }
-
-    public void setZipcode(String zipcode) {
-        this.zipcode = zipcode;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public List<PrivilegeDTO> getPrivileges() {
-        return privileges;
-    }
-
-    public void setPrivileges(List<PrivilegeDTO> privileges) {
-        this.privileges = privileges;
-    }
-
-    public Character getUserType() {
-        return userType;
-    }
-
-    public void setUserType(Character userType) {
-        this.userType = userType;
-    }
 }

@@ -8,22 +8,22 @@ import java.util.stream.Stream;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum EmployeeType {
-    TEACHER('T'),
-    NON_TEACHER('N');
+    TEACHER("T"),
+    NON_TEACHER("N");
 
     @JsonProperty
-    private Character employeeTypeValue;
+    private String employeeTypeValue;
 
-    EmployeeType(Character employeeTypeValue) {
+    EmployeeType(String employeeTypeValue) {
         this.employeeTypeValue = employeeTypeValue;
     }
 
-    public Character getEmployeeTypeValue() {
+    public String getEmployeeTypeValue() {
         return employeeTypeValue;
     }
 
     @JsonCreator
-    public static EmployeeType of(@JsonProperty Character employeeTypeValue){
+    public static EmployeeType of(@JsonProperty String employeeTypeValue){
         return Stream.of(EmployeeType.values())
                 .filter(employeeType -> employeeType.getEmployeeTypeValue() == employeeTypeValue)
                 .findFirst()

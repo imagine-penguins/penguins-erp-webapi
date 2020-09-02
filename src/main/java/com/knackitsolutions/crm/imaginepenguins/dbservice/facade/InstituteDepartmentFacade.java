@@ -4,7 +4,6 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.InstituteDepartmen
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteDepartmentPrivilege;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentPrivilegeRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.InstituteDepartmentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.InstituteService;
@@ -12,7 +11,8 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.service.PrivilegeServi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component

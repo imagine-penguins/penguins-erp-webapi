@@ -7,16 +7,6 @@ public class UserUpdateDTO {
     @Id
     Long id;
 
-    String addressLine1;
-
-    String addressLine2;
-
-    String state;
-
-    String country;
-
-    String zipcode;
-
     String password;
 
     String email;

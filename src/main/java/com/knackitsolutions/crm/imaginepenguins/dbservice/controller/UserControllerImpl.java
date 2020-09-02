@@ -2,21 +2,14 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.UserModelAssembler;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserLoginRequestDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserLoginResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserProfile;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping(value = "/users")
 public class UserControllerImpl {
 
     private static final Logger log = LoggerFactory.getLogger(UserControllerImpl.class);
@@ -32,20 +26,32 @@ public class UserControllerImpl {
     UserFacade userFacade;
 
     @Autowired
-    UserModelAssembler userModelAssembler;
+    UserLoginModelAssembler userLoginModelAssembler;
 
-    @GetMapping("/users")
+    @Autowired
+    TeacherModelAssembler teacherModelAssembler;
+
+    @Autowired
+    StudentModelAssembler studentModelAssembler;
+
+    @Autowired
+    ParentModelAssembler parentModelAssembler;
+
+    @Autowired
+    EmployeeModelAssembler employeeModelAssembler;
+
+    @GetMapping
     public CollectionModel<EntityModel<UserLoginResponseDTO>> all() {
         List<EntityModel<UserLoginResponseDTO>> userList = userFacade.findAll()
                 .stream()
-                .map(userModelAssembler::toModel)
+                .map(userLoginModelAssembler::toModel)
                 .collect(Collectors.toList());
         return  CollectionModel.of(userList, linkTo(methodOn(UserControllerImpl.class).all()).withSelfRel());
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public EntityModel<UserLoginResponseDTO> one(@PathVariable("id") Long id) {
-        return userModelAssembler.toModel(userFacade.findById(id));
+        return userLoginModelAssembler.toModel(userFacade.findById(id));
     }
 /*
     @Override
@@ -92,8 +98,27 @@ public class UserControllerImpl {
         return ResponseEntity.noContent().build();
     }*/
 
-    @PostMapping("/users/login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserLoginRequestDTO requestDTO){
-        return ResponseEntity.ok(userModelAssembler.toModel(userFacade.login(requestDTO)));
+        UserLoginResponseDTO dto = userFacade.login(requestDTO);
+//        if (dto instanceof EmployeeLoginResponseDTO){
+//            EmployeeLoginResponseDTO empDTO = (EmployeeLoginResponseDTO)dto;
+//            if (empDTO instanceof TeacherLoginResponseDTO)
+//                return ResponseEntity.ok(teacherModelAssembler.toModel((TeacherLoginResponseDTO)dto));
+//            else
+//                return ResponseEntity.ok(employeeModelAssembler.toModel(empDTO));
+//        }
+//        else if (dto instanceof ParentLoginResponseDTO)
+//            return ResponseEntity.ok(parentModelAssembler.toModel((ParentLoginResponseDTO)dto));
+//        else if (dto instanceof StudentLoginResponseDTO)
+//            return ResponseEntity.ok(studentModelAssembler.toModel((StudentLoginResponseDTO)dto));
+
+        //Change it later
+        return ResponseEntity.ok(userLoginModelAssembler.toModel(dto));
+    }
+
+    @GetMapping("/{id}/institute")
+    public EntityModel<InstituteDTO> institute(@PathVariable("id") Long id){
+        return null;
     }
 }

@@ -8,7 +8,10 @@ import java.util.stream.Stream;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum UserType {
-    EMPLOYEE('E'), PARENT('P'), STUDENT('S');
+    EMPLOYEE('E'),
+    PARENT('P'),
+    STUDENT('S');
+
     private Character userTypeValue;
 
     UserType(Character userTypeValue) {

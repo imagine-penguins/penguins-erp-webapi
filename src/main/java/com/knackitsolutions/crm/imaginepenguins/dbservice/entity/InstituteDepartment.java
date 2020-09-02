@@ -23,7 +23,11 @@ public class InstituteDepartment {
     @OneToMany(mappedBy = "instituteDepartment")
     private Set<InstituteDepartmentPrivilege> privileges = new HashSet<>();
 
-    protected InstituteDepartment() {
+    public InstituteDepartment() {
+    }
+
+    public InstituteDepartment(String departmentName){
+        this.departmentName = departmentName;
     }
 
     public InstituteDepartment(String departmentName, Institute institute) {

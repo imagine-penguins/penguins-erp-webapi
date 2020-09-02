@@ -2,7 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.EmployeeModelAssembler;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeCreationDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeUpdateDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeLoginResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.EmployeeFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import org.slf4j.Logger;
@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
@@ -35,8 +34,8 @@ public class EmployeeController {
     EmployeeFacade employeeFacade;
 
     @GetMapping("/employees")
-    public CollectionModel<EntityModel<EmployeeCreationDTO>> all() {
-        List<EntityModel<EmployeeCreationDTO>> employeeList = employeeFacade.allEmployee()
+    public CollectionModel<EntityModel<EmployeeLoginResponseDTO>> all() {
+        List<EntityModel<EmployeeLoginResponseDTO>> employeeList = employeeFacade.allEmployee()
                 .stream()
                 .map(employeeModelAssembler::toModel)
                 .collect(Collectors.toList());
@@ -46,15 +45,15 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees/{id}")
-    public EntityModel<EmployeeCreationDTO> one(@PathVariable("id") Long id) {
-        EmployeeCreationDTO employee = employeeFacade.oneEmployee(id);
+    public EntityModel<EmployeeLoginResponseDTO> one(@PathVariable("id") Long id) {
+        EmployeeLoginResponseDTO employee = employeeFacade.oneEmployee(id);
         return employeeModelAssembler.toModel(employee);
     }
 
     @PostMapping("/employees")
     public ResponseEntity<?> newEmployee(@RequestBody EmployeeCreationDTO employeeDTO) {
         log.info("Employee DTO: {}", employeeDTO);
-        EntityModel<EmployeeCreationDTO> newEmployee = employeeModelAssembler.toModel(employeeFacade.newEmployee(employeeDTO));
+        EntityModel<EmployeeLoginResponseDTO> newEmployee = employeeModelAssembler.toModel(employeeFacade.newEmployee(employeeDTO));
         return ResponseEntity.created(newEmployee.getRequiredLink(IanaLinkRelations.SELF).toUri())
                 .body(newEmployee);
     }

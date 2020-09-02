@@ -5,6 +5,7 @@ import javax.persistence.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.listner.InstituteListner;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 
+import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
@@ -23,7 +24,19 @@ public class Institute {
 	@Column(name = "institution_type", nullable = false)
 	InstituteType instituteType;
 
+	@Column(name = "recognition_number")
 	String recognitionNumber;
+
+	@Column(name = "open_time")
+	@Temporal(TemporalType.TIME)
+	Date openTime;
+
+	@Column(name = "close_time")
+	@Temporal(TemporalType.TIME)
+	Date closeTime;
+
+	@Column(name = "log_img")
+	String logoImg;
 
 	@Embedded
 	@AttributeOverrides(value = {@AttributeOverride(name = "addressLine1", column = @Column(name = "house_number")),
@@ -40,7 +53,10 @@ public class Institute {
 	})
 	private Contact contact;
 
-	@OneToMany(mappedBy = "institute")
+	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY)
+	private Set<Employee> employee;
+
+	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY)
 	private Set<InstituteClass> classes;
 
 	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY)
@@ -49,29 +65,9 @@ public class Institute {
 	public Institute() {
 	
 	}
-	
-	public Institute(String recognitionNumber, String name, InstituteType institutionType) {
-		this.recognitionNumber = recognitionNumber;
-		this.name = name;
-		this.instituteType = institutionType;
-	}
-
-	public Institute(String name, InstituteType institutionType) {
-		this.name = name;
-		this.instituteType = institutionType;
-	}
-
-	public Institute(String name, InstituteType institutionType, Address address, Contact contact) {
-		this.name = name;
-		this.instituteType = institutionType;
-		this.address = address;
-		this.contact = contact;
-	}
 
 	public Institute(Integer id, String name, InstituteType institutionType, Address address, Contact contact) {
-		this.id = id;
-		this.name = name;
-		this.instituteType = institutionType;
+		this(id, name, institutionType);
 		this.address = address;
 		this.contact = contact;
 	}
@@ -81,6 +77,13 @@ public class Institute {
 		this.id = id;
 		this.name = name;
 		this.instituteType = instituteType;
+	}
+
+	public Institute(Integer id, String name, InstituteType instituteType, String recognitionNumber, Date openTiming, Date closeTiming, Address address, Contact contact) {
+		this(id, name, instituteType, address, contact);
+		this.recognitionNumber = recognitionNumber;
+		this.openTime = openTiming;
+		this.closeTime = closeTiming;
 	}
 
 	public Integer getId() {
@@ -167,5 +170,45 @@ public class Institute {
 
 	public void setClasses(Set<InstituteClass> classes) {
 		this.classes = classes;
+	}
+
+	public Date getOpenTime() {
+		return openTime;
+	}
+
+	public void setOpenTime(Date openTime) {
+		this.openTime = openTime;
+	}
+
+	public Date getCloseTime() {
+		return closeTime;
+	}
+
+	public void setCloseTime(Date closeTime) {
+		this.closeTime = closeTime;
+	}
+
+	public Set<InstituteDepartment> getInstituteDepartments() {
+		return instituteDepartments;
+	}
+
+	public void setInstituteDepartments(Set<InstituteDepartment> instituteDepartments) {
+		this.instituteDepartments = instituteDepartments;
+	}
+
+	public String getLogoImg() {
+		return logoImg;
+	}
+
+	public void setLogoImg(String logoImg) {
+		this.logoImg = logoImg;
+	}
+
+	public Set<Employee> getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(Set<Employee> employee) {
+		this.employee = employee;
 	}
 }

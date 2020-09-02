@@ -30,7 +30,8 @@ public class PrivilegeFacade {
     }
 
     private Privilege convertToPrivilege(PrivilegeDTO dto){
-        return new Privilege(dto.getPrivilegeName(), dto.getPrivilegeDesc());
+//        return new Privilege(dto.getPrivilegeName(), dto.getPrivilegeDesc());
+        return null;
     }
 
     public PrivilegeDTO one(Integer id){
