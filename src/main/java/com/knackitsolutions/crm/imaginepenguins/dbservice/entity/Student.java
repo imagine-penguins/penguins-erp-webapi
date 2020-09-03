@@ -44,7 +44,7 @@ public class Student extends User{
 //        this.user = user;
 //    }
 
-    public InstituteClassSection getInstituteClassSectionTeacher() {
+    public InstituteClassSection getInstituteClassSection() {
         return instituteClassSection;
     }
 
@@ -66,12 +66,12 @@ public class Student extends User{
         if (!(o instanceof Student)) return false;
         if (!super.equals(o)) return false;
         Student student = (Student) o;
-        return Objects.equals(getInstituteClassSectionTeacher(), student.getInstituteClassSectionTeacher()) &&
+        return Objects.equals(getInstituteClassSection(), student.getInstituteClassSection()) &&
                 Objects.equals(getParent(), student.getParent());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getInstituteClassSectionTeacher(), getParent());
+        return Objects.hash(super.hashCode(), getInstituteClassSection(), getParent());
     }
 }

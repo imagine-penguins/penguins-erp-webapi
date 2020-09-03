@@ -13,7 +13,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteRepository;
@@ -21,7 +21,8 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteRe
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
-public class InstituteControllerImpl implements InstituteController {
+@RequestMapping(value = "/institutes")
+public class InstituteControllerImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(InstituteControllerImpl.class);
 	
@@ -30,14 +31,15 @@ public class InstituteControllerImpl implements InstituteController {
 
 	@Autowired
 	InstituteModelAssembler instituteModelAssembler;
-	@Override
-	public EntityModel<Institute> one(Integer id) {
+
+	@GetMapping("/{id}")
+	public EntityModel<Institute> one(@PathVariable Integer id) {
 		Optional<Institute> institute = instituteRepository.findById(id);
 		return instituteModelAssembler.toModel(institute.
 				orElseThrow(() -> new InstituteNotFoundException(id)));
 	}
 	
-	@Override
+	@GetMapping
 	public CollectionModel<EntityModel<Institute>> all() {
 		List<EntityModel<Institute>> entityModelList = instituteRepository.findAll()
 				.stream()
@@ -46,14 +48,14 @@ public class InstituteControllerImpl implements InstituteController {
 		return  CollectionModel.of(entityModelList,
 				linkTo(methodOn(InstituteControllerImpl.class).all()).withSelfRel());
 	}
-	
-	@Override
-	public ResponseEntity<List<Institute>> allBranches(Integer id) {
+
+	@GetMapping("/{id}/branches")
+	public ResponseEntity<List<Institute>> allBranches(@PathVariable("id") Integer id) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	@Override
+	@PostMapping
 	public ResponseEntity<?> newInstitute(Institute institute) {
 		log.info("instituteType: {}", institute.getInstituteType());
 		EntityModel<Institute> entityModel = instituteModelAssembler.toModel(
@@ -63,8 +65,8 @@ public class InstituteControllerImpl implements InstituteController {
 					.body(entityModel);
 	}
 
-	@Override
-	public ResponseEntity<?> replaceInstitute(Institute newInstitute, Integer id) {
+	@PutMapping("/{id}")
+	public ResponseEntity<?> replaceInstitute(Institute newInstitute, @PathVariable("id") Integer id) {
 		Institute replacedInstitute = instituteRepository.findById(id)
 				.map(institute -> {
 					institute.setInstituteType(newInstitute.getInstituteType());

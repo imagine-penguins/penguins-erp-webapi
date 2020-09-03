@@ -18,14 +18,14 @@ public class EmployeeService {
         return employeeRepository.save(employee);
     }
 
-    public Optional<Employee> getOne(Long id){
+    public Optional<Employee> findById(Long id){
         return employeeRepository.findById(id);
     }
 
     public List<Employee> getAllEmployees(){return employeeRepository.findAll();}
 
     public void delete(Long id){
-        employeeRepository.delete(getOne(id)
+        employeeRepository.delete(findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id)));
     }
 

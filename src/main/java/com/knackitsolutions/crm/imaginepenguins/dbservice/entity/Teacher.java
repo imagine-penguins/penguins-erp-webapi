@@ -60,11 +60,12 @@ public class Teacher extends Employee{
         this.instituteClassSectionSubjects = instituteClassSectionSubjects;
     }
 
-    public Teacher(Long id, String username, String password, UserType userType, Boolean isAdmin, Boolean isSuperAdmin, UserProfile userProfile, EmployeeType employeeType, String designation) {
+    public Teacher(Long id, String username, String password, UserType userType, Boolean isAdmin, Boolean isSuperAdmin
+            , UserProfile userProfile, EmployeeType employeeType, String designation) {
         super(id, username, password, userType, isAdmin, isSuperAdmin, userProfile, employeeType, designation);
-        this.teacherSubjects = teacherSubjects;
-        this.instituteClassSections = instituteClassSections;
-        this.instituteClassSectionSubjects = instituteClassSectionSubjects;
+//        this.teacherSubjects = teacherSubjects;
+//        this.instituteClassSections = instituteClassSections;
+//        this.instituteClassSectionSubjects = instituteClassSectionSubjects;
     }
     public Teacher(Long id, String username, String password, UserType userType, Boolean isAdmin, Boolean isSuperAdmin, UserProfile userProfile, EmployeeType employeeType, String designation, Institute institute, Employee manager, Set<Employee> subordinates, Set<TeacherSubject> teacherSubjects, Set<InstituteClassSection> instituteClassSections, Set<InstituteClassSectionSubject> instituteClassSectionSubjects) {
         super(id, username, password, userType, isAdmin, isSuperAdmin, userProfile, employeeType, designation, institute, manager, subordinates);
@@ -95,5 +96,14 @@ public class Teacher extends Employee{
 
     public void setInstituteClassSectionSubjects(InstituteClassSectionSubject instituteClassSectionSubject) {
         instituteClassSectionSubjects.add(instituteClassSectionSubject);
+    }
+
+    @Override
+    public String toString() {
+        return "Teacher{" +
+                "teacherSubjects=" + teacherSubjects +
+                ", instituteClassSections=" + instituteClassSections +
+                ", instituteClassSectionSubjects=" + instituteClassSectionSubjects +
+                '}';
     }
 }

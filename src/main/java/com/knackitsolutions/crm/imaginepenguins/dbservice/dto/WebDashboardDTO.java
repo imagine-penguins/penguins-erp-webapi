@@ -9,7 +9,7 @@ public class WebDashboardDTO {
 
     List<Container> containers = new ArrayList<>();
 
-    public static class Container<T extends Type> {
+    public static class Container<T> {
         private String name;
         private DashboardViewType dashboardViewType;
         private Integer location;
@@ -25,7 +25,7 @@ public class WebDashboardDTO {
             this.data = data;
         }
 
-        public static class FieldData implements Type{
+        public static class FieldData{
             private Integer integer;
 
             public FieldData(){}
@@ -39,7 +39,7 @@ public class WebDashboardDTO {
             }
         }
 
-        public static class GraphData implements Type{
+        public static class GraphData{
             private Point point = new Point();
             private Integer value;
 

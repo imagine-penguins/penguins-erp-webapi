@@ -3,7 +3,6 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.configuration;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.TeacherResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
@@ -243,48 +242,40 @@ public class LoadDatabase {
                         new UserProfile("t", "t",
                         new Address("d", "74", "Delhi", "India", "110043"),
                         new Contact("9717", "mj112295@gmail.com")), EmployeeType.TEACHER, "HOD"),
-                new Teacher(1l, "ankit", "ankit003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                new Teacher(2l, "ankit", "ankit003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t2", "t2",
                         new Address("d", "22", "Delhi", "India", "110043"),
-                        new Contact("97171", "mj11@gmail.com")), EmployeeType.TEACHER, "CI"),
-                new Teacher(1l, "mayank", "mayank003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                        new Contact("97171", "mj1@gmail.com")), EmployeeType.TEACHER, "CI"),
+                new Teacher(3l, "mayank", "mayank003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t3", "t3",
                         new Address("d", "90", "Delhi", "India", "110043"),
-                        new Contact("97173", "mj9599@gmail.com")), EmployeeType.TEACHER, ""),
+                        new Contact("10000", "mj11@gmail.com")), EmployeeType.TEACHER, ""),
                 new Teacher(1l, "chayanika", "chayanika003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t4", "t4",
                         new Address("d2", "99", "Delhi", "India", "110043"),
-                        new Contact("9717322", "mj@gmail.com")), EmployeeType.TEACHER, ""),
+                        new Contact("10001", "mj111@gmail.com")), EmployeeType.TEACHER, ""),
                 new Teacher(1l, "raj", "raj003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t5", "t5",
                         new Address("d2", "22", "UP", "India", "110043"),
-                        new Contact("9717321", "mj0@gmail.com")), EmployeeType.TEACHER,
+                        new Contact("10002", "mj1111@gmail.com")), EmployeeType.TEACHER,
                         "Math Professor")
-//                ,
-//                new Teacher(1l, "teacher6", "teacher6", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
-//                        new UserProfile("t6", "t6",
-//                        new Address("dq", "91", "Delhi", "India", "110043"),
-//                        new Contact("971700", "mj34@gmail.com")), EmployeeType.TEACHER, ""),
-//                new Teacher(1l, "teacher7", "teacher7", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
-//                        new UserProfile("t7", "t7",
-//                        new Address("d1", "00", "Delhi", "India", "110043"),
-//                        new Contact("97173220", "mj999@gmail.com")), EmployeeType.TEACHER, ""),
-//                new Teacher(1l, "teacher8", "teacher8", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
-//                        new UserProfile("t8", "t8",
-//                        new Address("qq", "990", "Delhi", "India", "110043"),
-//                        new Contact("9717322080", "mj009@gmail.com")), EmployeeType.TEACHER, ""),
-//                new Teacher(1l, "teacher9", "teacher9", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
-//                        new UserProfile("t9", "t9",
-//                        new Address("dp", "990", "Delhi", "India", "110043"),
-//                        new Contact("9717322000", "mj00001@gmail.com")), EmployeeType.TEACHER, ""),
-//                new Teacher(1l, "teacher10", "teacher10", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
-//                        new UserProfile("t10", "t10",
-//                        new Address("r1", "9999", "Delhi", "India", "110043"),
-//                        new Contact("917322", "mj9999999@gmail.com")), EmployeeType.TEACHER, ""),
-//                new Teacher(1l, "teacher11", "teacher11", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
-//                        new UserProfile("t11", "t11",
-//                        new Address("d11", "11", "Delhi", "India", "110043"),
-//                        new Contact("97173221111", "mj1111@gmail.com")), EmployeeType.TEACHER, "")
+                ,new Teacher(1l, "raju", "raju003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                        new UserProfile("t6", "t6",
+                                new Address("d11", "2233", "UP", "India", "110043"),
+                                new Contact("10003", "mj1000@gmail.com")), EmployeeType.TEACHER,
+                        "Physics Professor"),
+                new Teacher(1l, "rajesh", "rajesh003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                        new UserProfile("t7", "t7",
+                                new Address("d2221", "2332", "UP", "India", "110043"),
+                                new Contact("10005", "mj1001@gmail.com")), EmployeeType.TEACHER,
+                        "Chemistry Professor")
+                ,
+                new Teacher(1l, "rajendra", "rajendra003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                        new UserProfile("rajendra", "kumar",
+                                new Address("d1112", "22222", "UP", "India", "110043"),
+                                new Contact("10006", "mj1002@gmail.com")), EmployeeType.TEACHER,
+                        "English Professor")
+
         ).collect(Collectors.toList());
     }
 
@@ -342,6 +333,24 @@ public class LoadDatabase {
 
         return instituteDepartments;
     }
+
+    private void assignInstituteToTeacher(List<Teacher> teachers, List<Institute> institutes){
+        institutes.get(0).addEmployee(teachers.get(0));
+        institutes.get(0).addEmployee(teachers.get(1));
+        institutes.get(1).addEmployee(teachers.get(2));
+        institutes.get(1).addEmployee(teachers.get(3));
+        institutes.get(1).addEmployee(teachers.get(4));
+        institutes.get(2).addEmployee(teachers.get(5));
+        institutes.get(2).addEmployee(teachers.get(6));
+        institutes.get(2).addEmployee(teachers.get(7));
+
+    }
+
+//    public void assignInstituteTeacher(Teacher teacher, Institute institute){
+//        teacher.setInstitute(institute);
+//        institute.setEmployee(teacher);
+//    }
+
     private List<Privilege> createNewPrivilege(){
         return Stream.of(
                 new Privilege("Attendance", "View/Edit Attendance"),
@@ -564,25 +573,31 @@ public class LoadDatabase {
         return args -> {
             log.info("Database Initialization Started");
             log.info("Institutes: {}", newInstitutes());
-            newInstitutes().forEach(institute -> instituteRepository.save(institute));
-            instituteRepository.findAll().forEach(institute -> log.info("Preloaded: {}",institute));
+            newInstitutes().forEach(institute -> instituteRepository.saveAndFlush(institute));
 
-//            List<Privilege> privileges = privilegeRepository.saveAll(this.privileges);
+            List<Institute> institutes = instituteRepository.findAll();
 
-//            assignDepartmentPrivileges();
+            institutes.forEach(institute -> log.info("Preloaded: {}",institute));
 
-//            List<InstituteDepartment> departments = departmentRepository.saveAll(this.departments);
+            List<Teacher> teachers = newTeachers();
 
-            log.info("Users: {}", newTeachers());
-            newTeachers().stream().map(teacher -> {
+            assignInstituteToTeacher(teachers, institutes);
+
+//            log.info("Users: {}", newTeachers());
+            teachers.stream().map(teacher -> {
                 teacher.getUserProfile().setUser(teacher);
+                log.info("Teacher Problem: {}", teacher);
                 return teacherRepository.save(teacher);
-            }).forEach(teacher -> log.info("Teacher: {}", teacher));
-//            List<Teacher> users = teacherRepository.saveAll(newTeachers());
+            }).collect(Collectors.toList());
 
-//            userPrivilegeRepository.saveAll(assignUserPrivileges());
+            List<Teacher> teacherList = teacherRepository.findAll();
+            teacherList.forEach(teacher -> log.info("Preloaded: {}", teacher));
 
-//            userRepository.findAll().forEach(user -> log.info("Preloaded: {}", user));
+//            List<Teacher> teachers = teacherRepository.findAll();
+//            assignInstituteToTeacher(teachers, institutes);
+//            teachers.stream().forEach(teacherRepository::save);
+//            teacherRepository.saveAll(teachers);
+//            instituteRepository.saveAll(institutes);
             log.info("Database Initialization Finished");
         };
     }

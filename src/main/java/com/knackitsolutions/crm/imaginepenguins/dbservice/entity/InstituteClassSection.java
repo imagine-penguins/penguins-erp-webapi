@@ -91,4 +91,6 @@ public class InstituteClassSection {
     public void setInstituteClassSectionSubjects(Set<InstituteClassSectionSubject> instituteClassSectionSubjects) {
         this.instituteClassSectionSubjects = instituteClassSectionSubjects;
     }
+
+
 }

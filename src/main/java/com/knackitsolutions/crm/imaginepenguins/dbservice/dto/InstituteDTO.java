@@ -1,10 +1,11 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.util.Date;
 
-public class InstituteDTO {
+public class InstituteDTO extends RepresentationModel<InstituteDTO> {
 
     private Integer id;
 

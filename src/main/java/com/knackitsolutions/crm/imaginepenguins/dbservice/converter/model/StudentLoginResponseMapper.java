@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class StudentResponseMapper extends UserResponseMapper{
+public class StudentLoginResponseMapper extends UserLoginResponseMapper {
 
     @Autowired
     InstituteClassSectionMapper instituteClassSectionMapper;
@@ -22,7 +22,7 @@ public class StudentResponseMapper extends UserResponseMapper{
         entityToDTO(dto, student);
 
         dto.setParentId(student.getParent().getId());
-        dto.setClasss(instituteClassSectionMapper.toDTO(student.getInstituteClassSectionTeacher()));
+        dto.setClasss(instituteClassSectionMapper.toDTO(student.getInstituteClassSection()));
 
         return dto;
     }

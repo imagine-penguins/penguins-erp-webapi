@@ -5,7 +5,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserResponseMapper {
+public class UserLoginResponseMapper {
 
     public void entityToDTO(UserLoginResponseDTO userLoginResponseDTO, User user){
         if (user == null || userLoginResponseDTO == null)

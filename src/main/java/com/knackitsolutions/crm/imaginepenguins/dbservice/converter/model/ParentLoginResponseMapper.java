@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class ParentResponseMapper extends UserResponseMapper {
+public class ParentLoginResponseMapper extends UserLoginResponseMapper {
 
     public ParentLoginResponseDTO parentResponseDTO(Parent parent){
         if (parent == null)

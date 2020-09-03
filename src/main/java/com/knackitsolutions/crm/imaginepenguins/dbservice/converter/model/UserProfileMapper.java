@@ -4,7 +4,6 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserProfileDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserPrivilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserProfile;
-import org.mapstruct.Mapper;
 
 import java.util.List;
 

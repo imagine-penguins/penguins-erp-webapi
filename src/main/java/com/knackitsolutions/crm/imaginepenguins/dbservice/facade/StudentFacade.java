@@ -1,6 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.StudentResponseMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.StudentLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.StudentLoginResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import java.util.List;
 public class StudentFacade {
 
     @Autowired
-    StudentResponseMapper studentResponseMapper;
+    StudentLoginResponseMapper studentResponseMapper;
 
     @Autowired
     StudentService service;

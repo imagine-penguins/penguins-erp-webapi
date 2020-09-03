@@ -139,12 +139,7 @@ public class UserProfile {
         if (this == o) return true;
         if (!(o instanceof UserProfile)) return false;
         UserProfile that = (UserProfile) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(firstName, that.firstName) &&
-                Objects.equals(lastName, that.lastName) &&
-                Objects.equals(user, that.user) &&
-                Objects.equals(address, that.address) &&
-                Objects.equals(contact, that.contact);
+        return Objects.equals(contact, that.contact);
     }
 
     @Override

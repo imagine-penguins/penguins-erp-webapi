@@ -1,22 +1,25 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeResponseMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeLoginResponseMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserProfileMapper;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserResponseMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.EmployeeNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserLoginFailed;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.ParentService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,7 +44,7 @@ public class UserFacade {
     EmployeeService employeeService;
 
     @Autowired
-    UserResponseMapper userResponseMapper;
+    UserLoginResponseMapper userLoginResponseMapper;
 
     @Autowired
     EmployeeFacade employeeFacade;
@@ -50,7 +53,16 @@ public class UserFacade {
     TeacherFacade teacherFacade;
 
     @Autowired
-    EmployeeResponseMapper employeeResponseMapper;
+    EmployeeLoginResponseMapper employeeLoginResponseMapper;
+
+    @Autowired
+    InstituteMapper instituteMapper;
+
+    @Autowired
+    StudentService studentService;
+
+    @Autowired
+    ParentService parentService;
 
     public UserLoginResponseDTO newUser(){
         return null;
@@ -59,12 +71,12 @@ public class UserFacade {
     public List<UserLoginResponseDTO> findAll(){
         return userService.findAll()
                 .stream()
-                .map(user -> userResponseMapper.entityToDTO(user))
+                .map(user -> userLoginResponseMapper.entityToDTO(user))
                 .collect(Collectors.toList());
     }
 
     public UserLoginResponseDTO findById(Long id){
-        return userResponseMapper.entityToDTO(userService.findById(id));
+        return userLoginResponseMapper.entityToDTO(userService.findById(id));
     }
 
     public UserLoginResponseDTO login(UserLoginRequestDTO requestDTO){
@@ -96,9 +108,41 @@ public class UserFacade {
         return dto;
     }
 
-    public InstituteDTO getInstitute(String userId){
+    public List<InstituteDTO> getInstitutes(Long userId){
+        User user = userService.findById(userId);
+        List<InstituteDTO> institutes = new ArrayList<>();
+        log.info("User Type-------------->: {}", user.getUserType());
+        if (user.getUserType() == UserType.EMPLOYEE){
+            Employee employee = employeeService.findById(userId)
+                    .orElseThrow(()->new EmployeeNotFoundException(userId));
 
-        return null;
+            institutes.add(instituteMapper.entityToDTO(employee.getInstitute()));
+//            if (employee.getEmployeeType() == EmployeeType.TEACHER)
+//                return teacherFacade.findById(user.getId());
+//            else
+//                return employeeResponseMapper.toDTO(employee);
+        }
+        else if(user.getUserType() == UserType.STUDENT){
+            institutes.add(instituteMapper.entityToDTO(studentService
+                    .one(userId)
+                    .getInstituteClassSection()
+                    .getInstituteClass()
+                    .getInstitute()));
+        }
+        else if(user.getUserType() == UserType.PARENT){
+//            instituteMapper.entityToDTO(
+                    parentService.findById(userId)
+                            .getStudents()
+                            .stream()
+                            .map(student -> instituteMapper.entityToDTO(student
+                                    .getInstituteClassSection()
+                                    .getInstituteClass()
+                                    .getInstitute()))
+                            .forEach(institutes::add);
+
+//            parentFacade.findById(user.getId());
+        }
+        return institutes;
     }
 
 }

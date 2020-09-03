@@ -70,23 +70,6 @@ public class Address {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Address)) return false;
-        Address address = (Address) o;
-        return Objects.equals(addressLine1, address.addressLine1) &&
-                Objects.equals(addressLine2, address.addressLine2) &&
-                Objects.equals(state, address.state) &&
-                Objects.equals(country, address.country) &&
-                Objects.equals(zipcode, address.zipcode);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(addressLine1, addressLine2, state, country, zipcode);
-    }
-
-    @Override
     public String toString() {
         return "Address{" +
                 "addressLine1='" + addressLine1 + '\'' +

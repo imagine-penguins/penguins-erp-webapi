@@ -1,7 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeMapperImpl;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeResponseMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeLoginResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
@@ -37,7 +37,7 @@ public class EmployeeFacade {
     private PrivilegeService privilegeService;
 
     @Autowired
-    private EmployeeResponseMapper employeeResponseMapper;
+    private EmployeeLoginResponseMapper employeeLoginResponseMapper;
 
     @Autowired
     private EmployeeMapperImpl employeeMapperImpl;
@@ -53,11 +53,11 @@ public class EmployeeFacade {
 //        Employee newEmployee = newUser.getEmployee();//employeeService.newEmployee(employee);
         log.info("New Employee: {}", newEmployee);
 
-        return employeeResponseMapper.toDTO(newEmployee);
+        return employeeLoginResponseMapper.toDTO(newEmployee);
     }
 
     public EmployeeLoginResponseDTO oneEmployee(Long id){
-        return employeeResponseMapper.toDTO(employeeService.getOne(id)
+        return employeeLoginResponseMapper.toDTO(employeeService.findById(id)
                 .orElseThrow(() -> {
                     return new EmployeeNotFoundException(id);
                 }));
@@ -66,7 +66,7 @@ public class EmployeeFacade {
     public List<EmployeeLoginResponseDTO> allEmployee(){
         List<EmployeeLoginResponseDTO> employeeResponseDTOList = employeeService.getAllEmployees()
                 .stream()
-                .map(employee -> employeeResponseMapper.toDTO(employee))
+                .map(employee -> employeeLoginResponseMapper.toDTO(employee))
                 .collect(Collectors.toList());
         return employeeResponseDTOList;
     }

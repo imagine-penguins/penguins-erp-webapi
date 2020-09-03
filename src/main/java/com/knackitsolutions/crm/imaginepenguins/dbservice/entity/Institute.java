@@ -6,6 +6,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.listner.InstituteListn
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -53,13 +54,13 @@ public class Institute {
 	})
 	private Contact contact;
 
-	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY)
-	private Set<Employee> employee;
+	@OneToMany(mappedBy = "institute", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+	private Set<Employee> employees = new HashSet<>();
 
-	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
 	private Set<InstituteClass> classes;
 
-	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
 	private Set<InstituteDepartment> instituteDepartments;
 
 	public Institute() {
@@ -152,18 +153,6 @@ public class Institute {
 		return Objects.hash(id, name, instituteType, recognitionNumber, address, contact);
 	}
 
-	@Override
-	public String toString() {
-		return "Institute{" +
-				"id=" + id +
-				", name='" + name + '\'' +
-				", instituteType=" + instituteType +
-				", recognitionNumber='" + recognitionNumber + '\'' +
-				", address=" + address +
-				", contact=" + contact +
-				'}';
-	}
-
 	public Set<InstituteClass> getClasses() {
 		return classes;
 	}
@@ -204,11 +193,34 @@ public class Institute {
 		this.logoImg = logoImg;
 	}
 
-	public Set<Employee> getEmployee() {
-		return employee;
+	public Set<Employee> getEmployees() {
+		return employees;
 	}
 
-	public void setEmployee(Set<Employee> employee) {
-		this.employee = employee;
+	public void setEmployees(Set<Employee> employees) {
+		this.employees.addAll(employees);
+	}
+
+	public void addEmployee(Employee employee) {
+		employees.add(employee);
+		employee.setInstitute(this);
+	}
+
+	@Override
+	public String toString() {
+		return "Institute{" +
+				"id=" + id +
+				", name='" + name + '\'' +
+				", instituteType=" + instituteType +
+				", recognitionNumber='" + recognitionNumber + '\'' +
+				", openTime=" + openTime +
+				", closeTime=" + closeTime +
+				", logoImg='" + logoImg + '\'' +
+				", address=" + address +
+				", contact=" + contact +
+				", employees=" + employees +
+				", classes=" + classes +
+				", instituteDepartments=" + instituteDepartments +
+				'}';
 	}
 }

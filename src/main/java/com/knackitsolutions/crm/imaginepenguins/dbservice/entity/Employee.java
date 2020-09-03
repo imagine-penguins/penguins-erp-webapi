@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -120,5 +121,34 @@ public class Employee extends User{
 
     public void setInstitute(Institute institute) {
         this.institute = institute;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Employee)) return false;
+        if (!super.equals(o)) return false;
+        Employee employee = (Employee) o;
+        return getEmployeeType() == employee.getEmployeeType() &&
+                Objects.equals(getDesignation(), employee.getDesignation()) &&
+                Objects.equals(getInstitute(), employee.getInstitute()) &&
+                Objects.equals(getManager(), employee.getManager()) &&
+                Objects.equals(getSubordinates(), employee.getSubordinates());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getEmployeeType(), getDesignation(), getInstitute(), getManager(), getSubordinates());
+    }
+
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "employeeType=" + employeeType +
+                ", designation='" + designation + '\'' +
+                ", institute=" + institute +
+                ", manager=" + manager +
+                ", subordinates=" + subordinates +
+                '}';
     }
 }

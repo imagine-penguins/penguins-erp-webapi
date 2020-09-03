@@ -1,6 +1,8 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
-public class UserLoginResponseDTO {
+import org.springframework.hateoas.RepresentationModel;
+
+public class UserLoginResponseDTO extends RepresentationModel<UserLoginResponseDTO> {
 
     private String apiKey;
 

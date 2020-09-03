@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Collectors;
 
 @Component
-public class EmployeeResponseMapper extends UserResponseMapper {
+public class EmployeeLoginResponseMapper extends UserLoginResponseMapper {
 
     public void updateDTO(EmployeeLoginResponseDTO dto, Employee employee){
         if (employee == null || dto == null)

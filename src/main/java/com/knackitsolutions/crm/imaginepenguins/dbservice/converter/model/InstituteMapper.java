@@ -2,12 +2,16 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.InstituteDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InstituteMapper {
 
+    @Autowired
     AddressMapperImpl addressMapper;
+
+    @Autowired
     ContactMapperImpl contactMapper;
 
     public void entityToDTO(InstituteDTO dto, Institute entity){

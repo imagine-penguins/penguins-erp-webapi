@@ -114,6 +114,6 @@ public class EmployeeMapperImpl extends UserMapperImpl{
         return employee.getId();
     }
     protected Employee fromId(Long id){
-        return employeeService.getOne(id).orElseThrow(()->new EmployeeNotFoundException(id));
+        return employeeService.findById(id).orElseThrow(()->new EmployeeNotFoundException(id));
     }
 }

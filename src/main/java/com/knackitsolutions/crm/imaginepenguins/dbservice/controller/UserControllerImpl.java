@@ -114,11 +114,35 @@ public class UserControllerImpl {
 //            return ResponseEntity.ok(studentModelAssembler.toModel((StudentLoginResponseDTO)dto));
 
         //Change it later
-        return ResponseEntity.ok(userLoginModelAssembler.toModel(dto));
+
+        return ResponseEntity.ok(EntityModel.of(dto,
+                linkTo(methodOn(UserControllerImpl.class).one(dto.getUserId())).withSelfRel(),
+                linkTo(methodOn(UserControllerImpl.class).all()).withRel("users"),
+                linkTo(methodOn(DashboardController.class).webDashboardDTO(dto.getUserId(), 1l)).withRel("web-dashboard"),
+                linkTo(methodOn(DashboardController.class).appDashboardDTO(dto.getUserId(), 1l)).withRel("app-dashboard"),
+                linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute")
+        ));
     }
 
     @GetMapping("/{id}/institute")
-    public EntityModel<InstituteDTO> institute(@PathVariable("id") Long id){
-        return null;
+    public CollectionModel<EntityModel<InstituteDTO>> institute(@PathVariable("id") Long id){
+        List<InstituteDTO> instituteDTOS = userFacade.getInstitutes(id);
+        if (instituteDTOS.size() == 0) {
+            log.info("No institutes found for id: {}", id);
+            return null;
+        }
+        List<EntityModel<InstituteDTO>> institutes = instituteDTOS.stream().map(instituteDTO -> {
+            log.info("InstitutesDTO: {}", instituteDTO);
+            instituteDTO.add(linkTo(methodOn(InstituteControllerImpl.class)
+                    .one(instituteDTO.getId()))
+                    .withSelfRel());
+            instituteDTO.add(linkTo(methodOn(InstituteControllerImpl.class)
+                    .allBranches(instituteDTO.getId()))
+                    .withRel("branches"));
+            return EntityModel.of(instituteDTO);}).collect(Collectors.toList());
+
+        return CollectionModel.of(institutes,
+                linkTo(methodOn(InstituteControllerImpl.class).all()).withRel("institutes"));
+
     }
 }
