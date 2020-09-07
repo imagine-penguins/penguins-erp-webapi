@@ -61,7 +61,7 @@ public class UserMapperImpl {
 
     public List<Integer> userPrivilegesToPrivileges(List<UserPrivilege> userPrivilegeList){
         return userPrivilegeList.stream()
-                .map(userPrivilege -> userPrivilege.getPrivilege().getId())
+                .map(userPrivilege -> userPrivilege.getDepartmentPrivilege().getPrivilege().getId())
                 .collect(Collectors.toList());
     }
 
@@ -69,7 +69,7 @@ public class UserMapperImpl {
         user.getUserProfile().setUser(user);
         user.setUserPrivileges(dto.getPrivileges()
         .stream()
-        .map(id -> new UserPrivilege(user, privilegeService.get(id)))
+        .map(id -> new UserPrivilege())
         .collect(Collectors.toList()));
     }
 

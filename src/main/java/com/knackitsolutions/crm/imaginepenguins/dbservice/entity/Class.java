@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity(name = "class")
@@ -20,7 +21,8 @@ public class Class {
     InstituteType instituteType;
 
     @OneToMany(mappedBy = "classs")
-    private Set<InstituteClass> instituteClasses;
+    private Set<InstituteClass> instituteClasses = new HashSet<>();
+
 
     public Class(Long id, String className, InstituteType instituteType) {
         Id = id;
@@ -67,7 +69,7 @@ public class Class {
     }
 
     public void setInstitutes(Set<InstituteClass> institutes) {
-        this.instituteClasses = institutes;
+        this.instituteClasses.addAll(institutes);
     }
 
     @Override
@@ -78,5 +80,10 @@ public class Class {
                 ", instituteType=" + instituteType +
                 ", institutes=" + instituteClasses +
                 '}';
+    }
+
+    public void addInstituteClass(InstituteClass instituteClass) {
+        instituteClasses.add(instituteClass);
+        instituteClass.setClasss(this);
     }
 }

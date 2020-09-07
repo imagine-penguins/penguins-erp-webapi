@@ -25,8 +25,8 @@ public enum DashboardViewType {
     @JsonCreator
     public static DashboardViewType of(@JsonProperty String code){
         return Stream.of(DashboardViewType.values())
-                .filter(dashboardViewType -> dashboardViewType.getDashboardViewTypeValue() == code)
+                .filter(dashboardViewType -> dashboardViewType.getDashboardViewTypeValue().equals(code))
                 .findFirst()
-                .get();
+                .orElseThrow(IllegalAccessError::new);
     }
 }

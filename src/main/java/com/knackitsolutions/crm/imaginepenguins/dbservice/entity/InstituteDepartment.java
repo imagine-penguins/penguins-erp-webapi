@@ -2,6 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -16,17 +17,25 @@ public class InstituteDepartment {
     @Column(name = "department_name")
     private String departmentName;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "institute_id")
     private Institute institute;
 
     @OneToMany(mappedBy = "instituteDepartment")
     private Set<InstituteDepartmentPrivilege> privileges = new HashSet<>();
 
+    @OneToMany(mappedBy = "instituteDepartment")
+    private Set<UserDepartment> userDepartments = new HashSet<>();
+
     public InstituteDepartment() {
     }
 
     public InstituteDepartment(String departmentName){
+        this.departmentName = departmentName;
+    }
+
+    public InstituteDepartment(Long id, String departmentName) {
+        this.id = id;
         this.departmentName = departmentName;
     }
 
@@ -61,8 +70,8 @@ public class InstituteDepartment {
         return privileges;
     }
 
-    public void setPrivileges(Set<InstituteDepartmentPrivilege> privilages) {
-        this.privileges = privileges;
+    public void setPrivileges(Set<InstituteDepartmentPrivilege> privileges) {
+        privileges.forEach(this::setPrivileges);
     }
 
     public Institute getInstitute() {
@@ -71,5 +80,49 @@ public class InstituteDepartment {
 
     public void setInstitute(Institute institute) {
         this.institute = institute;
+    }
+
+    public Set<UserDepartment> getUserDepartments() {
+        return userDepartments;
+    }
+
+    public void addUserDepartment(Set<UserDepartment> userDepartments) {
+        userDepartments.forEach(this::addUserDepartment);
+    }
+
+    public void addUserDepartment(UserDepartment userDepartment) {
+        this.userDepartments.add(userDepartment);
+        userDepartment.setInstituteDepartment(this);
+    }
+
+    public void setPrivileges(InstituteDepartmentPrivilege privilege) {
+        this.privileges.add(privilege);
+        privilege.setInstituteDepartment(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof InstituteDepartment)) return false;
+        InstituteDepartment that = (InstituteDepartment) o;
+        return getId().equals(that.getId()) &&
+                getDepartmentName().equals(that.getDepartmentName()) &&
+                getInstitute().equals(that.getInstitute()) &&
+                Objects.equals(getPrivileges(), that.getPrivileges()) &&
+                Objects.equals(getUserDepartments(), that.getUserDepartments());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getDepartmentName(), getInstitute(), getPrivileges(), getUserDepartments());
+    }
+
+    @Override
+    public String toString() {
+        return "InstituteDepartment{" +
+                "id=" + id +
+                ", departmentName='" + departmentName + '\'' +
+//                ", institute=" + institute +
+                '}';
     }
 }

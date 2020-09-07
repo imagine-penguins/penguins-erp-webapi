@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @EntityListeners(InstituteListner.class)
 @Entity(name = "institute")
@@ -54,14 +55,23 @@ public class Institute {
 	})
 	private Contact contact;
 
-	@OneToMany(mappedBy = "institute", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+	@OneToMany(mappedBy = "institute"
+			, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
 	private Set<Employee> employees = new HashSet<>();
 
-	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-	private Set<InstituteClass> classes;
+	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY
+			, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+	private Set<InstituteClass> classes = new HashSet<>();
 
-	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-	private Set<InstituteDepartment> instituteDepartments;
+	@OneToMany(mappedBy = "institute", fetch = FetchType.LAZY
+			, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+	private Set<InstituteDepartment> instituteDepartments = new HashSet<>();
+
+	@OneToMany(mappedBy = "institute", orphanRemoval = true)
+	private Set<Holiday> holidays = new HashSet<>();
+
+	@OneToMany(mappedBy = "institute", orphanRemoval = true)
+	private Set<Event> events = new HashSet<>();
 
 	public Institute() {
 	
@@ -158,7 +168,7 @@ public class Institute {
 	}
 
 	public void setClasses(Set<InstituteClass> classes) {
-		this.classes = classes;
+		classes.forEach(this::addClasses);
 	}
 
 	public Date getOpenTime() {
@@ -182,7 +192,13 @@ public class Institute {
 	}
 
 	public void setInstituteDepartments(Set<InstituteDepartment> instituteDepartments) {
-		this.instituteDepartments = instituteDepartments;
+		instituteDepartments.forEach(this::addInstituteDepartments);
+	}
+
+	public void addInstituteDepartments(InstituteDepartment instituteDepartments) {
+		this.instituteDepartments.add(instituteDepartments);
+		instituteDepartments.setInstitute(this);
+
 	}
 
 	public String getLogoImg() {
@@ -198,7 +214,7 @@ public class Institute {
 	}
 
 	public void setEmployees(Set<Employee> employees) {
-		this.employees.addAll(employees);
+		employees.forEach(this::addEmployee);
 	}
 
 	public void addEmployee(Employee employee) {
@@ -218,9 +234,37 @@ public class Institute {
 				", logoImg='" + logoImg + '\'' +
 				", address=" + address +
 				", contact=" + contact +
-				", employees=" + employees +
-				", classes=" + classes +
-				", instituteDepartments=" + instituteDepartments +
 				'}';
+	}
+
+	public void addClasses(InstituteClass instituteClass) {
+		this.classes.add(instituteClass);
+		instituteClass.setInstitute(this);
+	}
+
+	public Set<Holiday> getHolidays() {
+		return holidays;
+	}
+
+	public void setHolidays(Set<Holiday> holidays) {
+		holidays.forEach(this::setHolidays);
+	}
+
+	public void setHolidays(Holiday holiday) {
+		this.holidays.add(holiday);
+		holiday.setInstitute(this);
+	}
+
+	public Set<Event> getEvents() {
+		return events;
+	}
+
+	public void setEvents(Set<Event> events) {
+		events.forEach(this::setEvents);
+	}
+
+	public void setEvents(Event event) {
+		this.events.add(event);
+		event.setInstitute(this);
 	}
 }

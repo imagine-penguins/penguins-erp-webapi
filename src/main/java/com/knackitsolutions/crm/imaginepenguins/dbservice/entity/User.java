@@ -149,7 +149,7 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, userType, isAdmin, isSuperAdmin, isActive, isVerified, userProfile);
+        return Objects.hash(id, username, userType, isAdmin, isSuperAdmin, isActive, isVerified);
     }
 
 //    public Employee getEmployee() {
@@ -181,7 +181,12 @@ public class User {
     }
 
     public void setUserPrivileges(List<UserPrivilege> userPrivileges) {
-        this.userPrivileges = userPrivileges;
+        userPrivileges.forEach(this::setUserPrivileges);
+    }
+
+    public void setUserPrivileges(UserPrivilege userPrivilege) {
+        this.userPrivileges.add(userPrivilege);
+        userPrivilege.setUser(this);
     }
 
     @Override
@@ -194,11 +199,7 @@ public class User {
                 ", isSuperAdmin=" + isSuperAdmin +
                 ", isActive=" + isActive +
                 ", isVerified=" + isVerified +
-//                ", userProfile=" + userProfile +
-//                ", employee=" + employee +
-//                ", parent=" + parent +
-//                ", student=" + student +
-//                ", userPrivileges=" + userPrivileges +
+                ", userProfile=" + userProfile +
                 '}';
     }
 
@@ -215,10 +216,12 @@ public class User {
     }
 
     public void setUserDepartments(Set<UserDepartment> userDepartments) {
-        this.userDepartments = userDepartments;
+        userDepartments.forEach(this::setUserDepartment);
     }
 
     public void setUserDepartment(UserDepartment userDepartment){
         userDepartments.add(userDepartment);
+        userDepartment.setUser(this);
     }
+
 }

@@ -153,7 +153,6 @@ public class UserProfile {
                 "Id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", user=" + user +
                 ", address=" + address +
                 ", contact=" + contact +
                 '}';

@@ -1,35 +1,22 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
+
 import javax.persistence.Id;
+import java.util.ArrayList;
 import java.util.List;
 
 public class InstituteDepartmentDTO {
-    @Id
-    Long id;
 
-    String departmentName;
+    private Long id;
 
-    Integer instituteId;
+    private String departmentName;
 
-    List<Integer> privileges;
+    private Integer instituteId;
 
-    protected InstituteDepartmentDTO() {
-    }
+    private List<PrivilegeDTO> privileges = new ArrayList<>();
 
-    public InstituteDepartmentDTO(String departmentName, Integer instituteId) {
-        this();
-        this.departmentName = departmentName;
-        this.instituteId = instituteId;
-    }
-
-    public InstituteDepartmentDTO(String departmentName, Integer instituteId, List<Integer> privileges) {
-        this(departmentName, instituteId);
-        this.privileges = privileges;
-    }
-
-    public InstituteDepartmentDTO(Long id, String departmentName, Integer instituteId, List<Integer> privileges) {
-        this(departmentName, instituteId, privileges);
-        this.id = id;
+    public InstituteDepartmentDTO() {
     }
 
     public Long getId() {
@@ -56,14 +43,6 @@ public class InstituteDepartmentDTO {
         this.instituteId = instituteId;
     }
 
-    public List<Integer> getPrivileges() {
-        return privileges;
-    }
-
-    public void setPrivileges(List<Integer> privileges) {
-        this.privileges = privileges;
-    }
-
     @Override
     public String toString() {
         return "InstituteDepartmentDTO{" +
@@ -72,5 +51,17 @@ public class InstituteDepartmentDTO {
                 ", instituteId=" + instituteId +
                 ", privileges=" + privileges +
                 '}';
+    }
+
+    public List<PrivilegeDTO> getPrivileges() {
+        return privileges;
+    }
+
+    public void setPrivileges(List<PrivilegeDTO> privileges) {
+        this.privileges.addAll(privileges);
+    }
+
+    public void setPrivileges(PrivilegeDTO privilege) {
+        this.privileges.add(privilege);
     }
 }

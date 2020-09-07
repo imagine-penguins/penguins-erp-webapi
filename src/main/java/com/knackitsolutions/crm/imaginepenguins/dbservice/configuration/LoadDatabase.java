@@ -8,6 +8,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,9 +25,352 @@ import java.util.stream.Stream;
 public class LoadDatabase {
     private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
 
+    private static List<Institute> institutes = new ArrayList<>();
+
+    private static List<InstituteClass> instituteClasss = new ArrayList<>();
+
+    private static List<InstituteClassSection> instituteClassSections = new ArrayList<>();
+
+    private static List<InstituteDepartment> departments = new ArrayList<>();
+
+    private static List<Privilege> privileges = new ArrayList<>();
+
+    private static List<Employee> employees = new ArrayList<>(10);
+
+    private static List<Teacher> teachers = new ArrayList<>(10);
+
+    private static List<Student> students = new ArrayList<>();
+
+    private static List<UserDepartment> userDepartments = new ArrayList<>();
+
+    private static List<InstituteDepartmentPrivilege> instituteDepartmentPrivileges = new ArrayList<>();
+
+    private static List<UserPrivilege> userPrivileges = new ArrayList<>();
+
     private List<Institute> newInstitutes(){
         //Open and close timings
         return createSchools();
+    }
+
+    public static void setupInstitutes(InstituteRepository instituteRepository) {
+        Institute institute1 = new Institute(4, "XYC", InstituteType.SCHOOL
+                , new Address("D45", "Raod-3", "Delhi", "India", "110034")
+                , new Contact("982", "xyz772@g.com"));
+        Institute institute2 = new Institute(5, "ABC", InstituteType.SCHOOL
+                , new Address("D45", "Raod-4", "Delhi", "India", "110034")
+                , new Contact("98999", "ABC@g.com"));
+
+        institute1 = instituteRepository.save(institute1);
+        institute2 = instituteRepository.save(institute2);
+        institutes.add(institute1);
+        institutes.add(institute2);
+    }
+
+    public static void setupEmployees(EmployeeRepository employeeRepository) {
+        Institute institute1 = institutes.get(0);
+        Institute institute2 = institutes.get(1);
+        Employee employee1 = new Employee(1l, "gautam", "gautam003", UserType.EMPLOYEE
+                , false, false
+                , new UserProfile("Gautam", "Kumar"
+                , new Address("D74", "Gali16", "Delhi", "India", "110053")
+                , new Contact("1010", "gautam@gmail.com")), EmployeeType.NON_TEACHER
+                , "None", institute1, null, null);
+
+        institute1.addEmployee(employee1);
+
+        Employee employee2 = new Employee(1l, "gaurav", "gaurav003", UserType.EMPLOYEE
+                , false, false
+                , new UserProfile("Gaurav", "Kumar"
+                , new Address("D14", "Gali16", "Delhi", "India", "110053")
+                , new Contact("10111", "gaurav@gmail.com")), EmployeeType.NON_TEACHER
+                , "None", institute1, null, null);
+        institute1.addEmployee(employee2);
+
+        employees.addAll(Stream.of(employee1, employee2)
+                .map(employee -> {
+                    employee.getUserProfile().setUser(employee);
+                    return employeeRepository.save(employee);
+                }).collect(Collectors.toList()));
+    }
+
+    public static void setupTeachers(TeacherRepository teacherRepository) {
+        Institute institute1 = institutes.get(0);
+        Institute institute2 = institutes.get(1);
+        Teacher teacher1 = new Teacher(1l, "manish", "manish003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                new UserProfile("asdf", "dgsh",
+                        new Address("d", "74", "Delhi", "India", "110043"),
+                        new Contact("9000", "mj01@gmail.com")), EmployeeType.TEACHER, "HOD");
+        Teacher teacher2 = new Teacher(1l, "nisha", "nisha003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                new UserProfile("t2", "t2",
+                        new Address("d", "22", "Delhi", "India", "110043"),
+                        new Contact("888", "nisha1@gmail.com")), EmployeeType.TEACHER, "CI");
+        institute1.addEmployee(teacher1);
+        institute1.addEmployee(teacher2);
+
+        teacher1.getUserProfile().setUser(teacher1);
+        teacher2.getUserProfile().setUser(teacher2);
+
+        teacher1 = teacherRepository.save(teacher1);
+        teacher2 = teacherRepository.save(teacher2);
+
+        teachers.addAll(Stream.of(teacher1, teacher2).collect(Collectors.toList()));
+    }
+
+    public static void setupClasses(ClassRepository classRepository
+            , InstituteClassRepository instituteClassRepository) {
+        Institute institute1 = institutes.get(0);
+        Institute institute2 = institutes.get(1);
+
+        Class class1 = classRepository.save(new Class(1l, "Nursery", InstituteType.SCHOOL));
+        Class class2 = classRepository.save(new Class(1l, "K.G.", InstituteType.SCHOOL));
+
+        InstituteClass instituteClass1 = new InstituteClass(1l, institute1, class1);
+        InstituteClass instituteClass2 = new InstituteClass(1l, institute1, class2);
+
+        institute1.addClasses(instituteClass1);
+        institute1.addClasses(instituteClass2);
+
+        class1.addInstituteClass(instituteClass1);
+        class2.addInstituteClass(instituteClass2);
+
+        instituteClass1 = instituteClassRepository.save(instituteClass1);
+        instituteClass2 = instituteClassRepository.save(instituteClass2);
+
+        instituteClasss.add(instituteClass1);
+        instituteClasss.add(instituteClass2);
+    }
+
+    public static void setupSections(SectionRepository sectionRepository
+            , InstituteClassSectionRepository instituteClassSectionRepository) {
+        InstituteClass instituteClass1 = instituteClasss.get(0);
+        InstituteClass instituteClass2 = instituteClasss.get(1);
+
+        Section section1 = new Section(1l, "A", InstituteType.SCHOOL);
+        Section section2 = new Section(1l, "B", InstituteType.SCHOOL);
+        Section section3 = new Section(1l, "C", InstituteType.SCHOOL);
+
+        section1 = sectionRepository.save(section1);
+        section2 = sectionRepository.save(section2);
+        section3 = sectionRepository.save(section3);
+
+        InstituteClassSection instituteClassSection1 = new InstituteClassSection(1l, instituteClass1, section1);
+        InstituteClassSection instituteClassSection2 = new InstituteClassSection(1l, instituteClass1, section2);
+        InstituteClassSection instituteClassSection3 = new InstituteClassSection(1l, instituteClass1, section3);
+        InstituteClassSection instituteClassSection4 = new InstituteClassSection(1l, instituteClass2, section1);
+        InstituteClassSection instituteClassSection5 = new InstituteClassSection(1l, instituteClass2, section2);
+
+        section1.addInstituteClassSection(instituteClassSection1);
+        section1.addInstituteClassSection(instituteClassSection4);
+        section2.addInstituteClassSection(instituteClassSection2);
+        section2.addInstituteClassSection(instituteClassSection5);
+        section3.addInstituteClassSection(instituteClassSection3);
+
+        instituteClassSections.addAll(Stream.of(instituteClassSection1, instituteClassSection2
+                , instituteClassSection3, instituteClassSection4, instituteClassSection5)
+                .map(instituteClassSectionRepository::save)
+                .collect(Collectors.toList()));
+
+    }
+
+    public static void setupStudents(StudentRepository studentRepository) {
+        InstituteClassSection instituteClassSection1 = instituteClassSections.get(0);
+        InstituteClassSection instituteClassSection2 = instituteClassSections.get(1);
+        InstituteClassSection instituteClassSection3 = instituteClassSections.get(2);
+        InstituteClassSection instituteClassSection4 = instituteClassSections.get(3);
+        InstituteClassSection instituteClassSection5 = instituteClassSections.get(4);
+
+
+        Student student1 = new Student(1l, "naman", "naman003", UserType.STUDENT, false, false,
+                new UserProfile("Naman", "Kumar"
+                        , new Address("D74", "Gali-16", "Telangana", "India", "140088")
+                        , new Contact("9003321", "naman@gmail.com")), instituteClassSection1, null);
+        instituteClassSection1.addStudent(student1);
+
+        Student student2 = new Student(1l, "manan", "manan003", UserType.STUDENT, false, false,
+                new UserProfile("Manan", "Kumar"
+                        , new Address("D34", "Gali-26", "Telangana", "India", "140088")
+                        , new Contact("8003312", "manan@gmail.com")), instituteClassSection1, null);
+        instituteClassSection1.addStudent(student2);
+
+        Student student3 = new Student(1l, "kishor", "kishor003", UserType.STUDENT, false, false,
+                new UserProfile("Kishor", "Kumar"
+                        , new Address("D75", "Gali-16", "Telangana", "India", "140088")
+                        , new Contact("9000011", "kishor@gmail.com")), instituteClassSection2, null);
+        instituteClassSection2.addStudent(student3);
+
+        Student student4 = new Student(1l, "hiteshi", "hiteshi003", UserType.STUDENT, false, false,
+                new UserProfile("Hiteshi", "Kumar"
+                        , new Address("D54", "Gali-46", "Telangana", "India", "140088")
+                        , new Contact("90000118", "hiteshi@gmail.com")), instituteClassSection2, null);
+        instituteClassSection2.addStudent(student4);
+
+        Student student5 = new Student(1l, "pooja", "pooja003", UserType.STUDENT, false, false,
+                new UserProfile("Pooja", "Kumar"
+                        , new Address("D79", "Gali-86", "Telangana", "India", "140088")
+                        , new Contact("9009119", "pooja@gmail.com")), instituteClassSection3, null);
+        instituteClassSection3.addStudent(student5);
+
+        Student student6 = new Student(1l, "neetu", "neetu003", UserType.STUDENT, false, false,
+                new UserProfile("Neetu", "Kumar"
+                        , new Address("D740", "Gali-916", "Telangana", "India", "140088")
+                        , new Contact("881018", "neetu@gmail.com")), instituteClassSection3, null);
+        instituteClassSection3.addStudent(student6);
+
+        students.addAll(Stream.of(student1, student2, student3, student4, student5, student6)
+                .map(student -> {
+                    student.getUserProfile().setUser(student);
+                    return studentRepository.save(student);
+                }).collect(Collectors.toList()));
+
+    }
+
+    public static void setupDepartment(DepartmentRepository departmentRepository) {
+        InstituteDepartment department1 = new InstituteDepartment(1l,"ADMIN");
+        InstituteDepartment department2 = new InstituteDepartment(1l,"STUDENT");
+        InstituteDepartment department3 = new InstituteDepartment(1l,"TEACHER");
+        InstituteDepartment department4 = new InstituteDepartment(1l,"PARENT");
+        departments.addAll(Stream.of(department1, department2
+                , department3, department4)
+                .map(department -> {
+                    institutes.get(0).addInstituteDepartments(department);
+                    return departmentRepository.save(department);
+                }).collect(Collectors.toList()));
+    }
+
+    public static void setupPrivileges(PrivilegeRepository privilegeRepository) {
+        Privilege privilege1 = new Privilege(1, "ATD"
+                , "Attendance", "Attendance Module");
+        Privilege privilege2 = new Privilege(1, "CLD"
+                , "Calendar", "Calendar Module");
+        Privilege privilege3 = new Privilege(1, "VSATD"
+                , "View Self Attendance", "View Self Attendance");
+        Privilege privilege4 = new Privilege(1, "MEATD"
+                , "Mark Employee Attendance", "Mark Employee Attendance");
+        Privilege privilege5 = new Privilege(1, "MSATD"
+                , "Mark Student Attendance", "Mark Student Attendance");
+
+        privileges.addAll(Stream.of(
+                privilege1, privilege2, privilege3, privilege4, privilege5
+        ).map(privilegeRepository::save).collect(Collectors.toList()));
+
+    }
+
+    public static void setupInstituteDepartmentPrivileges(InstituteDepartmentPrivilegeRepository repository) {
+        //admin department privilege
+        instituteDepartmentPrivileges.addAll(privileges.stream().map(privilege -> {
+            InstituteDepartmentPrivilege departmentPrivilege = new InstituteDepartmentPrivilege(departments.get(0), privilege);
+            return repository.save(departmentPrivilege);
+        }).collect(Collectors.toList()));
+
+        //student department privilege
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege1 =
+                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(2));
+        departments.get(1).setPrivileges(instituteDepartmentPrivilege1);
+        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
+
+        //teacher department privilege
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege2 =
+                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(4));
+
+        departments.get(2).setPrivileges(instituteDepartmentPrivilege2);
+        privileges.get(4).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
+
+        //parent department privilege
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege3 =
+                new InstituteDepartmentPrivilege(departments.get(3), privileges.get(2));
+
+        departments.get(3).setPrivileges(instituteDepartmentPrivilege3);
+        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
+
+        instituteDepartmentPrivileges.addAll(departments.stream().map(department -> {
+            InstituteDepartmentPrivilege privilege = new InstituteDepartmentPrivilege(department, privileges.get(1));
+            department.setPrivileges(privilege);
+            privileges.get(1).addInstituteDepartmentPrivilege(privilege);
+            repository.save(privilege);
+            return privilege;
+        }).collect(Collectors.toList()));
+
+        instituteDepartmentPrivileges.addAll(Stream.of(instituteDepartmentPrivilege1, instituteDepartmentPrivilege2
+                , instituteDepartmentPrivilege3).map(repository::save).collect(Collectors.toList()));
+    }
+
+    public static void setupUserDepartment(UserDepartmentRepository userDepartmentRepository) {
+        UserDepartment userDepartment1 = new UserDepartment(employees.get(0), departments.get(0));
+        employees.get(0).setUserDepartment(userDepartment1);
+        departments.get(0).addUserDepartment(userDepartment1);
+        UserDepartment userDepartment2 = new UserDepartment(employees.get(1), departments.get(0));
+        employees.get(1).setUserDepartment(userDepartment2);
+        departments.get(0).addUserDepartment(userDepartment2);
+
+        //Teacher teacher department
+        UserDepartment userDepartment3 = new UserDepartment(teachers.get(0), departments.get(2));
+        teachers.get(0).setUserDepartment(userDepartment3);
+        departments.get(2).addUserDepartment(userDepartment3);
+
+        //Teacher admin department
+        UserDepartment userDepartment4 = new UserDepartment(teachers.get(0), departments.get(0));
+        teachers.get(0).setUserDepartment(userDepartment4);
+        departments.get(0).addUserDepartment(userDepartment4);
+
+        //Teacher teacher department
+        UserDepartment userDepartment5 = new UserDepartment(teachers.get(1), departments.get(2));
+        teachers.get(1).setUserDepartment(userDepartment5);
+        departments.get(2).addUserDepartment(userDepartment5);
+
+        userDepartments.addAll(Stream.of(userDepartment1, userDepartment2, userDepartment3, userDepartment4, userDepartment5)
+                .map(userDepartmentRepository::save).collect(Collectors.toList()));
+
+        //students
+        userDepartments.addAll(students.stream().map(student -> {
+            UserDepartment department = new UserDepartment(student, departments.get(1));
+            student.setUserDepartment(department);
+            departments.get(1).addUserDepartment(department);
+            return userDepartmentRepository.save(department);
+        }).collect(Collectors.toList()));
+
+    }
+
+    public static void setupUserPrivileges(UserPrivilegeRepository repository, UserRepository userRepository
+            , InstituteDepartmentPrivilegeRepository instituteDepartmentPrivilegeRepository) {
+        List<User> users = userRepository.findAll();
+//		users.forEach(user -> log.info("user: {}", user));
+        log.info("Fill User privileges for employees");
+        users.stream().filter(user -> user.getUserType() == UserType.EMPLOYEE).forEach(user -> {
+            log.info("User: {}", user);
+            user.getUserDepartments()
+                    .forEach(userDepartment -> {
+                        userPrivileges.addAll(
+                                instituteDepartmentPrivilegeRepository
+                                        .findByInstituteDepartmentId(userDepartment.getInstituteDepartment().getId())
+                                        .stream()
+                                        .map(instituteDepartmentPrivilege -> {
+                                            UserPrivilege userPrivilege = new UserPrivilege();
+                                            instituteDepartmentPrivilege.setPrivileges(userPrivilege);
+                                            user.setUserPrivileges(userPrivilege);
+                                            return repository.save(userPrivilege);
+                                        }).collect(Collectors.toList()));
+                    });
+        });
+        log.info("Fill User privileges for Students");
+        users.stream().filter(user -> user.getUserType() == UserType.STUDENT).forEach(user -> {
+            log.info("User: {}", user);
+            user.getUserDepartments()
+                    .forEach(userDepartment -> {
+                        userPrivileges.addAll(
+                                instituteDepartmentPrivilegeRepository
+                                        .findByInstituteDepartmentId(userDepartment.getInstituteDepartment().getId())
+                                        .stream()
+                                        .map(instituteDepartmentPrivilege -> {
+                                            UserPrivilege userPrivilege = new UserPrivilege();
+                                            instituteDepartmentPrivilege.setPrivileges(userPrivilege);
+                                            user.setUserPrivileges(userPrivilege);
+                                            return repository.save(userPrivilege);
+                                        }).collect(Collectors.toList()));
+                    });
+        });
+
+        repository.findAll().forEach(userPrivilege -> log.info("User Privileges: {}", userPrivilege));
+
     }
 
     private List<Institute> createSchools(){
@@ -240,25 +584,24 @@ public class LoadDatabase {
         return Stream.of(
                 new Teacher(1l, "amit", "amit003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t", "t",
-                        new Address("d", "74", "Delhi", "India", "110043"),
-                        new Contact("9717", "mj112295@gmail.com")), EmployeeType.TEACHER, "HOD"),
+                            new Address("d", "74", "Delhi", "India", "110043"),
+                            new Contact("9717", "mj112295@gmail.com")), EmployeeType.TEACHER, "HOD"),
                 new Teacher(2l, "ankit", "ankit003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t2", "t2",
-                        new Address("d", "22", "Delhi", "India", "110043"),
-                        new Contact("97171", "mj1@gmail.com")), EmployeeType.TEACHER, "CI"),
+                            new Address("d", "22", "Delhi", "India", "110043"),
+                            new Contact("97171", "mj1@gmail.com")), EmployeeType.TEACHER, "CI"),
                 new Teacher(3l, "mayank", "mayank003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t3", "t3",
-                        new Address("d", "90", "Delhi", "India", "110043"),
-                        new Contact("10000", "mj11@gmail.com")), EmployeeType.TEACHER, ""),
+                            new Address("d", "90", "Delhi", "India", "110043"),
+                            new Contact("10000", "mj11@gmail.com")), EmployeeType.TEACHER, ""),
                 new Teacher(1l, "chayanika", "chayanika003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t4", "t4",
-                        new Address("d2", "99", "Delhi", "India", "110043"),
-                        new Contact("10001", "mj111@gmail.com")), EmployeeType.TEACHER, ""),
+                            new Address("d2", "99", "Delhi", "India", "110043"),
+                            new Contact("10001", "mj111@gmail.com")), EmployeeType.TEACHER, ""),
                 new Teacher(1l, "raj", "raj003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t5", "t5",
-                        new Address("d2", "22", "UP", "India", "110043"),
-                        new Contact("10002", "mj1111@gmail.com")), EmployeeType.TEACHER,
-                        "Math Professor")
+                            new Address("d2", "22", "UP", "India", "110043"),
+                            new Contact("10002", "mj1111@gmail.com")), EmployeeType.TEACHER,"Math Professor")
                 ,new Teacher(1l, "raju", "raju003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                         new UserProfile("t6", "t6",
                                 new Address("d11", "2233", "UP", "India", "110043"),
@@ -563,6 +906,36 @@ public class LoadDatabase {
     }*/
 
     @Bean
+    CommandLineRunner initDatabase(@Autowired InstituteRepository instituteRepository
+            , @Autowired EmployeeRepository employeeRepository, @Autowired TeacherRepository teacherRepository
+            , @Autowired ClassRepository classRepository, @Autowired SectionRepository sectionRepository
+            , @Autowired InstituteClassRepository instituteClassRepository
+            , @Autowired InstituteClassSectionRepository instituteClassSectionRepository
+            , @Autowired StudentRepository studentRepository
+            , @Autowired DepartmentRepository departmentRepository
+            , @Autowired PrivilegeRepository privilegeRepository
+            , @Autowired InstituteDepartmentPrivilegeRepository instituteDepartmentPrivilegeRepository
+            , @Autowired UserDepartmentRepository userDepartmentRepository
+            , @Autowired UserPrivilegeRepository userPrivilegeRepository
+            , @Autowired UserRepository userRepository) {
+
+        return args -> {
+        setupInstitutes(instituteRepository);
+        setupClasses(classRepository, instituteClassRepository);
+        setupSections(sectionRepository, instituteClassSectionRepository);
+        setupEmployees(employeeRepository);
+        setupTeachers(teacherRepository);
+        setupStudents(studentRepository);
+
+        setupDepartment(departmentRepository);
+        setupPrivileges(privilegeRepository);
+        setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository);
+        setupUserDepartment(userDepartmentRepository);
+        setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);};
+
+    }
+/*
+    @Bean
     CommandLineRunner initDatabase(UserPrivilegeRepository userPrivilegeRepository,
                                    InstituteRepository instituteRepository, UserRepository userRepository,
                                    PrivilegeRepository privilegeRepository,
@@ -600,6 +973,7 @@ public class LoadDatabase {
 //            instituteRepository.saveAll(institutes);
             log.info("Database Initialization Finished");
         };
-    }
+
+    }*/
 
 }

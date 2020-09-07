@@ -20,11 +20,14 @@ public class Privilege {
     @Column(name = "privilege_desc")
     String privilegeDesc;
 
+    @Column(name = "logo")
+    String logo;
+
     @OneToMany(mappedBy = "privilege")
     Set<InstituteDepartmentPrivilege> instituteDepartmentPrivileges = new HashSet<>();
 
-    @OneToMany(mappedBy = "privilege")
-    List<UserPrivilege> userPrivileges = new ArrayList<>();
+//    @OneToMany(mappedBy = "privilege")
+//    List<UserPrivilege> userPrivileges = new ArrayList<>();
 
     @OneToMany(mappedBy = "privilege", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     Set<Dashboard> dashboards = new HashSet<>();
@@ -36,12 +39,12 @@ public class Privilege {
     @OneToMany(mappedBy = "privilege")
     Set<Privilege> privileges = new HashSet<>();
 
-    protected Privilege() {
+    public Privilege() {
     }
 
-    public Privilege(String privilegeCode, String privilegeName) {
-        this.privilegeName = privilegeCode;
-        this.privilegeDesc = privilegeName;
+    public Privilege(String privilegeName, String privilegeDesc) {
+        this.privilegeName = privilegeName;
+        this.privilegeDesc = privilegeDesc;
     }
 
     public Privilege(Integer id, String privilegeCode, String privilegeName) {
@@ -50,7 +53,7 @@ public class Privilege {
         this.privilegeDesc = privilegeName;
     }
 
-    public Privilege(Integer id, String privilegeName, String privilegeCode, String privilegeDesc) {
+    public Privilege(Integer id, String privilegeCode, String privilegeName, String privilegeDesc) {
         this.id = id;
         this.privilegeName = privilegeName;
         this.privilegeCode = privilegeCode;
@@ -77,8 +80,6 @@ public class Privilege {
                 "id=" + id +
                 ", privilegeName='" + privilegeName + '\'' +
                 ", privilegeDesc='" + privilegeDesc + '\'' +
-                ", instituteDepartmentPrivileges=" + instituteDepartmentPrivileges +
-                ", userPrivileges=" + userPrivileges +
                 '}';
     }
 
@@ -111,20 +112,20 @@ public class Privilege {
     }
 
     public void setInstituteDepartmentPrivileges(Set<InstituteDepartmentPrivilege> instituteDepartmentPrivileges) {
-        this.instituteDepartmentPrivileges = instituteDepartmentPrivileges;
+        this.instituteDepartmentPrivileges.addAll(instituteDepartmentPrivileges);
     }
 
-    public void addInstituteDepartmentPrivilege(){
-
+    public void addInstituteDepartmentPrivilege(InstituteDepartmentPrivilege instituteDepartmentPrivilege){
+        this.instituteDepartmentPrivileges.add(instituteDepartmentPrivilege);
     }
 
-    public List<UserPrivilege> getUserPrivileges() {
+/*    public List<UserPrivilege> getUserPrivileges() {
         return userPrivileges;
     }
 
     public void setUserPrivileges(List<UserPrivilege> userPrivileges) {
         this.userPrivileges = userPrivileges;
-    }
+    }*/
 
     public String getPrivilegeCode() {
         return privilegeCode;
@@ -165,4 +166,14 @@ public class Privilege {
     public void setPrivileges(Privilege privilege) {
         privileges.add(privilege);
     }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+
 }

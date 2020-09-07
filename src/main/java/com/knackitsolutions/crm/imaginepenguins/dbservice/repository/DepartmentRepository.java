@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface DepartmentRepository extends JpaRepository<InstituteDepartment, Long> {
     List<InstituteDepartment> findByInstitute(Institute institute);
+    List<InstituteDepartment> findByInstituteId(Long instituteId);
+
 }

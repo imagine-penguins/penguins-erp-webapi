@@ -100,10 +100,13 @@ public class Teacher extends Employee{
 
     @Override
     public String toString() {
-        return "Teacher{" +
+
+        return super.toString() +
+                "Teacher{" +
                 "teacherSubjects=" + teacherSubjects +
                 ", instituteClassSections=" + instituteClassSections +
                 ", instituteClassSectionSubjects=" + instituteClassSectionSubjects +
+                ", userprofile=" + this.getUserProfile() +
                 '}';
     }
 }

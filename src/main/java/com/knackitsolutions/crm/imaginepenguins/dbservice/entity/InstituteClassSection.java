@@ -1,6 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -25,10 +26,10 @@ public class InstituteClassSection {
     private Teacher teacher;
 
     @OneToMany(mappedBy = "instituteClassSection")
-    private Set<Student> student;
+    private Set<Student> students = new HashSet<>();
 
     @OneToMany(mappedBy = "instituteClassSection")
-    private Set<InstituteClassSectionSubject> instituteClassSectionSubjects;
+    private Set<InstituteClassSectionSubject> instituteClassSectionSubjects = new HashSet<>();
 
     public InstituteClassSection() {
     }
@@ -76,12 +77,12 @@ public class InstituteClassSection {
         this.teacher = teacher;
     }
 
-    public Set<Student> getStudent() {
-        return student;
+    public Set<Student> getStudents() {
+        return students;
     }
 
-    public void setStudent(Set<Student> student) {
-        this.student = student;
+    public void setStudents(Set<Student> students) {
+        this.students.addAll(students);
     }
 
     public Set<InstituteClassSectionSubject> getInstituteClassSectionSubjects() {
@@ -89,7 +90,11 @@ public class InstituteClassSection {
     }
 
     public void setInstituteClassSectionSubjects(Set<InstituteClassSectionSubject> instituteClassSectionSubjects) {
-        this.instituteClassSectionSubjects = instituteClassSectionSubjects;
+        this.instituteClassSectionSubjects.addAll(instituteClassSectionSubjects);
+    }
+
+    public void addStudent(Student student){
+        this.students.add(student);
     }
 
 

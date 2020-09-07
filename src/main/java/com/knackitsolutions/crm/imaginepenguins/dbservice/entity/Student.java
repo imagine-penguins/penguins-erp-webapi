@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -22,10 +24,27 @@ public class Student extends User{
     InstituteClassSection instituteClassSection;
 
     @ManyToOne
-    @JoinColumn(name = "parent_id", nullable = false)
+    @JoinColumn(name = "parent_id")
     Parent parent;
 
     public Student() {
+    }
+
+    public Student(InstituteClassSection instituteClassSection, Parent parent) {
+        this.instituteClassSection = instituteClassSection;
+        this.parent = parent;
+    }
+
+    public Student(Long id, String username, UserType userType, Boolean isAdmin, Boolean isSuperAdmin, InstituteClassSection instituteClassSection, Parent parent) {
+        super(id, username, userType, isAdmin, isSuperAdmin);
+        this.instituteClassSection = instituteClassSection;
+        this.parent = parent;
+    }
+
+    public Student(Long id, String username, String password, UserType userType, Boolean isAdmin, Boolean isSuperAdmin, UserProfile userProfile, InstituteClassSection instituteClassSection, Parent parent) {
+        super(id, username, password, userType, isAdmin, isSuperAdmin, userProfile);
+        this.instituteClassSection = instituteClassSection;
+        this.parent = parent;
     }
 
 //    public Long getId() {
@@ -73,5 +92,15 @@ public class Student extends User{
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), getInstituteClassSection(), getParent());
+    }
+
+    @Override
+    public String toString() {
+
+        return super.toString() +
+                "Student{" +
+                "instituteClassSection=" + instituteClassSection +
+                ", parent=" + parent +
+                '}';
     }
 }

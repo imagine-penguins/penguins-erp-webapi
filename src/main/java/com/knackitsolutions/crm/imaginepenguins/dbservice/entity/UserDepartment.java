@@ -12,14 +12,16 @@ public class UserDepartment {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "institute_department_id")
     private InstituteDepartment instituteDepartment;
 
-    public UserDepartment(User User, InstituteDepartment instituteDepartment) {
+    public UserDepartment(){}
+
+    public UserDepartment(User user, InstituteDepartment instituteDepartment) {
         this.user = user;
         this.instituteDepartment = instituteDepartment;
     }
@@ -46,5 +48,14 @@ public class UserDepartment {
 
     public void setInstituteDepartment(InstituteDepartment instituteDepartment) {
         this.instituteDepartment = instituteDepartment;
+    }
+
+    @Override
+    public String toString() {
+        return "UserDepartment{" +
+                "id=" + id +
+                ", user=" + user.getId() +
+                ", instituteDepartment=" + instituteDepartment.getId() +
+                '}';
     }
 }

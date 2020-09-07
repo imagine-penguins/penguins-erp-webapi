@@ -143,12 +143,13 @@ public class Employee extends User{
 
     @Override
     public String toString() {
-        return "Employee{" +
+        return super.toString() +
+                "Employee{" +
                 "employeeType=" + employeeType +
                 ", designation='" + designation + '\'' +
                 ", institute=" + institute +
                 ", manager=" + manager +
-                ", subordinates=" + subordinates +
+                ", subordinates=" + subordinates.stream().map(subordinate -> subordinate.getId()) +
                 '}';
     }
 }

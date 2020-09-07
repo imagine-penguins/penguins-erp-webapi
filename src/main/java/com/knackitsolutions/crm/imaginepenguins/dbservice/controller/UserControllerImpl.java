@@ -3,18 +3,24 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(value = "/users")
@@ -40,18 +46,25 @@ public class UserControllerImpl {
     @Autowired
     EmployeeModelAssembler employeeModelAssembler;
 
+    @Autowired
+    UserDepartmentRepository userDepartmentRepository;
+
+    @Autowired
+    PrivilegeMapper privilegeMapper;
+
     @GetMapping
     public CollectionModel<EntityModel<UserLoginResponseDTO>> all() {
         List<EntityModel<UserLoginResponseDTO>> userList = userFacade.findAll()
                 .stream()
-                .map(userLoginModelAssembler::toModel)
+                .map(user -> EntityModel.of(user, loginLinks(user)))
                 .collect(Collectors.toList());
         return  CollectionModel.of(userList, linkTo(methodOn(UserControllerImpl.class).all()).withSelfRel());
     }
 
     @GetMapping("/{id}")
     public EntityModel<UserLoginResponseDTO> one(@PathVariable("id") Long id) {
-        return userLoginModelAssembler.toModel(userFacade.findById(id));
+        UserLoginResponseDTO dto = userFacade.findById(id);
+        return EntityModel.of(dto, loginLinks(dto)); //userLoginModelAssembler.toModel(userFacade.findById(id));
     }
 /*
     @Override
@@ -101,27 +114,45 @@ public class UserControllerImpl {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserLoginRequestDTO requestDTO){
         UserLoginResponseDTO dto = userFacade.login(requestDTO);
-//        if (dto instanceof EmployeeLoginResponseDTO){
-//            EmployeeLoginResponseDTO empDTO = (EmployeeLoginResponseDTO)dto;
-//            if (empDTO instanceof TeacherLoginResponseDTO)
-//                return ResponseEntity.ok(teacherModelAssembler.toModel((TeacherLoginResponseDTO)dto));
-//            else
-//                return ResponseEntity.ok(employeeModelAssembler.toModel(empDTO));
-//        }
-//        else if (dto instanceof ParentLoginResponseDTO)
-//            return ResponseEntity.ok(parentModelAssembler.toModel((ParentLoginResponseDTO)dto));
-//        else if (dto instanceof StudentLoginResponseDTO)
-//            return ResponseEntity.ok(studentModelAssembler.toModel((StudentLoginResponseDTO)dto));
+        return ResponseEntity.ok(EntityModel.of(dto, loginLinks(dto)));
+    }
 
-        //Change it later
-
-        return ResponseEntity.ok(EntityModel.of(dto,
-                linkTo(methodOn(UserControllerImpl.class).one(dto.getUserId())).withSelfRel(),
+    private List<Link> loginLinks(UserLoginResponseDTO dto){
+        List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(dto.getUserId());
+        Long departmentId = userDepartments.get(0).getInstituteDepartment().getId();
+        return Stream.of(linkTo(methodOn(UserControllerImpl.class).one(dto.getUserId())).withSelfRel(),
                 linkTo(methodOn(UserControllerImpl.class).all()).withRel("users"),
-                linkTo(methodOn(DashboardController.class).webDashboardDTO(dto.getUserId(), 1l)).withRel("web-dashboard"),
-                linkTo(methodOn(DashboardController.class).appDashboardDTO(dto.getUserId(), 1l)).withRel("app-dashboard"),
-                linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute")
-        ));
+                linkTo(methodOn(DashboardController.class).webDashboardDTO(
+                        dto.getUserId(), departmentId))
+                        .withRel("web-dashboard"),
+                linkTo(methodOn(DashboardController.class)
+                        .appDashboardDTO(dto.getUserId(), departmentId)).withRel("app-dashboard"),
+                linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute"),
+                linkTo(methodOn(UserControllerImpl.class).departments(dto.getUserId())).withRel("departments"))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}/departments")
+    public CollectionModel<EntityModel<InstituteDepartmentDTO>> departments(@PathVariable("id") Long userId){
+        List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(userId);
+        List<EntityModel<InstituteDepartmentDTO>> dtos = userDepartments.stream().map(userDepartment -> {
+            InstituteDepartmentDTO dto = new InstituteDepartmentDTO();
+
+            dto.setDepartmentName(userDepartment.getInstituteDepartment().getDepartmentName());
+            dto.setId(userDepartment.getInstituteDepartment().getId());
+            dto.setInstituteId(userDepartment.getInstituteDepartment().getInstitute().getId());
+            dto.setPrivileges(userDepartment.getInstituteDepartment()
+                    .getPrivileges()
+                    .stream()
+                    .map(instituteDepartmentPrivilege -> {
+                        return privilegeMapper.entityToDTO(instituteDepartmentPrivilege.getPrivilege());
+                    })
+                    .collect(Collectors.toList()));
+
+            return EntityModel.of(dto); //Add Links To Department
+        }).collect(Collectors.toList());
+
+        return CollectionModel.of(dtos);
     }
 
     @GetMapping("/{id}/institute")

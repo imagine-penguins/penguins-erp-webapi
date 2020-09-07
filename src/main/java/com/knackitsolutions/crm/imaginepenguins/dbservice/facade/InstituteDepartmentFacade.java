@@ -1,6 +1,8 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.InstituteDepartmentDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.PrivilegeDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteDepartmentPrivilege;
@@ -29,6 +31,9 @@ public class InstituteDepartmentFacade {
     @Autowired
     InstituteDepartmentPrivilegeRepository departmentPrivilegeRepository;
 
+    @Autowired
+    PrivilegeMapper privilegeMapper;
+
     public InstituteDepartmentDTO createNew(InstituteDepartmentDTO dto){
 
         InstituteDepartment instituteDepartment = convertToInstituteDepartmentEntity(dto);
@@ -36,7 +41,7 @@ public class InstituteDepartmentFacade {
 
         Set<InstituteDepartmentPrivilege> departmentPrivileges = dto.getPrivileges()
                 .stream()
-                .map(id -> new InstituteDepartmentPrivilege(newInstituteDepartment, privilegeService.getReference(id)))
+                .map(privilegeDTO -> new InstituteDepartmentPrivilege(newInstituteDepartment, privilegeService.getReference(privilegeDTO.getId())))
                 .collect(Collectors.toSet());
 
         departmentPrivilegeRepository.saveAll(departmentPrivileges);
@@ -47,16 +52,20 @@ public class InstituteDepartmentFacade {
         return convertToInstituteDepartmentDTO(instituteDepartmentService.findOneByDepartmentId(id));
     }
 
-    private InstituteDepartmentDTO convertToInstituteDepartmentDTO(InstituteDepartment instituteDepartment){
-        List<Integer> privileges = instituteDepartment.getPrivileges()
+    public InstituteDepartmentDTO convertToInstituteDepartmentDTO(InstituteDepartment instituteDepartment){
+        List<PrivilegeDTO> privileges = instituteDepartment.getPrivileges()
                 .stream()
-                .map(privilege->privilege.getPrivilege().getId())
+                .map(privilege->privilegeMapper.entityToDTO(privilege.getPrivilege()))
                 .collect(Collectors.toList());
-        InstituteDepartmentDTO dto = new InstituteDepartmentDTO(instituteDepartment.getDepartmentName(), instituteDepartment.getInstitute().getId(), privileges);
+        InstituteDepartmentDTO dto = new InstituteDepartmentDTO();
+        dto.setPrivileges(privileges);
+        dto.setDepartmentName(instituteDepartment.getDepartmentName());
+        dto.setInstituteId(instituteDepartment.getInstitute().getId());
+        dto.setId(instituteDepartment.getId());
         return  dto;
     }
 
-    private InstituteDepartment convertToInstituteDepartmentEntity(InstituteDepartmentDTO dto){
+    public InstituteDepartment convertToInstituteDepartmentEntity(InstituteDepartmentDTO dto){
         Institute institute = instituteService.findById(dto.getInstituteId());
         InstituteDepartment instituteDepartment = new InstituteDepartment(dto.getDepartmentName(), institute);
         //InstituteDepartmentPrivilege departmentPrivilege = new InstituteDepartmentPrivilege();

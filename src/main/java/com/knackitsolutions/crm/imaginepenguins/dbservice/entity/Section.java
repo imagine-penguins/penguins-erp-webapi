@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -20,7 +21,7 @@ public class Section {
     InstituteType instituteType;
 
     @OneToMany(mappedBy = "section")
-    Set<InstituteClassSection> instituteClassSectionTeachers;
+    Set<InstituteClassSection> instituteClassSections = new HashSet<>();
 
     public Section() {
     }
@@ -31,11 +32,11 @@ public class Section {
         this.instituteType = instituteType;
     }
 
-    public Section(Long id, String sectionName, InstituteType instituteType, Set<InstituteClassSection> instituteClassSectionTeachers) {
+    public Section(Long id, String sectionName, InstituteType instituteType, Set<InstituteClassSection> instituteClassSections) {
         Id = id;
         this.sectionName = sectionName;
         this.instituteType = instituteType;
-        this.instituteClassSectionTeachers = instituteClassSectionTeachers;
+        this.instituteClassSections = instituteClassSections;
     }
 
     public Long getId() {
@@ -62,11 +63,16 @@ public class Section {
         this.instituteType = instituteType;
     }
 
-    public Set<InstituteClassSection> getInstituteClassSectionTeachers() {
-        return instituteClassSectionTeachers;
+    public Set<InstituteClassSection> getInstituteClassSections() {
+        return instituteClassSections;
     }
 
-    public void setInstituteClassSectionTeachers(Set<InstituteClassSection> instituteClassSectionTeachers) {
-        this.instituteClassSectionTeachers = instituteClassSectionTeachers;
+    public void setInstituteClassSections(Set<InstituteClassSection> instituteClassSections) {
+        this.instituteClassSections.addAll(instituteClassSections);
+    }
+
+    public void addInstituteClassSection(InstituteClassSection instituteClassSection) {
+        this.instituteClassSections.add(instituteClassSection);
+        instituteClassSection.setSection(this);
     }
 }

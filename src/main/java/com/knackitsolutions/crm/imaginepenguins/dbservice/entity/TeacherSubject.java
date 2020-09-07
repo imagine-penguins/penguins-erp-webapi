@@ -67,4 +67,13 @@ public class TeacherSubject {
     public int hashCode() {
         return Objects.hash(getId(), getTeacher(), getSubject());
     }
+
+    @Override
+    public String toString() {
+        return "TeacherSubject{" +
+                "id=" + id +
+                ", teacher=" + teacher +
+                ", subject=" + subject +
+                '}';
+    }
 }
