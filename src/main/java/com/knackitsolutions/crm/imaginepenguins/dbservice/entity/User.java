@@ -1,17 +1,17 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity(name = "user")
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class User {
+public class User implements UserDetails {
 
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Id@Column(name = "user_id")
@@ -26,13 +26,17 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    private Boolean isAdmin;
+    @Column(name = "is_admin")
+    private Boolean admin;
 
-    private Boolean isSuperAdmin;
+    @Column(name = "is_super_admin")
+    private Boolean superAdmin;
 
-    private Boolean isActive;
+    @Column(name = "is_active")
+    private Boolean active;
 
-    private Boolean isVerified;
+    @Column(name = "is_verified")
+    private Boolean verified;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserProfile userProfile;
@@ -40,36 +44,57 @@ public class User {
     @OneToMany(mappedBy = "user")
     private Set<UserDepartment> userDepartments = new HashSet<>();
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Employee employee;
-//
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Parent parent;
-//
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Student student;
-
     @OneToMany(mappedBy = "user", cascade = {
             CascadeType.MERGE,
             CascadeType.PERSIST
-    }, fetch = FetchType.LAZY)
+    })
     private List<UserPrivilege> userPrivileges;
+
+    @OneToMany(mappedBy = "user")
+    private List<Attendance> attendances = new ArrayList<>();
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return Optional
+                .ofNullable(getVerified())
+                .orElse(Boolean.TRUE);
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return Boolean.TRUE;
+    }
 
     public User(){
 
     }
 
-    public User(Long id, String username, UserType userType, Boolean isAdmin, Boolean isSuperAdmin) {
+    public User(Long id, String username, UserType userType, Boolean admin, Boolean superAdmin) {
         this.id = id;
         this.username = username;
         this.userType = userType;
-        this.isAdmin = isAdmin;
-        this.isSuperAdmin = isSuperAdmin;
+        this.admin = admin;
+        this.superAdmin = superAdmin;
     }
 
     public User(Long id, String username, String password, UserType userType,
-                Boolean isAdmin, Boolean isSuperAdmin, UserProfile userProfile) {
-        this(id, username, userType, isAdmin, isSuperAdmin);
+                Boolean admin, Boolean superAdmin, UserProfile userProfile) {
+        this(id, username, userType, admin, superAdmin);
         this.password = password;
         this.userProfile = userProfile;
     }
@@ -99,35 +124,35 @@ public class User {
     }
 
     public Boolean getAdmin() {
-        return isAdmin;
+        return admin;
     }
 
     public void setAdmin(Boolean admin) {
-        isAdmin = admin;
+        this.admin = admin;
     }
 
     public Boolean getSuperAdmin() {
-        return isSuperAdmin;
+        return superAdmin;
     }
 
     public void setSuperAdmin(Boolean superAdmin) {
-        isSuperAdmin = superAdmin;
+        this.superAdmin = superAdmin;
     }
 
     public Boolean getActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(Boolean active) {
-        isActive = active;
+        this.active = active;
     }
 
     public Boolean getVerified() {
-        return isVerified;
+        return verified;
     }
 
     public void setVerified(Boolean verified) {
-        isVerified = verified;
+        this.verified = verified;
     }
 
     public UserProfile getUserProfile() {
@@ -149,32 +174,8 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, userType, isAdmin, isSuperAdmin, isActive, isVerified);
+        return Objects.hash(id, username, userType, admin, superAdmin, active, verified);
     }
-
-//    public Employee getEmployee() {
-//        return employee;
-//    }
-//
-//    public void setEmployee(Employee employee) {
-//        this.employee = employee;
-//    }
-//
-//    public Parent getParent() {
-//        return parent;
-//    }
-//
-//    public void setParent(Parent parent) {
-//        this.parent = parent;
-//    }
-//
-//    public Student getStudent() {
-//        return student;
-//    }
-//
-//    public void setStudent(Student student) {
-//        this.student = student;
-//    }
 
     public List<UserPrivilege> getUserPrivileges() {
         return userPrivileges;
@@ -195,10 +196,10 @@ public class User {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", userType=" + userType +
-                ", isAdmin=" + isAdmin +
-                ", isSuperAdmin=" + isSuperAdmin +
-                ", isActive=" + isActive +
-                ", isVerified=" + isVerified +
+                ", isAdmin=" + admin +
+                ", isSuperAdmin=" + superAdmin +
+                ", isActive=" + active +
+                ", isVerified=" + verified +
                 ", userProfile=" + userProfile +
                 '}';
     }
@@ -224,4 +225,16 @@ public class User {
         userDepartment.setUser(this);
     }
 
+    public List<Attendance> getAttendances() {
+        return attendances;
+    }
+
+    public void setAttendances(List<Attendance> attendances) {
+        attendances.forEach(this::setAttendances);
+    }
+
+    public void setAttendances(Attendance attendance) {
+        this.attendances.add(attendance);
+        attendance.setUser(this);
+    }
 }

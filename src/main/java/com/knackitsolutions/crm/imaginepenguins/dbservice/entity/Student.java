@@ -1,8 +1,11 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -10,22 +13,19 @@ import java.util.Objects;
 @PrimaryKeyJoinColumn(name = "student_id")
 public class Student extends User{
 
-//    @Id
-//    @Column(name = "student_id")
-//    Long id;
-
-//    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
-//    @MapsId
-//    @JoinColumn(name = "student_id", referencedColumnName = "user_id")
-//    User user;
+    @Column(name = "roll_number", length = 100)
+    private String rollNumber;
 
     @ManyToOne
     @JoinColumn(name = "class_section_id", nullable = false)
-    InstituteClassSection instituteClassSection;
+    private InstituteClassSection instituteClassSection;
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    Parent parent;
+    private Parent parent;
+
+    @OneToMany(mappedBy = "student")
+    private List<StudentAttendance> studentAttendances = new ArrayList<>();
 
     public Student() {
     }
@@ -102,5 +102,30 @@ public class Student extends User{
                 "instituteClassSection=" + instituteClassSection +
                 ", parent=" + parent +
                 '}';
+    }
+
+    public String getRollNumber() {
+        return rollNumber;
+    }
+
+    public void setRollNumber(String rollNumber) {
+        this.rollNumber = rollNumber;
+    }
+
+    public void setInstituteClassSection(InstituteClassSection instituteClassSection) {
+        this.instituteClassSection = instituteClassSection;
+    }
+
+    public List<StudentAttendance> getStudentAttendances() {
+        return studentAttendances;
+    }
+
+    public void setStudentAttendances(List<StudentAttendance> studentAttendances) {
+        studentAttendances.forEach(this::setStudentAttendances);
+    }
+
+    public void setStudentAttendances(StudentAttendance studentAttendance) {
+        studentAttendances.add(studentAttendance);
+        studentAttendance.setStudent(this);
     }
 }

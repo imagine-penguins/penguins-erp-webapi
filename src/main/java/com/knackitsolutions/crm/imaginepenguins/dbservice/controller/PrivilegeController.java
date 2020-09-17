@@ -2,7 +2,6 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.PrivilegeModelAssembler;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.PrivilegeDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.PrivilegeFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;

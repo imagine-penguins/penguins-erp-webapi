@@ -1,6 +1,10 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "class_subjects")
@@ -8,6 +12,7 @@ public class InstituteClassSectionSubject {
 
     @Id
     @Column(name = "class_subject_id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ManyToOne
@@ -21,6 +26,9 @@ public class InstituteClassSectionSubject {
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
+
+    @OneToMany(mappedBy = "instituteClassSectionSubject")
+    private Set<StudentAttendance> studentAttendances = new HashSet<>();
 
     public InstituteClassSectionSubject() {
     }
@@ -45,14 +53,6 @@ public class InstituteClassSectionSubject {
         this.id = id;
     }
 
-    public InstituteClassSection getInstituteClass() {
-        return instituteClassSection;
-    }
-
-    public void setInstituteClass(InstituteClassSection instituteClassSection) {
-        this.instituteClassSection = instituteClassSection;
-    }
-
     public Subject getSubject() {
         return subject;
     }
@@ -75,6 +75,28 @@ public class InstituteClassSectionSubject {
 
     public void setTeacher(Teacher teacher) {
         this.teacher = teacher;
+    }
+
+    public Set<StudentAttendance> getStudentAttendances() {
+        return studentAttendances;
+    }
+
+    public void setStudentAttendances(Set<StudentAttendance> studentAttendances) {
+        studentAttendances.forEach(this::setStudentAttendance);
+    }
+
+    public void setStudentAttendance(StudentAttendance studentAttendance) {
+        this.studentAttendances.add(studentAttendance);
+        studentAttendance.setInstituteClassSectionSubject(this);
+    }
+
+    @Override
+    public String toString() {
+        return "InstituteClassSectionSubject{" +
+                "id=" + id +
+                ", instituteClassSection=" + instituteClassSection +
+                ", subject=" + subject +
+                '}';
     }
 
 }

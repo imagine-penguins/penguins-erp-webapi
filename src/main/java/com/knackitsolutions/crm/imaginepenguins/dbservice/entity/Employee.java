@@ -148,8 +148,7 @@ public class Employee extends User{
                 "employeeType=" + employeeType +
                 ", designation='" + designation + '\'' +
                 ", institute=" + institute +
-                ", manager=" + manager +
-                ", subordinates=" + subordinates.stream().map(subordinate -> subordinate.getId()) +
+                ", manager=" + (manager != null ? manager.getUsername() : "null") +
                 '}';
     }
 }

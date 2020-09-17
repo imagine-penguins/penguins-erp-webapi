@@ -1,11 +1,13 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.repository;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserPrivilege;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserPrivilegeRepository extends JpaRepository<UserPrivilege, Long> {
 
@@ -15,4 +17,5 @@ public interface UserPrivilegeRepository extends JpaRepository<UserPrivilege, Lo
     List<UserPrivilege> findByUserIdAndDepartmentId(@Param("userId") Long userId, @Param("departmentId") Long departmentId);
 
     List<UserPrivilege> findByUserId(Long userId);
+
 }

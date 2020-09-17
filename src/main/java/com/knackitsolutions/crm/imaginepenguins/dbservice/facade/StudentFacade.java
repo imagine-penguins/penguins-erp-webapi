@@ -2,7 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.StudentLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.StudentLoginResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ public class StudentFacade {
     StudentLoginResponseMapper studentResponseMapper;
 
     @Autowired
-    StudentService service;
+    StudentServiceImpl service;
 
     public StudentLoginResponseDTO getOne(Long id){
         return studentResponseMapper.toDTO(service.one(id));

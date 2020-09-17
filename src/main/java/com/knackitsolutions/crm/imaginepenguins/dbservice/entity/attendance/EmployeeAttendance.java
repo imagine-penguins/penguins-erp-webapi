@@ -1,4 +1,6 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance;
+
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 
 import javax.persistence.*;
 

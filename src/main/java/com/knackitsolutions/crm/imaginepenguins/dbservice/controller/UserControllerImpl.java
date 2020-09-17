@@ -5,7 +5,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
@@ -113,7 +112,7 @@ public class UserControllerImpl {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserLoginRequestDTO requestDTO){
-        UserLoginResponseDTO dto = userFacade.login(requestDTO);
+        UserLoginResponseDTO dto = userFacade.authLogin(requestDTO);
         return ResponseEntity.ok(EntityModel.of(dto, loginLinks(dto)));
     }
 

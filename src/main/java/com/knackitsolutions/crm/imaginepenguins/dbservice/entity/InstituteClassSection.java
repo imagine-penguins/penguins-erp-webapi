@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,7 +11,7 @@ import java.util.Set;
 public class InstituteClassSection {
 
     @Id
-    @Column(name = "class_section_teacher_id")
+    @Column(name = "class_section_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
@@ -30,6 +32,9 @@ public class InstituteClassSection {
 
     @OneToMany(mappedBy = "instituteClassSection")
     private Set<InstituteClassSectionSubject> instituteClassSectionSubjects = new HashSet<>();
+
+    @OneToMany(mappedBy = "classSection")
+    private Set<StudentAttendance> studentAttendances = new HashSet<>();
 
     public InstituteClassSection() {
     }
@@ -82,7 +87,7 @@ public class InstituteClassSection {
     }
 
     public void setStudents(Set<Student> students) {
-        this.students.addAll(students);
+        students.forEach(this::addStudent);
     }
 
     public Set<InstituteClassSectionSubject> getInstituteClassSectionSubjects() {
@@ -90,12 +95,39 @@ public class InstituteClassSection {
     }
 
     public void setInstituteClassSectionSubjects(Set<InstituteClassSectionSubject> instituteClassSectionSubjects) {
-        this.instituteClassSectionSubjects.addAll(instituteClassSectionSubjects);
+        instituteClassSectionSubjects.forEach(this::setInstituteClassSectionSubjects);
     }
 
-    public void addStudent(Student student){
+    public void setInstituteClassSectionSubjects(InstituteClassSectionSubject instituteClassSectionSubject) {
+        this.instituteClassSectionSubjects.add(instituteClassSectionSubject);
+        instituteClassSectionSubject.setInstituteClassSection(this);
+    }
+
+    public void addStudent(Student student) {
         this.students.add(student);
+        student.setInstituteClassSectionTeacher(this);
     }
 
+    public Set<StudentAttendance> getStudentAttendances() {
+        return studentAttendances;
+    }
 
+    public void setStudentAttendances(Set<StudentAttendance> studentAttendances) {
+        studentAttendances.forEach(this::setStudentAttendances);
+    }
+
+    public void setStudentAttendances(StudentAttendance studentAttendance) {
+        studentAttendances.add(studentAttendance);
+        studentAttendance.setClassSection(this);
+
+    }
+
+    @Override
+    public String toString() {
+        return "InstituteClassSection{" +
+                "id=" + id +
+                ", instituteClass=" + instituteClass +
+                ", section=" + section +
+                '}';
+    }
 }

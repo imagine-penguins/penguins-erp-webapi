@@ -71,4 +71,13 @@ public class InstituteClass {
     public void setClassSections(Set<InstituteClassSection> classSections) {
         this.classSections = classSections;
     }
+
+    @Override
+    public String toString() {
+        return "InstituteClass{" +
+                "id=" + id +
+                ", institute=" + institute +
+                ", classs=" + classs +
+                '}';
+    }
 }

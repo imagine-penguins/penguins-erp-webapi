@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.auth.api.UserAuthenticationService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteMapper;
@@ -12,7 +13,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.EmployeeNotF
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserLoginFailed;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.ParentService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentServiceImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,9 @@ import java.util.stream.Collectors;
 public class UserFacade {
 
     private static final Logger log = LoggerFactory.getLogger(UserFacade.class);
+
+    @Autowired
+    UserAuthenticationService userAuthenticationService;
 
     @Autowired
     ParentFacade parentFacade;
@@ -59,7 +63,7 @@ public class UserFacade {
     InstituteMapper instituteMapper;
 
     @Autowired
-    StudentService studentService;
+    StudentServiceImpl studentServiceImpl;
 
     @Autowired
     ParentService parentService;
@@ -79,8 +83,16 @@ public class UserFacade {
         return userLoginResponseMapper.entityToDTO(userService.findById(id));
     }
 
+    public UserLoginResponseDTO authLogin(UserLoginRequestDTO requestDTO) {
+        return userAuthenticationService
+                .login(requestDTO.getUsername(), requestDTO.getPassword())
+                .orElseThrow(() -> new UserLoginFailed(requestDTO.getUsername()));
+    }
+
     public UserLoginResponseDTO login(UserLoginRequestDTO requestDTO){
+
         User user = userService.login(requestDTO.getUsername());
+
         if (user == null || user.getPassword() == null || !user.getPassword().equals(requestDTO.getPassword())){
             throw new UserLoginFailed(requestDTO.getUsername());
         }
@@ -123,7 +135,7 @@ public class UserFacade {
 //                return employeeResponseMapper.toDTO(employee);
         }
         else if(user.getUserType() == UserType.STUDENT){
-            institutes.add(instituteMapper.entityToDTO(studentService
+            institutes.add(instituteMapper.entityToDTO(studentServiceImpl
                     .one(userId)
                     .getInstituteClassSection()
                     .getInstituteClass()

@@ -2,31 +2,32 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.AddressMapperImpl;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ContactMapperImpl;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserProfileMapper;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.AddressDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.ContactDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.PrivilegeDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserProfileDTO;
+import com.google.common.collect.ImmutableList;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentInfo;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.AppDashboardFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.TeacherFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.TeacherService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -104,12 +105,12 @@ class DbServiceApplicationTests {
 	private static List<UserPrivilege> userPrivileges = new ArrayList<>();
 
 	public static void setupInstitutes(InstituteRepository instituteRepository) {
-		Institute institute1 = new Institute(4, "XYC", InstituteType.SCHOOL
+		Institute institute1 = new Institute(11, "XYC", InstituteType.SCHOOL
 				, new Address("D45", "Raod-3", "Delhi", "India", "110034")
-				, new Contact("982", "xyz772@g.com"));
-		Institute institute2 = new Institute(5, "ABC", InstituteType.SCHOOL
+				, new Contact("9821", "xyz7721@g.com"));
+		Institute institute2 = new Institute(12, "ABC", InstituteType.SCHOOL
 				, new Address("D45", "Raod-4", "Delhi", "India", "110034")
-				, new Contact("98999", "ABC@g.com"));
+				, new Contact("989991", "ABC1@g.com"));
 
 		institute1 = instituteRepository.save(institute1);
 		institute2 = instituteRepository.save(institute2);
@@ -120,20 +121,20 @@ class DbServiceApplicationTests {
 	public static void setupEmployees(EmployeeRepository employeeRepository) {
 		Institute institute1 = institutes.get(0);
 		Institute institute2 = institutes.get(1);
-		Employee employee1 = new Employee(1l, "gautam", "gautam003", UserType.EMPLOYEE
+		Employee employee1 = new Employee(1l, "gautam1", "gautam003", UserType.EMPLOYEE
 				, false, false
 				, new UserProfile("Gautam", "Kumar"
 				, new Address("D74", "Gali16", "Delhi", "India", "110053")
-				, new Contact("1010", "gautam@gmail.com")), EmployeeType.NON_TEACHER
+				, new Contact("10101", "gautam1@gmail.com")), EmployeeType.NON_TEACHER
 				, "None", institute1, null, null);
 
 		institute1.addEmployee(employee1);
 
-		Employee employee2 = new Employee(1l, "gaurav", "gaurav003", UserType.EMPLOYEE
+		Employee employee2 = new Employee(1l, "gaurav1", "gaurav003", UserType.EMPLOYEE
 				, false, false
 				, new UserProfile("Gaurav", "Kumar"
 				, new Address("D14", "Gali16", "Delhi", "India", "110053")
-				, new Contact("10111", "gaurav@gmail.com")), EmployeeType.NON_TEACHER
+				, new Contact("101111", "gaurav1@gmail.com")), EmployeeType.NON_TEACHER
 				, "None", institute1, null, null);
 		institute1.addEmployee(employee2);
 
@@ -147,14 +148,14 @@ class DbServiceApplicationTests {
 	public static void setupTeachers(TeacherRepository teacherRepository) {
 		Institute institute1 = institutes.get(0);
 		Institute institute2 = institutes.get(1);
-		Teacher teacher1 = new Teacher(1l, "manish", "manish003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+		Teacher teacher1 = new Teacher(1l, "manish1", "manish003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
 				new UserProfile("asdf", "dgsh",
 						new Address("d", "74", "Delhi", "India", "110043"),
-						new Contact("9000", "mj01@gmail.com")), EmployeeType.TEACHER, "HOD");
-		Teacher teacher2 = new Teacher(1l, "nisha", "nisha003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+						new Contact("90001", "manish1@gmail.com")), EmployeeType.TEACHER, "HOD");
+		Teacher teacher2 = new Teacher(1l, "nisha1", "nisha003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
 				new UserProfile("t2", "t2",
 						new Address("d", "22", "Delhi", "India", "110043"),
-						new Contact("888", "nisha1@gmail.com")), EmployeeType.TEACHER, "CI");
+						new Contact("8881", "nisha11@gmail.com")), EmployeeType.TEACHER, "CI");
 		institute1.addEmployee(teacher1);
 		institute1.addEmployee(teacher2);
 
@@ -231,40 +232,40 @@ class DbServiceApplicationTests {
 		InstituteClassSection instituteClassSection5 = instituteClassSections.get(4);
 
 
-		Student student1 = new Student(1l, "naman", "naman003", UserType.STUDENT, false, false,
+		Student student1 = new Student(1l, "naman1", "naman003", UserType.STUDENT, false, false,
 				new UserProfile("Naman", "Kumar"
 						, new Address("D74", "Gali-16", "Telangana", "India", "140088")
-						, new Contact("9003321", "naman@gmail.com")), instituteClassSection1, null);
+						, new Contact("90033211", "naman1@gmail.com")), instituteClassSection1, null);
 		instituteClassSection1.addStudent(student1);
 
-		Student student2 = new Student(1l, "manan", "manan003", UserType.STUDENT, false, false,
+		Student student2 = new Student(1l, "manan1", "manan003", UserType.STUDENT, false, false,
 				new UserProfile("Manan", "Kumar"
 						, new Address("D34", "Gali-26", "Telangana", "India", "140088")
-						, new Contact("8003312", "manan@gmail.com")), instituteClassSection1, null);
+						, new Contact("80033121", "manan1@gmail.com")), instituteClassSection1, null);
 		instituteClassSection1.addStudent(student2);
 
-		Student student3 = new Student(1l, "kishor", "kishor003", UserType.STUDENT, false, false,
+		Student student3 = new Student(1l, "kishor1", "kishor003", UserType.STUDENT, false, false,
 				new UserProfile("Kishor", "Kumar"
 						, new Address("D75", "Gali-16", "Telangana", "India", "140088")
-						, new Contact("9000011", "kishor@gmail.com")), instituteClassSection2, null);
+						, new Contact("90000111", "kishor1@gmail.com")), instituteClassSection2, null);
 		instituteClassSection2.addStudent(student3);
 
-		Student student4 = new Student(1l, "hiteshi", "hiteshi003", UserType.STUDENT, false, false,
+		Student student4 = new Student(1l, "hiteshi1", "hiteshi003", UserType.STUDENT, false, false,
 				new UserProfile("Hiteshi", "Kumar"
 						, new Address("D54", "Gali-46", "Telangana", "India", "140088")
-						, new Contact("90000118", "hiteshi@gmail.com")), instituteClassSection2, null);
+						, new Contact("900001181", "hiteshi1@gmail.com")), instituteClassSection2, null);
 		instituteClassSection2.addStudent(student4);
 
-		Student student5 = new Student(1l, "pooja", "pooja003", UserType.STUDENT, false, false,
+		Student student5 = new Student(1l, "pooja1", "pooja003", UserType.STUDENT, false, false,
 				new UserProfile("Pooja", "Kumar"
 						, new Address("D79", "Gali-86", "Telangana", "India", "140088")
-						, new Contact("9009119", "pooja@gmail.com")), instituteClassSection3, null);
+						, new Contact("90091191", "pooja1@gmail.com")), instituteClassSection3, null);
 		instituteClassSection3.addStudent(student5);
 
-		Student student6 = new Student(1l, "neetu", "neetu003", UserType.STUDENT, false, false,
+		Student student6 = new Student(1l, "neetu1", "neetu003", UserType.STUDENT, false, false,
 				new UserProfile("Neetu", "Kumar"
 						, new Address("D740", "Gali-916", "Telangana", "India", "140088")
-						, new Contact("881018", "neetu@gmail.com")), instituteClassSection3, null);
+						, new Contact("8810181", "neetu1@gmail.com")), instituteClassSection3, null);
 		instituteClassSection3.addStudent(student6);
 
 		students.addAll(Stream.of(student1, student2, student3, student4, student5, student6)
@@ -289,15 +290,15 @@ class DbServiceApplicationTests {
 	}
 
 	public static void setupPrivileges(PrivilegeRepository privilegeRepository) {
-		Privilege privilege1 = new Privilege(1, "ATD"
+		Privilege privilege1 = new Privilege(1, PrivilegeCode.ATTENDANCE
 				, "Attendance", "Attendance Module");
-		Privilege privilege2 = new Privilege(1, "CLD"
+		Privilege privilege2 = new Privilege(1, PrivilegeCode.CALENDAR
 				, "Calendar", "Calendar Module");
-		Privilege privilege3 = new Privilege(1, "VSATD"
+		Privilege privilege3 = new Privilege(1, PrivilegeCode.VIEW_SELF_ATTENDANCE
 				, "View Self Attendance", "View Self Attendance");
-		Privilege privilege4 = new Privilege(1, "MEATD"
+		Privilege privilege4 = new Privilege(1, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
 				, "Mark Employee Attendance", "Mark Employee Attendance");
-		Privilege privilege5 = new Privilege(1, "MSATD"
+		Privilege privilege5 = new Privilege(1, PrivilegeCode.MARK_STUDENT_ATTENDANCE
 				, "Mark Student Attendance", "Mark Student Attendance");
 
 		privileges.addAll(Stream.of(
@@ -459,18 +460,18 @@ class DbServiceApplicationTests {
 			, @Autowired UserPrivilegeRepository userPrivilegeRepository
 			, @Autowired UserRepository userRepository) {
 
-		setupInstitutes(instituteRepository);
-		setupClasses(classRepository, instituteClassRepository);
-		setupSections(sectionRepository, instituteClassSectionRepository);
-		setupEmployees(employeeRepository);
-		setupTeachers(teacherRepository);
-		setupStudents(studentRepository);
-
-		setupDepartment(departmentRepository);
-		setupPrivileges(privilegeRepository);
-		setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository);
-		setupUserDepartment(userDepartmentRepository);
-		setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
+//		setupInstitutes(instituteRepository);
+//		setupClasses(classRepository, instituteClassRepository);
+//		setupSections(sectionRepository, instituteClassSectionRepository);
+//		setupEmployees(employeeRepository);
+//		setupTeachers(teacherRepository);
+//		setupStudents(studentRepository);
+//
+//		setupDepartment(departmentRepository);
+//		setupPrivileges(privilegeRepository);
+//		setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository);
+//		setupUserDepartment(userDepartmentRepository);
+//		setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
 
 	}
 
@@ -496,25 +497,33 @@ class DbServiceApplicationTests {
 	}
 
 	@Test
-	void countEmployeeByInstituteId_test(@Autowired EmployeeRepository employeeRepository) {
+	void countEmployeeByInstituteId_test(@Autowired EmployeeRepository employeeRepository
+			, @Autowired InstituteRepository instituteRepository) {
+		List<Institute> institutes = instituteRepository.findAll();
 		assertThat(employeeRepository.countByInstituteId(institutes.get(0).getId())).isGreaterThan(0);
 		assertThat(employeeRepository.countByInstituteId(institutes.get(0).getId())).isEqualTo(4);
 	}
 
 	@Test
-	void countTeachersByInstituteId_test(@Autowired TeacherRepository teacherRepository) {
+	void countTeachersByInstituteId_test(@Autowired TeacherRepository teacherRepository
+			, @Autowired InstituteRepository instituteRepository) {
+		List<Institute> institutes = instituteRepository.findAll();
 		assertThat(teacherRepository.countByInstituteId(institutes.get(0).getId())).isEqualTo(2);
 		assertThat(teacherRepository.countByInstituteId(institutes.get(1).getId())).isEqualTo(0);
 	}
 
 	@Test
-	void countStudentByInstituteId_test(@Autowired StudentRepository studentRepository) {
+	void countStudentByInstituteId_test(@Autowired StudentRepository studentRepository
+			, @Autowired InstituteRepository instituteRepository) {
+		List<Institute> institutes = instituteRepository.findAll();
 		assertThat(studentRepository.countByInstituteId(institutes.get(0).getId())).isGreaterThan(0);
 		assertThat(studentRepository.countByInstituteId(institutes.get(0).getId())).isEqualTo(6);
 	}
 
 	@Test
-	void countEmployeesByInstituteIdAndEmployeeType_test(@Autowired EmployeeRepository employeeRepository) {
+	void countEmployeesByInstituteIdAndEmployeeType_test(@Autowired EmployeeRepository employeeRepository
+			, @Autowired InstituteRepository instituteRepository) {
+		List<Institute> institutes = instituteRepository.findAll();
 		assertThat(employeeRepository.countEmployeesByInstituteId(institutes.get(0).getId()
 				, EmployeeType.NON_TEACHER)).isEqualTo(2);
 
@@ -597,6 +606,200 @@ class DbServiceApplicationTests {
 		assertThat(privilegeDTO.getId()).isNotNull();
 		assertThat(privilegeDTO.getId()).isNotZero();
 		assertThat(privilegeDTO.getName()).isNotNull();
+	}
+
+	@Test
+	void removeFromStartAndTrim_test() {
+		String value = "Bearer b856850e-1ad4-456d-b5ca-1c2bfc355e5e";
+		String BEARER = "Bearer";
+		String result = removeFromStartAndTrim(value, BEARER);
+		assertThat(result).isNotNull();
+		assertThat(result).isNotEmpty();
+		assertThat(result).isEqualTo("b856850e-1ad4-456d-b5ca-1c2bfc355e5e");
+	}
+
+//	@Test
+	void privilegeNotEmpty_whenPrivilegePresent_test(@Autowired UserService userService) {
+		String username = "naman";
+		String endPoint = "/users";
+		Optional<Privilege> privilege = userService.getPrivilege(username, endPoint);
+		assertThat(privilege).isNotEmpty();
+		
+	}
+
+//	@Test
+	void privilegeIsEmpty_whenPrivilegeNotPresent_Test(@Autowired UserService userService) {
+
+	}
+
+	@Test
+	void teachersClassSectionSubject_list(@Autowired TeacherRepository teacherRepository
+			, @Autowired TeacherFacade teacherFacade, @Autowired ClassSectionSubjectMapper mapper) {
+
+		List<Teacher> teachers = teacherRepository.findAll();
+
+		ClassSectionSubjectDTO dto = mapper
+				.entityToDTO(teacherRepository
+								.getClassSectionSubjects(teachers.get(0).getId())
+						, teacherRepository.getClassSections(teachers.get(0).getId()));
+
+		assertThat(dto).isNotNull();
+		assertThat(dto.getSubjectClasses()).isNotNull();
+		assertThat(dto.getSubjectClasses()).isNotEmpty();
+		assertThat(dto.getSubjectClasses().get(0)).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getClassName()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getSectionName()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getSubjectName()).isNotNull();
+	}
+
+	@Test
+	void teacherClassSectionlist_notEmpty_whenMappedToDTO(@Autowired TeacherRepository teacherRepository
+			, @Autowired TeacherFacade teacherFacade, @Autowired ClassSectionSubjectMapper mapper) {
+		List<Teacher> teachers = teacherRepository.findAll();
+
+		ClassSectionSubjectDTO dto = mapper
+				.entityToDTO(teacherRepository
+						.getClassSectionSubjects(teachers.get(0).getId())
+						, teacherRepository.getClassSections(teachers.get(0).getId()));
+
+		assertThat(dto).isNotNull();
+		assertThat(dto.getClassDTOs()).isNotNull();
+		assertThat(dto.getClassDTOs()).isNotEmpty();
+		assertThat(dto.getClassDTOs().get(0)).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getClassName()).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getSectionName()).isNotNull();
+	}
+
+	@Test
+	void studentInfo_isNotEmpty(@Autowired StudentRepository repository
+		, @Autowired InstituteClassSectionRepository instituteClassSectionRepository) {
+		List<InstituteClassSection> instituteClassSections = instituteClassSectionRepository.findAll();
+		log.debug("class id: {}", instituteClassSections.get(0).getId());
+		List<StudentInfo> studentsInfo = repository.findAllByClassSectionId(instituteClassSections.get(0).getId());
+
+		assertThat(studentsInfo).isNotNull();
+		assertThat(studentsInfo).isNotEmpty();
+		assertThat(studentsInfo.get(0).getId()).isNotZero();
+		assertThat(studentsInfo.get(0).getName()).isNotNull();
+		assertThat(studentsInfo.get(0).getRollNumber()).isNotNull();
+	}
+
+	@Test
+	void studentAttendanceEntityNotNull_whenStudentAttendanceMapper_mappedDTOToEntity_test(
+			@Autowired AttendanceRequestMapper mapper
+			, @Autowired StudentRepository studentRepository
+			, @Autowired StudentService studentService
+			, @Autowired TeacherRepository teacherRepository){
+		Student student = studentRepository.findAll().get(0);
+		Teacher teacher = teacherRepository.findAll().get(0);
+
+		StudentAttendanceRequestDTO dto = new StudentAttendanceRequestDTO(student.getId()
+				, teacher.getId(), AttendanceStatus.PRESENT);
+
+		AttendanceRequestDTO attendanceRequestDTO =
+				new AttendanceRequestDTO(
+						teacher
+								.getInstituteClassSectionSubjects()
+								.stream()
+								.findFirst()
+								.get()
+								.getId()
+						, teacher.getId()
+						, new Date(System.currentTimeMillis())
+						, ImmutableList.of(dto)
+				);
+
+		List<StudentAttendance> entities = mapper.dtoToEntity(attendanceRequestDTO);
+
+		assertThat(entities).isNotNull();
+		assertThat(entities).isNotEmpty();
+		assertThat(entities.get(0)).isNotNull();
+		assertThat(entities.get(0).getAttendance()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getUser()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getAttendanceTime()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getAttendanceStatus()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getId()).isNotNull();
+
+		assertThat(entities.get(0).getStudent()).isNotNull();
+
+		if (entities.get(0).getClassSection() == null)
+			assertThat(entities.get(0).getInstituteClassSectionSubject()).isNotNull();
+		if (entities.get(0).getInstituteClassSectionSubject() == null)
+			assertThat(entities.get(0).getClassSection()).isNotNull();
+
+		entities = studentService.saveAttendance(entities);
+
+		assertThat(entities).isNotNull();
+		assertThat(entities).isNotEmpty();
+		assertThat(entities.get(0)).isNotNull();
+		assertThat(entities.get(0).getAttendance()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getUser()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getAttendanceTime()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getAttendanceStatus()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getId()).isNotNull();
+
+		assertThat(entities.get(0).getStudent()).isNotNull();
+
+		if (entities.get(0).getClassSection() == null)
+			assertThat(entities.get(0).getInstituteClassSectionSubject()).isNotNull();
+		if (entities.get(0).getInstituteClassSectionSubject() == null)
+			assertThat(entities.get(0).getClassSection()).isNotNull();
+
+	}
+
+	@Test
+	void test_teacherClasses_notNull_whenIdis17(@Autowired TeacherService teacherService) {
+		Long teacherId = 17l;
+		List<InstituteClassSection> instituteClassSections = teacherService.loadClassSections(17l);
+		assertThat(instituteClassSections).isNotNull();
+		assertThat(instituteClassSections).isNotEmpty();
+		instituteClassSections
+				.forEach(classs -> {
+					assertThat(classs).isNotNull();
+					assertThat(classs.getInstituteClass()).isNotNull();
+					assertThat(classs.getInstituteClass().getId()).isNotNull();
+					log.debug("id: {}", classs.getInstituteClass().getId());
+				});
+	}
+
+	@Test
+	void test_teacherFacadeClassesList_isNotEmptyAndNonNull(@Autowired TeacherFacade teacherFacade
+			, @Autowired TeacherRepository teacherRepository) {
+		List<Teacher> teachers = teacherRepository.findAll();
+		ClassSectionSubjectDTO dto = teacherFacade.loadClasses(teachers.get(0).getId());
+		assertThat(dto).isNotNull();
+
+		assertThat(dto.getClassDTOs()).isNotNull();
+		assertThat(dto.getClassDTOs()).isNotEmpty();
+		assertThat(dto.getClassDTOs().get(0)).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getClassName()).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getSectionName()).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getLinks()).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getLinks()).isNotEmpty();
+		assertThat(dto.getClassDTOs().get(0).getLink("students")).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getInstituteClassSectionId()).isNotZero();
+
+		assertThat(dto.getSubjectClasses()).isNotNull();
+		assertThat(dto.getSubjectClasses()).isNotEmpty();
+		assertThat(dto.getSubjectClasses().get(0)).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getSubjectName()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getClassName()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getSectionName()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getLinks()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getLinks()).isNotEmpty();
+		assertThat(dto.getSubjectClasses().get(0).getLink("students").get()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getInstituteClassSectionSubjectId()).isNotZero();
+	}
+
+	@Test
+	void throwsException_whenPrivilegeNotPresent_Test(@Autowired UserService userService) {
+
+	}
+
+
+
+	private final String removeFromStartAndTrim(String value, String remove) {
+		return value.replaceFirst(remove, "").trim();
 	}
 
 	@AfterAll

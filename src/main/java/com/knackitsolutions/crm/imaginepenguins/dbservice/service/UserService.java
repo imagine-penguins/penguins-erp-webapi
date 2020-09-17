@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
@@ -17,7 +18,6 @@ public class UserService{
 
 
     public User newUser(User user) {
-
         return userRepository.save(user);
     }
 
@@ -33,5 +33,9 @@ public class UserService{
 
     public List<User> findAll(){
         return userRepository.findAll();
+    }
+
+    public Optional<Privilege> getPrivilege(String username, String endPoint){
+        return null;
     }
 }

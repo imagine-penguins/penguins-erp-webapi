@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
+
 import javax.persistence.*;
 import java.util.*;
 
@@ -15,7 +17,7 @@ public class Privilege {
     String privilegeName;
 
     @Column(name = "privilege_code", unique = true)
-    String privilegeCode;
+    PrivilegeCode privilegeCode;
 
     @Column(name = "privilege_desc")
     String privilegeDesc;
@@ -53,7 +55,7 @@ public class Privilege {
         this.privilegeDesc = privilegeName;
     }
 
-    public Privilege(Integer id, String privilegeCode, String privilegeName, String privilegeDesc) {
+    public Privilege(Integer id, PrivilegeCode privilegeCode, String privilegeName, String privilegeDesc) {
         this.id = id;
         this.privilegeName = privilegeName;
         this.privilegeCode = privilegeCode;
@@ -127,11 +129,11 @@ public class Privilege {
         this.userPrivileges = userPrivileges;
     }*/
 
-    public String getPrivilegeCode() {
+    public PrivilegeCode getPrivilegeCode() {
         return privilegeCode;
     }
 
-    public void setPrivilegeCode(String privilegeCode) {
+    public void setPrivilegeCode(PrivilegeCode privilegeCode) {
         this.privilegeCode = privilegeCode;
     }
 
@@ -174,6 +176,5 @@ public class Privilege {
     public void setLogo(String logo) {
         this.logo = logo;
     }
-
 
 }

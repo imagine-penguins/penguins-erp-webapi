@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -7,6 +7,8 @@ import java.util.Objects;
 
 @Embeddable
 public class StudentAttendanceKey implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "student_id")
     private Long studentId;
@@ -30,6 +32,10 @@ public class StudentAttendanceKey implements Serializable {
         this.attendanceId = attendanceId;
     }
 
+    //    public void setAttendanceId(Long attendanceId) {
+//        this.attendanceId = attendanceId;
+//    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -51,4 +57,6 @@ public class StudentAttendanceKey implements Serializable {
                 ", attendanceId=" + attendanceId +
                 '}';
     }
+
+
 }

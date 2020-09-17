@@ -1,6 +1,7 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,16 +14,28 @@ public class Attendance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "attendance_id")
     private Long id;
 
+    @Column(name = "load_dt_tm")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date attendanceTime;
+
+    @Column(name = "status")
     private AttendanceStatus attendanceStatus;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "supervisor_id")
+    private User user;
 
     @OneToMany(mappedBy = "attendance")
     private Set<StudentAttendance> studentAttendances = new HashSet<>();
 
     @OneToMany(mappedBy = "attendance")
     private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
+
+    public Attendance() {
+    }
 
     public Attendance(Long id, Date attendanceTime, AttendanceStatus attendanceStatus) {
         this.id = id;
@@ -54,13 +67,30 @@ public class Attendance {
         this.attendanceStatus = attendanceStatus;
     }
 
-    public void addStudentAttendance(StudentAttendance studentAttendance) {
+    public void setEmployeeAttendance(EmployeeAttendance employeeAttendance) {
+        this.employeeAttendances.add(employeeAttendance);
+        employeeAttendance.setAttendance(this);
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Set<StudentAttendance> getStudentAttendances() {
+        return studentAttendances;
+    }
+
+    public void setStudentAttendance(Set<StudentAttendance> studentAttendances) {
+        studentAttendances.forEach(this::setStudentAttendance);
+    }
+
+    public void setStudentAttendance(StudentAttendance studentAttendance) {
         this.studentAttendances.add(studentAttendance);
         studentAttendance.setAttendance(this);
     }
 
-    public void addEmployeeAttendance(EmployeeAttendance employeeAttendance) {
-        this.employeeAttendances.add(employeeAttendance);
-        employeeAttendance.setAttendance(this);
-    }
 }

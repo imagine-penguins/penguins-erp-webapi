@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 public class DashboardService {
 
     @Autowired
-    TeacherService teacherService;
+    TeacherServiceImpl teacherServiceImpl;
 
     @Autowired
     EmployeeService employeeService;
 
     @Autowired
-    StudentService studentService;
+    StudentServiceImpl studentServiceImpl;
 
     @Autowired
     ParentService parentService;

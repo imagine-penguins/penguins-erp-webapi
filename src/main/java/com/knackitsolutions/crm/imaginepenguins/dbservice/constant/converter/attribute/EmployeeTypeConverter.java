@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.converter;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter.attribute;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
 
@@ -7,8 +7,6 @@ import javax.persistence.Converter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Converter(autoApply = true)
 public class EmployeeTypeConverter implements AttributeConverter<EmployeeType, String> {

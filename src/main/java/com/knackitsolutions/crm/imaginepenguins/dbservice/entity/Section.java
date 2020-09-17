@@ -12,7 +12,7 @@ public class Section {
     @Id
     @Column(name = "section_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Long Id;
+    Long id;
 
     @Column(name = "section_name")
     String sectionName;
@@ -27,24 +27,24 @@ public class Section {
     }
 
     public Section(Long id, String sectionName, InstituteType instituteType) {
-        Id = id;
+        this.id = id;
         this.sectionName = sectionName;
         this.instituteType = instituteType;
     }
 
     public Section(Long id, String sectionName, InstituteType instituteType, Set<InstituteClassSection> instituteClassSections) {
-        Id = id;
+        this.id = id;
         this.sectionName = sectionName;
         this.instituteType = instituteType;
         this.instituteClassSections = instituteClassSections;
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public String getSectionName() {
@@ -68,11 +68,20 @@ public class Section {
     }
 
     public void setInstituteClassSections(Set<InstituteClassSection> instituteClassSections) {
-        this.instituteClassSections.addAll(instituteClassSections);
+        instituteClassSections.forEach(this::addInstituteClassSection);
     }
 
     public void addInstituteClassSection(InstituteClassSection instituteClassSection) {
         this.instituteClassSections.add(instituteClassSection);
         instituteClassSection.setSection(this);
+    }
+
+    @Override
+    public String toString() {
+        return "Section{" +
+                "Id=" + id +
+                ", sectionName='" + sectionName + '\'' +
+                ", instituteType=" + instituteType +
+                '}';
     }
 }

@@ -2,13 +2,15 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "subjects")
 public class Subject {
     @Id
-    @Column(name = "section_id")
+    @Column(name = "subject_id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(name = "name")
@@ -20,6 +22,9 @@ public class Subject {
 
     @OneToMany(mappedBy = "subject")
     private Set<TeacherSubject> teacherSubjects = new HashSet<>();
+
+    public Subject() {
+    }
 
     public Subject(Long id, String name) {
         this.id = id;
@@ -52,15 +57,39 @@ public class Subject {
         return classSubjects;
     }
 
+    public void setClassSubjects(List<InstituteClassSectionSubject> classSubjects) {
+        classSubjects.forEach(this::setClassSubjects);
+    }
+
     public void setClassSubjects(InstituteClassSectionSubject classSubject) {
         classSubjects.add(classSubject);
+        classSubject.setSubject(this);
     }
 
     public Set<TeacherSubject> getTeacherSubjects() {
         return teacherSubjects;
     }
 
+    public void setTeacherSubjects(List<TeacherSubject> teacherSubjects) {
+        teacherSubjects.forEach(this::setTeacherSubjects);
+    }
+
     public void setTeacherSubjects(TeacherSubject teacherSubject) {
         teacherSubjects.add(teacherSubject);
+        teacherSubject.setSubject(this);
+    }
+
+    @Override
+    public String toString() {
+        return "Subject{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
+    public static class SubjectNotFoundException extends RuntimeException{
+        public SubjectNotFoundException(String message) {
+            super(message);
+        }
     }
 }

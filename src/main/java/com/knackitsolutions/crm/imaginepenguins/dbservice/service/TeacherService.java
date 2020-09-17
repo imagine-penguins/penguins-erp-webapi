@@ -1,19 +1,21 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.ClassSectionSubjectDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassSection;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassSectionSubject;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Teacher;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.TeacherNotFoundException;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.TeacherRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
-public class TeacherService {
+import java.util.List;
 
-    @Autowired
-    private TeacherRepository teacherRepository;
+public interface TeacherService {
 
-    public Teacher findById(Long id){
-        return teacherRepository.findById(id)
-                .orElseThrow(()->new TeacherNotFoundException(id));
-    }
+    Teacher newTeacher(Teacher teacher);
+
+    Teacher findById(Long id);
+
+    List<InstituteClassSectionSubject> loadSubjectClasses(Long id);
+
+
+
+    List<InstituteClassSection> loadClassSections(Long id);
 }

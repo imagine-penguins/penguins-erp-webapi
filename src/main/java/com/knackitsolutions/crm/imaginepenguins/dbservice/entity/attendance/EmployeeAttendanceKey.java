@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;

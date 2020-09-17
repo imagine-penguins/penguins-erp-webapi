@@ -12,7 +12,7 @@ public class Class {
     @Id
     @Column(name = "class_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Long Id;
+    Long id;
 
     @Column(name = "class_name")
     String className;
@@ -25,13 +25,13 @@ public class Class {
 
 
     public Class(Long id, String className, InstituteType instituteType) {
-        Id = id;
+        this.id = id;
         this.className = className;
         this.instituteType = instituteType;
     }
 
     public Class(Long id, String className, InstituteType instituteType, Set<InstituteClass> instituteClasses) {
-        Id = id;
+        this.id = id;
         this.className = className;
         this.instituteType = instituteType;
         this.instituteClasses = instituteClasses;
@@ -41,11 +41,11 @@ public class Class {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public String getClassName() {
@@ -75,10 +75,9 @@ public class Class {
     @Override
     public String toString() {
         return "Class{" +
-                "Id=" + Id +
+                "Id=" + id +
                 ", className='" + className + '\'' +
                 ", instituteType=" + instituteType +
-                ", institutes=" + instituteClasses +
                 '}';
     }
 

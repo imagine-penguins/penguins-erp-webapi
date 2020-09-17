@@ -18,7 +18,7 @@ public class UserLoginResponseMapper {
             return null;
 
         UserLoginResponseDTO userLoginResponseDTO = new UserLoginResponseDTO();
-        userLoginResponseDTO.setUserId(user.getId());
+        entityToDTO(userLoginResponseDTO, user);
         return userLoginResponseDTO;
     }
 

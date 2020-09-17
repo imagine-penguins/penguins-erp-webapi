@@ -31,7 +31,8 @@ public class DashboardController {
     public EntityModel<AppDashboardDTO> appDashboardDTO(@PathVariable("userId") Long userId
             , @PathVariable("departmentId") Long departmentId){
         AppDashboardDTO dto = new AppDashboardDTO();
-        List<PrivilegeDTO> privilegeDTOS = appDashboardFacade.getPrivileges(userId, departmentId);
+        List<PrivilegeDTO> privilegeDTOS = appDashboardFacade
+                .getPrivileges(userId, departmentId);
         dto.setPrivileges(privilegeDTOS);
 
         //To Do add links for module functions

@@ -2,7 +2,6 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.PrivilegeDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserPrivilege;
 import org.springframework.stereotype.Component;
 
 @Component

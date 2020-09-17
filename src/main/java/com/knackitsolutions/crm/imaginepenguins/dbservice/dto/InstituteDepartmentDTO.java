@@ -1,8 +1,5 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
-
-import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.List;
 
