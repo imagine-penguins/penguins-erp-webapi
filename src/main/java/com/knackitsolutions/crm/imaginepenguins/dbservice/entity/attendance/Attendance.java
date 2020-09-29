@@ -18,8 +18,8 @@ public class Attendance {
     private Long id;
 
     @Column(name = "load_dt_tm")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date attendanceTime;
+    @Temporal(TemporalType.DATE)
+    private Date attendanceDate;
 
     @Column(name = "status")
     private AttendanceStatus attendanceStatus;
@@ -34,12 +34,16 @@ public class Attendance {
     @OneToMany(mappedBy = "attendance")
     private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
 
+    @Column(name = "update_dt_tm")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updateTime;
+
     public Attendance() {
     }
 
-    public Attendance(Long id, Date attendanceTime, AttendanceStatus attendanceStatus) {
+    public Attendance(Long id, Date attendanceDate, AttendanceStatus attendanceStatus) {
         this.id = id;
-        this.attendanceTime = attendanceTime;
+        this.attendanceDate = attendanceDate;
         this.attendanceStatus = attendanceStatus;
     }
 
@@ -51,12 +55,12 @@ public class Attendance {
         this.id = id;
     }
 
-    public Date getAttendanceTime() {
-        return attendanceTime;
+    public Date getAttendanceDate() {
+        return attendanceDate;
     }
 
-    public void setAttendanceTime(Date attendanceTime) {
-        this.attendanceTime = attendanceTime;
+    public void setAttendanceDate(Date attendanceDate) {
+        this.attendanceDate = attendanceDate;
     }
 
     public AttendanceStatus getAttendanceStatus() {
@@ -93,4 +97,11 @@ public class Attendance {
         studentAttendance.setAttendance(this);
     }
 
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
 }

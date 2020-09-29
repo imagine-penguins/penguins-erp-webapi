@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
@@ -16,10 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -51,6 +50,8 @@ public class AttendanceRequestMapper {
     private Attendance saveAttendance(Date date, AttendanceStatus status, User supervisor) {
         Attendance attendance = new Attendance(1l, date, status);
         attendance.setUser(supervisor);
+        attendance.setUpdateTime(DatesConfig.now());
+
         return attendanceRepository.save(attendance);
     }
 
@@ -62,7 +63,7 @@ public class AttendanceRequestMapper {
 
         studentService.one(dto.getStudentId()).setStudentAttendances(studentAttendance);
 
-        Attendance attendance = saveAttendance(attendanceRequestDTO.getDate(), dto.getStatus()
+        Attendance attendance = saveAttendance(attendanceRequestDTO.getAttendanceDate(), dto.getStatus()
                 , userService.findById(attendanceRequestDTO.getSupervisorId()));
 
         attendance.setStudentAttendance(studentAttendance);

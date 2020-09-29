@@ -7,12 +7,15 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceHistoryDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentInfo;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.AppDashboardFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.TeacherFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
@@ -26,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -716,7 +718,7 @@ class DbServiceApplicationTests {
 		assertThat(entities.get(0)).isNotNull();
 		assertThat(entities.get(0).getAttendance()).isNotNull();
 		assertThat(entities.get(0).getAttendance().getUser()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getAttendanceTime()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getAttendanceDate()).isNotNull();
 		assertThat(entities.get(0).getAttendance().getAttendanceStatus()).isNotNull();
 		assertThat(entities.get(0).getAttendance().getId()).isNotNull();
 
@@ -734,7 +736,7 @@ class DbServiceApplicationTests {
 		assertThat(entities.get(0)).isNotNull();
 		assertThat(entities.get(0).getAttendance()).isNotNull();
 		assertThat(entities.get(0).getAttendance().getUser()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getAttendanceTime()).isNotNull();
+		assertThat(entities.get(0).getAttendance().getAttendanceDate()).isNotNull();
 		assertThat(entities.get(0).getAttendance().getAttendanceStatus()).isNotNull();
 		assertThat(entities.get(0).getAttendance().getId()).isNotNull();
 
@@ -776,7 +778,7 @@ class DbServiceApplicationTests {
 		assertThat(dto.getClassDTOs().get(0).getSectionName()).isNotNull();
 		assertThat(dto.getClassDTOs().get(0).getLinks()).isNotNull();
 		assertThat(dto.getClassDTOs().get(0).getLinks()).isNotEmpty();
-		assertThat(dto.getClassDTOs().get(0).getLink("students")).isNotNull();
+		assertThat(dto.getClassDTOs().get(0).getLink("class-students")).isNotNull();
 		assertThat(dto.getClassDTOs().get(0).getInstituteClassSectionId()).isNotZero();
 
 		assertThat(dto.getSubjectClasses()).isNotNull();
@@ -787,7 +789,7 @@ class DbServiceApplicationTests {
 		assertThat(dto.getSubjectClasses().get(0).getSectionName()).isNotNull();
 		assertThat(dto.getSubjectClasses().get(0).getLinks()).isNotNull();
 		assertThat(dto.getSubjectClasses().get(0).getLinks()).isNotEmpty();
-		assertThat(dto.getSubjectClasses().get(0).getLink("students").get()).isNotNull();
+		assertThat(dto.getSubjectClasses().get(0).getLink("class-students").get()).isNotNull();
 		assertThat(dto.getSubjectClasses().get(0).getInstituteClassSectionSubjectId()).isNotZero();
 	}
 
@@ -796,7 +798,202 @@ class DbServiceApplicationTests {
 
 	}
 
+	@Test
+	void attendancehistoryStudentList_notEmpty() {
+		AttendanceHistoryDTO historyDTO = new AttendanceHistoryDTO();
+		AttendanceHistoryDTO.Student student = new AttendanceHistoryDTO.Student();
+		List<AttendanceHistoryDTO.Student> students = new ArrayList<>();
+		student.setName("Mayank");
+		student.setRollNumber("3");
+		student.setStatus(AttendanceStatus.PRESENT);
+		StudentAttendanceKey key = new StudentAttendanceKey();
+		key.setStudentId(1l);
+		key.setAttendanceId(100l);
+		student.setStudentAttendanceKey(key);
+		students.add(student);
 
+		historyDTO.setStudents(students);
+
+		assertThat(historyDTO).isNotNull();
+		assertThat(historyDTO.getStudents()).isNotNull();
+		assertThat(historyDTO.getStudents()).isNotEmpty();
+		assertThat(historyDTO.getStudents().get(0)).isNotNull();
+		assertThat(historyDTO.getStudents().get(0).getStudentAttendanceKey()).isNotNull();
+
+	}
+
+	@Test
+	void attendanceHistory_GraphData_isNotNull() {
+		AttendanceHistoryDTO dto = new AttendanceHistoryDTO();
+		AttendanceHistoryDTO.GraphData graphData = new AttendanceHistoryDTO.GraphData();
+		graphData.setAbsentPercent(10);
+		graphData.setPresentPercent(80);
+		graphData.setLeavePercent(20);
+		dto.setGraphData(graphData);
+
+		assertThat(dto).isNotNull();
+		assertThat(dto.getGraphData()).isNotNull();
+		assertThat(dto.getGraphData().getAbsentPercent()).isNotNull();
+
+	}
+
+	@Test
+	void studentAttendanceList_notEmpty_when_recordsArePresentInDB(@Autowired StudentService studentService
+			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
+		Student student = studentService.all().get(0);
+		Attendance attendance = new Attendance(1l, new Date(System.currentTimeMillis()), AttendanceStatus.PRESENT);
+		attendance.setUser(
+				teacherRepository
+						.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
+						.get(0)
+		);
+		attendance = attendanceRepository.save(attendance);
+
+		StudentAttendanceKey studentAttendanceKey = new StudentAttendanceKey();
+		studentAttendanceKey.setStudentId(student.getId());
+		studentAttendanceKey.setAttendanceId(attendance.getId());
+
+		StudentAttendance studentAttendance = new StudentAttendance();
+		studentAttendance.setStudentAttendanceKey(studentAttendanceKey);
+		student.getInstituteClassSection().setStudentAttendances(studentAttendance);
+		student.setStudentAttendances(studentAttendance);
+		attendance.setStudentAttendance(studentAttendance);
+
+		studentService.saveAttendance(studentAttendance);
+
+		List<StudentAttendance> studentAttendances
+				= studentService.getStudentAttendancesByClassId(student.getInstituteClassSection().getId());
+
+		assertThat(studentAttendances).isNotNull();
+		assertThat(studentAttendances).isNotEmpty();
+		assertThat(studentAttendances.get(0)).isNotNull();
+		assertThat(studentAttendances.get(0).getStudent()).isNotNull();
+		assertThat(studentAttendances.get(0).getAttendance()).isNotNull();
+		assertThat(studentAttendances.get(0).getStudentAttendanceKey()).isNotNull();
+		assertThat(studentAttendances.get(0).getInstituteClassSectionSubject()).isNull();
+		assertThat(studentAttendances.get(0).getClassSection()).isNotNull();
+
+	}
+
+	@Test
+	void studentAttendance_notNull_when_recordsPresent(@Autowired StudentService studentService
+			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
+		Student student = studentService.all().get(0);
+		Attendance attendance = new Attendance(1l, new Date(System.currentTimeMillis()), AttendanceStatus.PRESENT);
+		attendance.setUser(
+				teacherRepository
+						.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
+						.get(0)
+		);
+		attendance = attendanceRepository.save(attendance);
+
+		StudentAttendanceKey studentAttendanceKey = new StudentAttendanceKey();
+		studentAttendanceKey.setStudentId(student.getId());
+		studentAttendanceKey.setAttendanceId(attendance.getId());
+
+		StudentAttendance studentAttendance = new StudentAttendance();
+		studentAttendance.setStudentAttendanceKey(studentAttendanceKey);
+		student.getInstituteClassSection().setStudentAttendances(studentAttendance);
+		student.setStudentAttendances(studentAttendance);
+		attendance.setStudentAttendance(studentAttendance);
+
+		studentService.saveAttendance(studentAttendance);
+
+		List<StudentAttendance> studentAttendances = studentService.getStudentAttendancesByStudentId(student.getId());
+		assertThat(studentAttendances).isNotNull();
+		assertThat(studentAttendances).isNotEmpty();
+		assertThat(studentAttendances.get(0)).isNotNull();
+
+	}
+
+	private Attendance createAndSaveAttendance(Date date, AttendanceStatus status, User supervisor
+			, AttendanceRepository attendanceRepository) {
+		Attendance attendance1 = new Attendance(1l, date, status);
+		attendance1.setUser(supervisor);
+		attendance1.setUpdateTime(date);
+		return attendanceRepository.save(attendance1);
+	}
+
+	private StudentAttendanceKey getStudentAttendanceKey(Long studentId, Long attendanceId) {
+		StudentAttendanceKey studentAttendanceKey = new StudentAttendanceKey();
+		studentAttendanceKey.setStudentId(studentId);
+		studentAttendanceKey.setAttendanceId(attendanceId);
+		return studentAttendanceKey;
+	}
+
+	private StudentAttendance createAndSaveStudentAttendance(StudentAttendanceKey key, Student student
+			, Attendance attendance, StudentService studentService) {
+		StudentAttendance studentAttendance = new StudentAttendance();
+		studentAttendance.setStudentAttendanceKey(key);
+		student.getInstituteClassSection().setStudentAttendances(studentAttendance);
+		student.setStudentAttendances(studentAttendance);
+		attendance.setStudentAttendance(studentAttendance);
+		studentAttendance = studentService.saveAttendance(studentAttendance).get();
+		return studentAttendance;
+	}
+
+	private void createStudentAttendances(StudentService studentService, AttendanceRepository attendanceRepository
+			,Student student, Teacher teacher) {
+		Attendance attendance1 = createAndSaveAttendance(new Date(System.currentTimeMillis() - (4 * 24 * 60 * 60 * 1000))
+				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
+		Attendance attendance2 = createAndSaveAttendance(new Date(System.currentTimeMillis() - (3 * 24 * 60 * 60 * 1000))
+				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
+		Attendance attendance3 = createAndSaveAttendance(new Date(System.currentTimeMillis() - (2 * 24 * 60 * 60 * 1000))
+				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
+		Attendance attendance4 = createAndSaveAttendance(new Date(System.currentTimeMillis() - (1 * 24 * 60 * 60 * 1000))
+				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
+
+		StudentAttendanceKey studentAttendanceKey1 = getStudentAttendanceKey(student.getId(), attendance1.getId());
+		StudentAttendanceKey studentAttendanceKey2 = getStudentAttendanceKey(student.getId(), attendance2.getId());
+		StudentAttendanceKey studentAttendanceKey3 = getStudentAttendanceKey(student.getId(), attendance3.getId());
+		StudentAttendanceKey studentAttendanceKey4 = getStudentAttendanceKey(student.getId(), attendance4.getId());
+
+		createAndSaveStudentAttendance(studentAttendanceKey1, student, attendance1, studentService);
+		createAndSaveStudentAttendance(studentAttendanceKey2, student, attendance2, studentService);
+		createAndSaveStudentAttendance(studentAttendanceKey3, student, attendance3, studentService);
+		createAndSaveStudentAttendance(studentAttendanceKey4, student, attendance4, studentService);
+	}
+
+	@Test
+	void studentAttendanceBetweenDates_notNull_when_recordsPresent(@Autowired StudentService studentService
+			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
+		Student student = studentService.all().get(0);
+		Teacher teacher = teacherRepository
+				.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
+				.get(0);
+
+		createStudentAttendances(studentService, attendanceRepository, student, teacher);
+
+		List<StudentAttendance> studentAttendances = studentService.getStudentAttendancesByStudentId(student.getId()
+				, Optional.of(new Date(System.currentTimeMillis() - 3 * 24 * 60 * 60 * 1000))
+				, Optional.of(new Date(System.currentTimeMillis() - 1 * 24 * 60 * 60 * 1000)));
+
+		assertThat(studentAttendances).isNotNull();
+		assertThat(studentAttendances).isNotEmpty();
+		assertThat(studentAttendances.get(0)).isNotNull();
+		assertThat(studentAttendances.get(0).getStudentAttendanceKey()).isNotNull();
+		assertThat(studentAttendances.get(0).getStudentAttendanceKey().getStudentId()).isNotNull();
+
+	}
+
+	@Test
+	void studentAttendance_isNotNull_when_studentKeyIsPresent(@Autowired StudentService studentService
+			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
+		Student student = studentService.all().get(0);
+		Teacher teacher = teacherRepository
+				.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
+				.get(0);
+
+		createStudentAttendances(studentService, attendanceRepository, student, teacher);
+
+		StudentAttendance studentAttendance = studentService
+				.getStudentAttendanceById(
+						student.getStudentAttendances().get(0).getStudentAttendanceKey());
+
+		assertThat(studentAttendance).isNotNull();
+
+
+	}
 
 	private final String removeFromStartAndTrim(String value, String remove) {
 		return value.replaceFirst(remove, "").trim();

@@ -1,6 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.AttendanceController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.StudentController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.TeacherController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
@@ -35,13 +36,19 @@ public class AppDashboardFacade {
     @Autowired
     private UserPrivilegeRepository userPrivilegeRepository;
 
-    private PrivilegeDTO addLinks(UserPrivilege userPrivilege){
+    private PrivilegeDTO addLinks(Long userId, UserPrivilege userPrivilege) {
         Privilege privilege = userPrivilege.getDepartmentPrivilege().getPrivilege();
         PrivilegeDTO dto = privilegeMapper
                 .entityToDTO(privilege);
 
-        if (privilege.getPrivilegeCode() == PrivilegeCode.MARK_STUDENT_ATTENDANCE)
-            dto.add(linkTo(methodOn(TeacherController.class).classes(null)).withRel("classes"));
+        if (privilege.getPrivilegeCode() == PrivilegeCode.MARK_STUDENT_ATTENDANCE){
+            dto.add(linkTo(methodOn(TeacherController.class).classes(userId)).withRel("classes"));
+        }
+        if (privilege.getPrivilegeCode() == PrivilegeCode.VIEW_SELF_ATTENDANCE);
+            //;
+        if (privilege.getPrivilegeCode() == PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY) {
+            dto.add(linkTo(methodOn(AttendanceController.class).attendanceHistory(null, null, null, null)).withRel("view-attendance-history"));
+        }
         return dto;
     }
 
@@ -50,7 +57,7 @@ public class AppDashboardFacade {
         return userPrivilegeRepository
                 .findByUserIdAndDepartmentId(userId, departmentId)
                 .stream()
-                .map(this::addLinks)
+                .map(userPrivilege -> addLinks(userId, userPrivilege))
                 .collect(Collectors.toList());
     }
 

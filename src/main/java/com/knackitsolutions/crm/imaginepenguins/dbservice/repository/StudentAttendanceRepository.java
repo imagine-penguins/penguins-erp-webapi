@@ -1,8 +1,27 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.repository;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Date;
+import java.util.List;
+
 public interface StudentAttendanceRepository extends JpaRepository<StudentAttendance, Long> {
+
+    List<StudentAttendance> findByClassSectionId(Long classSectionId);
+    List<StudentAttendance> findByClassSectionIdAndAttendanceUpdateTimeBetween(Long classSectionId, Date updateTimeStart
+            , Date updateTimeEnd);
+
+    List<StudentAttendance> findByInstituteClassSectionSubjectId(Long instituteClassSectionSubjectId);
+    List<StudentAttendance> findByInstituteClassSectionSubjectIdAndAttendanceUpdateTimeBetween(Long instituteClassSectionSubjectId
+            , Date updateTimeStart, Date updateTimeEnd);
+
+    StudentAttendance findByStudentAttendanceKey(StudentAttendanceKey studentAttendanceKey);
+
+    List<StudentAttendance> findByStudentAttendanceKeyStudentId(Long studentId);
+
+    List<StudentAttendance> findByStudentAttendanceKeyStudentIdAndAttendanceUpdateTimeBetween(Long studentId
+            , Date updateTimeStart, Date updateTimeEnd);
 
 }

@@ -36,6 +36,14 @@ public class StudentAttendanceKey implements Serializable {
 //        this.attendanceId = attendanceId;
 //    }
 
+    public StudentAttendanceKey() {
+    }
+
+    public StudentAttendanceKey(Long studentId, Long attendanceId) {
+        this.studentId = studentId;
+        this.attendanceId = attendanceId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

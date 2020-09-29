@@ -331,9 +331,10 @@ public class LoadDatabase {
                 , "Mark Employee Attendance", "Mark Employee Attendance");
         Privilege privilege5 = new Privilege(1, PrivilegeCode.MARK_STUDENT_ATTENDANCE
                 , "Mark Student Attendance", "Mark Student Attendance");
-
+        Privilege privilege6 = new Privilege(1, PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY
+                , "View Students Attendance History", "View Students Attendance History");
         privileges.addAll(Stream.of(
-                privilege1, privilege2, privilege3, privilege4, privilege5
+                privilege1, privilege2, privilege3, privilege4, privilege5, privilege6
         ).map(privilegeRepository::save).collect(Collectors.toList()));
 
     }
@@ -358,12 +359,18 @@ public class LoadDatabase {
         departments.get(2).setPrivileges(instituteDepartmentPrivilege2);
         privileges.get(4).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
 
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege4 =
+                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(5));
+        departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
+        privileges.get(5).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
+
         //parent department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege3 =
                 new InstituteDepartmentPrivilege(departments.get(3), privileges.get(2));
 
         departments.get(3).setPrivileges(instituteDepartmentPrivilege3);
         privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
+
 
         instituteDepartmentPrivileges.addAll(departments.stream().map(department -> {
             InstituteDepartmentPrivilege privilege = new InstituteDepartmentPrivilege(department, privileges.get(1));
@@ -373,8 +380,12 @@ public class LoadDatabase {
             return privilege;
         }).collect(Collectors.toList()));
 
-        instituteDepartmentPrivileges.addAll(Stream.of(instituteDepartmentPrivilege1, instituteDepartmentPrivilege2
-                , instituteDepartmentPrivilege3).map(repository::save).collect(Collectors.toList()));
+        instituteDepartmentPrivileges.addAll(Stream.of(instituteDepartmentPrivilege1
+                , instituteDepartmentPrivilege2
+                , instituteDepartmentPrivilege3
+                , instituteDepartmentPrivilege4)
+                .map(repository::save)
+                .collect(Collectors.toList()));
     }
 
     private static void setupUserDepartment(UserDepartmentRepository userDepartmentRepository) {
@@ -456,10 +467,6 @@ public class LoadDatabase {
 
     }
 
-//    public void assignInstituteTeacher(Teacher teacher, Institute institute){
-//        teacher.setInstitute(institute);
-//        institute.setEmployee(teacher);
-//    }
 
     @Bean
     CommandLineRunner initDatabase(@Autowired InstituteRepository instituteRepository

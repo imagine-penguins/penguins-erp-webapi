@@ -1,9 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -11,18 +9,20 @@ public class AttendanceRequestDTO {
 
     private Long subjectClassID;
     private Long supervisorId;
+
     @JsonFormat(pattern = "dd-MM-yyyy")
-    private Date date;
+    private Date attendanceDate;
+
     private List<StudentAttendanceRequestDTO> attendanceData;
     private Long classSectionId;
 
     public AttendanceRequestDTO() {
     }
 
-    public AttendanceRequestDTO(Long classSectionSubjectId, Long supervisorId, Date date, List<StudentAttendanceRequestDTO> attendanceData) {
+    public AttendanceRequestDTO(Long classSectionSubjectId, Long supervisorId, Date attendanceDate, List<StudentAttendanceRequestDTO> attendanceData) {
         this.subjectClassID = classSectionSubjectId;
         this.supervisorId = supervisorId;
-        this.date = date;
+        this.attendanceDate = attendanceDate;
         this.attendanceData = attendanceData;
     }
 
@@ -50,12 +50,12 @@ public class AttendanceRequestDTO {
         this.attendanceData = attendanceData;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getAttendanceDate() {
+        return attendanceDate;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setAttendanceDate(Date attendanceDate) {
+        this.attendanceDate = attendanceDate;
     }
 
     public Long getClassSectionId() {

@@ -45,9 +45,9 @@ public class TeacherController {
     }
 
     @GetMapping("/{id}/classes")
-    public EntityModel<ClassSectionSubjectDTO> classes(@PathVariable("id") Long id){
+    public EntityModel<ClassSectionSubjectDTO> classes(@PathVariable("id") Long teacherId){
 
-        return EntityModel.of(facade.loadClasses(id));
+        return EntityModel.of(facade.loadClasses(teacherId));
 
     }
 

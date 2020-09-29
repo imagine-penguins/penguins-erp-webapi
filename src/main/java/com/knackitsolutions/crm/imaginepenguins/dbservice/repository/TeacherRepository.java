@@ -18,6 +18,7 @@ import java.util.Optional;
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
 
     List<Teacher> findByInstituteId(Integer instituteId);
+
     Integer countByInstituteId(Integer instituteId);
 
     @Query(value = "select t.instituteClassSectionSubjects from Teacher t where t.id = :teacherId")
@@ -25,4 +26,8 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
 
     @Query(value = "select t.instituteClassSections from Teacher t where t.id = :teacherId")
     List<InstituteClassSection> getClassSections(@Param("teacherId") Long id);
+
+    List<Teacher> findByInstituteClassSectionsId(Long instituteClassSectionId);
+
+    List<Teacher> findByInstituteClassSectionSubjectsId(Long instituteClassSectionSubjectsId);
 }

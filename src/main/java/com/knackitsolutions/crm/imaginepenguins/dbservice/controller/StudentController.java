@@ -54,4 +54,6 @@ public class StudentController {
                 , linkTo(methodOn(AttendanceController.class).studentAttendance(null)).withRel("save-attendance"));
     }
 
+
+
 }
