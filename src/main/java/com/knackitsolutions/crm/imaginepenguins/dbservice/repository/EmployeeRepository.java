@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.repository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,4 +27,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Integer countByInstituteIdAndEmployeeType(Integer instituteId, EmployeeType employeeType);
 
     List<Employee> findByEmployeeType(EmployeeType employeeType);
+
 }

@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter.request;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.AttendanceController;
 import org.springframework.core.convert.converter.Converter;
@@ -7,6 +7,6 @@ import org.springframework.core.convert.converter.Converter;
 public class AttendancePeriodTypeConverter implements Converter<String, AttendanceController.Period> {
     @Override
     public AttendanceController.Period convert(String source) {
-        return AttendanceController.Period.of(source);
+        return AttendanceController.Period.of(source.toUpperCase());
     }
 }

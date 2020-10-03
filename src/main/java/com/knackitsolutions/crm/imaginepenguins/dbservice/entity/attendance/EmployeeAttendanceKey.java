@@ -14,6 +14,11 @@ public class EmployeeAttendanceKey implements Serializable {
     @Column(name = "attendance_id")
     private Long attendanceId;
 
+    public EmployeeAttendanceKey(Long employeeId, Long attendanceId) {
+        this.employeeId = employeeId;
+        this.attendanceId = attendanceId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

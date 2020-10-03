@@ -5,6 +5,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassS
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 
 import javax.persistence.*;
+import java.util.Optional;
 
 @Entity
 @Table(name = "student_attendance")
@@ -71,5 +72,20 @@ public class StudentAttendance {
         this.classSection = classSection;
     }
 
-
+    @Override
+    public String toString() {
+        return "StudentAttendance{" +
+                "studentAttendanceKey=" + studentAttendanceKey +
+                ", student=" + Optional.ofNullable(student)
+                    .map(student1 -> student1.getUserProfile().getFirstName() + student1.getUserProfile().getLastName())
+                    .orElse("Not Found")+
+                ", attendance=" + Optional.ofNullable(attendance)
+                .orElse(null) +
+                ", instituteClassSectionSubject=" + Optional
+                .ofNullable(instituteClassSectionSubject)
+                .map(classSectionSubject -> classSectionSubject.getId()) +
+                ", classSection=" + Optional.ofNullable(classSection)
+                .map(classSection -> classSection.getId()) +
+                '}';
+    }
 }

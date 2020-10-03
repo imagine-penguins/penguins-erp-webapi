@@ -1,9 +1,8 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
@@ -48,44 +47,42 @@ public class AttendanceRequestMapper {
     }
 
     private Attendance saveAttendance(Date date, AttendanceStatus status, User supervisor) {
-        Attendance attendance = new Attendance(1l, date, status);
-        attendance.setUser(supervisor);
-        attendance.setUpdateTime(DatesConfig.now());
-
+        Attendance attendance = new Attendance(1l, date, status, supervisor);
+        log.debug("Attendance :{}", attendance);
         return attendanceRepository.save(attendance);
     }
 
-    public StudentAttendance dtoToEntity(StudentAttendanceRequestDTO dto, AttendanceRequestDTO attendanceRequestDTO) {
+    public StudentAttendance dtoToEntity(UserAttendanceRequestDTO dto, StudentAttendanceRequestDTO studentAttendanceRequestDTO) {
         if (dto == null) {
             return null;
         }
         StudentAttendance studentAttendance = new StudentAttendance();
 
-        studentService.one(dto.getStudentId()).setStudentAttendances(studentAttendance);
+        studentService.one(dto.getUserId()).setStudentAttendances(studentAttendance);
 
-        Attendance attendance = saveAttendance(attendanceRequestDTO.getAttendanceDate(), dto.getStatus()
-                , userService.findById(attendanceRequestDTO.getSupervisorId()));
+        Attendance attendance = saveAttendance(studentAttendanceRequestDTO.getAttendanceDate(), dto.getStatus()
+                , userService.findById(studentAttendanceRequestDTO.getSupervisorId()));
 
         attendance.setStudentAttendance(studentAttendance);
 
-        StudentAttendanceKey compositeKey = createCompositeKey(dto.getStudentId(), attendance.getId());
+        StudentAttendanceKey compositeKey = createCompositeKey(dto.getUserId(), attendance.getId());
 
         studentAttendance.setStudentAttendanceKey(compositeKey);
 
-        if (attendanceRequestDTO.getSubjectClassID() != null)
+        if (studentAttendanceRequestDTO.getSubjectClassID() != null)
             classSectionSubjectRepository
-                    .getOne(attendanceRequestDTO.getSubjectClassID())
+                    .getOne(studentAttendanceRequestDTO.getSubjectClassID())
                     .setStudentAttendance(studentAttendance);
 
-        if (attendanceRequestDTO.getClassSectionId() != null)
+        if (studentAttendanceRequestDTO.getClassSectionId() != null)
             classSectionRepository
-                    .getOne(attendanceRequestDTO.getClassSectionId())
+                    .getOne(studentAttendanceRequestDTO.getClassSectionId())
                     .setStudentAttendances(studentAttendance);
 
         return studentAttendance;
     }
 
-    public List<StudentAttendance> dtoToEntity(AttendanceRequestDTO dto) {
+    public List<StudentAttendance> dtoToEntity(StudentAttendanceRequestDTO dto) {
         if (dto == null) {
             return null;
         }

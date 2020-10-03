@@ -7,8 +7,12 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.Instit
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserProfileMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.EmployeeNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserLoginFailed;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,15 +38,6 @@ public class UserFacade {
     UserAuthenticationService userAuthenticationService;
 
     @Autowired
-    ParentFacade parentFacade;
-
-    @Autowired
-    StudentFacade studentFacade;
-
-    @Autowired
-    UserProfileMapper userProfileMapper;
-
-    @Autowired
     UserService userService;
 
     @Autowired
@@ -49,15 +45,6 @@ public class UserFacade {
 
     @Autowired
     UserLoginResponseMapper userLoginResponseMapper;
-
-    @Autowired
-    EmployeeFacade employeeFacade;
-
-    @Autowired
-    TeacherFacade teacherFacade;
-
-    @Autowired
-    EmployeeLoginResponseMapper employeeLoginResponseMapper;
 
     @Autowired
     InstituteMapper instituteMapper;

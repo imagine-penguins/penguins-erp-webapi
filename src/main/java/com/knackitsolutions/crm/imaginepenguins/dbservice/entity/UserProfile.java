@@ -33,6 +33,8 @@ public class UserProfile {
     @Transient
     private String doj;
 
+    private String profilePic;
+
     @Embedded
     @AttributeOverrides(value = {
             @AttributeOverride(name = "addressLine1", column = @Column(name = "house_number")),
@@ -168,5 +170,13 @@ public class UserProfile {
 
     public void setDoj(String doj) {
         this.doj = doj;
+    }
+
+    public String getProfilePic() {
+        return profilePic;
+    }
+
+    public void setProfilePic(String profilePic) {
+        this.profilePic = profilePic;
     }
 }

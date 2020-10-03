@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter.attribute;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 

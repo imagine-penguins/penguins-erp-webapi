@@ -2,22 +2,34 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.LeaverRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaverRequestDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserDepartment;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,25 +43,22 @@ public class UserControllerImpl {
     UserFacade userFacade;
 
     @Autowired
-    UserLoginModelAssembler userLoginModelAssembler;
-
-    @Autowired
-    TeacherModelAssembler teacherModelAssembler;
-
-    @Autowired
-    StudentModelAssembler studentModelAssembler;
-
-    @Autowired
-    ParentModelAssembler parentModelAssembler;
-
-    @Autowired
-    EmployeeModelAssembler employeeModelAssembler;
+    UserService userService;
 
     @Autowired
     UserDepartmentRepository userDepartmentRepository;
 
     @Autowired
     PrivilegeMapper privilegeMapper;
+
+    @Autowired
+    LeaverRequestMapper leaverRequestMapper;
+
+    @Autowired
+    EmployeeController employeeController;
+
+    @Autowired
+    StudentController studentController;
 
     @GetMapping
     public CollectionModel<EntityModel<UserLoginResponseDTO>> all() {
@@ -173,6 +182,41 @@ public class UserControllerImpl {
 
         return CollectionModel.of(institutes,
                 linkTo(methodOn(InstituteControllerImpl.class).all()).withRel("institutes"));
+
+    }
+
+    @GetMapping("/{userId}")
+    public CollectionModel<?> viewAttendance(@PathVariable("employeeId") Long userId
+            , @RequestParam(name = "period") Optional<AttendanceController.Period> period
+            , @RequestParam(name = "value") Optional<String> value) {
+
+        log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, userId);
+        User user = userService.findById(userId);
+        List<UserAttendanceResponseDTO> dtos = null;
+        if (user.getUserType() == UserType.EMPLOYEE) {
+            return CollectionModel.of(employeeController.viewAttendance(userId, period, value));
+        }
+        else if(user.getUserType() == UserType.STUDENT){
+            return CollectionModel.of(studentController.viewAttendance(userId, period, value));
+        }
+        else
+            return CollectionModel.of(null);
+    }
+
+    @PostMapping("/attendance/leave-request")
+    public ResponseEntity<String> saveLeaveRequest(@RequestBody LeaverRequestDTO leaverRequestDTO) {
+        LeaveRequest entity = leaverRequestMapper.dtoToEntity(leaverRequestDTO);
+        entity.setLeaveRequestStatus(LeaveRequestStatus.PENDING);
+        LeaveRequest leaveRequest = userService
+                .saveLeaveRequest(Optional.ofNullable(entity));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Leave Request saved.");
+    }
+
+    //Admin load all department for that institute
+    public Object loadDepartments(Long userId) {
+        User user = userService.findById(userId);
+        return null;
 
     }
 }

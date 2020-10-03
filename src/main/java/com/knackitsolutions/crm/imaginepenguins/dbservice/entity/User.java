@@ -2,6 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -50,8 +51,17 @@ public class User implements UserDetails {
     })
     private List<UserPrivilege> userPrivileges;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "supervisor")
     private List<Attendance> attendances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<LeaveRequest> leaveRequests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "approver")
+    private List<LeaveRequest> leaveRequestsApprover = new ArrayList<>();
+
+    @OneToMany(mappedBy = "approvedBy")
+    private List<LeaveRequest> leaveRequestsApprovedBy = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -235,6 +245,46 @@ public class User implements UserDetails {
 
     public void setAttendances(Attendance attendance) {
         this.attendances.add(attendance);
-        attendance.setUser(this);
+        attendance.setSupervisor(this);
+    }
+
+    public List<LeaveRequest> getLeaveRequests() {
+        return leaveRequests;
+    }
+
+    public void setLeaveRequests(List<LeaveRequest> leaveRequests) {
+        leaveRequests.forEach(this::setLeaveRequests);
+    }
+
+    public void setLeaveRequests(LeaveRequest leaveRequest) {
+        this.leaveRequests.add(leaveRequest);
+        leaveRequest.setUser(this);
+    }
+
+    public List<LeaveRequest> getLeaveRequestsApprover() {
+        return leaveRequestsApprover;
+    }
+
+    public void setLeaveRequestsApprover(List<LeaveRequest> leaveRequestsApprover) {
+        leaveRequestsApprover.forEach(this::setLeaveRequestsApprover);
+    }
+
+    public void setLeaveRequestsApprover(LeaveRequest leaveRequestApprover) {
+        this.leaveRequestsApprover.add(leaveRequestApprover);
+        leaveRequestApprover.setApprover(this);
+    }
+
+    public List<LeaveRequest> getLeaveRequestsApprovedBy() {
+        return leaveRequestsApprovedBy;
+    }
+
+    public void setLeaveRequestsApprovedBy(List<LeaveRequest> leaveRequestsApprovedBy) {
+        leaveRequestsApprovedBy.forEach(this::setLeaveRequestsApprovedBy);
+    }
+
+    public void setLeaveRequestsApprovedBy(LeaveRequest leaveRequestApprovedBy) {
+        this.leaveRequestsApprovedBy.add(leaveRequestApprovedBy);
+        leaveRequestApprovedBy.setApprovedBy(this);
+
     }
 }

@@ -7,21 +7,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Date;
 import java.util.List;
 
-public interface StudentAttendanceRepository extends JpaRepository<StudentAttendance, Long> {
+public interface StudentAttendanceRepository extends JpaRepository<StudentAttendance, StudentAttendanceKey> {
 
     List<StudentAttendance> findByClassSectionId(Long classSectionId);
-    List<StudentAttendance> findByClassSectionIdAndAttendanceUpdateTimeBetween(Long classSectionId, Date updateTimeStart
+    List<StudentAttendance> findByClassSectionIdAndAttendanceAttendanceDateBetween(Long classSectionId, Date updateTimeStart
             , Date updateTimeEnd);
 
     List<StudentAttendance> findByInstituteClassSectionSubjectId(Long instituteClassSectionSubjectId);
-    List<StudentAttendance> findByInstituteClassSectionSubjectIdAndAttendanceUpdateTimeBetween(Long instituteClassSectionSubjectId
+    List<StudentAttendance> findByInstituteClassSectionSubjectIdAndAttendanceAttendanceDateBetween(Long instituteClassSectionSubjectId
             , Date updateTimeStart, Date updateTimeEnd);
 
     StudentAttendance findByStudentAttendanceKey(StudentAttendanceKey studentAttendanceKey);
 
     List<StudentAttendance> findByStudentAttendanceKeyStudentId(Long studentId);
 
-    List<StudentAttendance> findByStudentAttendanceKeyStudentIdAndAttendanceUpdateTimeBetween(Long studentId
+    List<StudentAttendance> findByStudentAttendanceKeyStudentIdAndAttendanceAttendanceDateBetween(Long studentId
             , Date updateTimeStart, Date updateTimeEnd);
 
 }

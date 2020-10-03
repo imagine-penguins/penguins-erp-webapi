@@ -1,13 +1,13 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentInfo;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.StudentNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.StudentAttendanceRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.StudentRepository;
-import org.checkerframework.checker.nullness.Opt;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class StudentServiceImpl implements StudentService {
     @Autowired
     private StudentRepository studentRepository;
@@ -42,7 +43,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<StudentInfo> loadClassStudents(Long classSectionId) {
+    public List<StudentAttendanceResponseDTO> loadClassStudents(Long classSectionId) {
         return studentRepository.findAllByClassSectionId(classSectionId);
     }
 
@@ -64,9 +65,13 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<StudentAttendance> getStudentAttendancesByClassId(Long classId
             , Optional<Date> updateTimeStart, Optional<Date> updateTimeEnd) {
-        if (updateTimeStart.isPresent() && updateTimeEnd.isPresent())
-            return attendanceRepository.findByClassSectionIdAndAttendanceUpdateTimeBetween(classId
+        log.debug("Student Attendances for classId: {}", classId);
+        if (updateTimeStart.isPresent() && updateTimeEnd.isPresent()) {
+            log.debug("Lower and upper dates are present. calling DB for students attendances on period");
+            return attendanceRepository.findByClassSectionIdAndAttendanceAttendanceDateBetween(classId
                     , updateTimeStart.get(), updateTimeEnd.get());
+        }
+        log.debug("Period is not provided. Fetching students Attendances for classId");
         return getStudentAttendancesByClassId(classId);
     }
 
@@ -79,14 +84,16 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentAttendance> getStudentAttendancesByStudentId(Long studentId
             , Optional<Date> updateTimeStart, Optional<Date> updateTimeEnd) {
         if (updateTimeStart.isPresent() && updateTimeEnd.isPresent())
-            return attendanceRepository.findByStudentAttendanceKeyStudentIdAndAttendanceUpdateTimeBetween(studentId
+            return attendanceRepository.findByStudentAttendanceKeyStudentIdAndAttendanceAttendanceDateBetween(studentId
                     , updateTimeStart.get(), updateTimeEnd.get());
         return getStudentAttendancesByStudentId(studentId);
     }
 
     @Override
     public StudentAttendance getStudentAttendanceById(StudentAttendanceKey studentAttendanceKey) {
-        return attendanceRepository.findByStudentAttendanceKey(studentAttendanceKey);
+        return attendanceRepository
+                .findById(studentAttendanceKey)
+                .orElseThrow(() -> new RuntimeException("Student Attendance Not Found."));
     }
 
     @Override
@@ -96,7 +103,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentAttendance> getStudentAttendanceByClassSubjectId(Long subjectClassId, Date updateTimeStart, Date updateTimeEnd) {
-        return attendanceRepository.findByInstituteClassSectionSubjectIdAndAttendanceUpdateTimeBetween(subjectClassId
+        return attendanceRepository.findByInstituteClassSectionSubjectIdAndAttendanceAttendanceDateBetween(subjectClassId
                 , updateTimeStart, updateTimeEnd);
     }
 }

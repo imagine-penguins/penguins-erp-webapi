@@ -37,11 +37,11 @@ public class EmployeeAttendance {
         this.employee = employee;
     }
 
-    private EmployeeAttendanceKey getEmployeeAttendanceKey() {
+    public EmployeeAttendanceKey getEmployeeAttendanceKey() {
         return employeeAttendanceKey;
     }
 
-    private void setEmployeeAttendanceKey(EmployeeAttendanceKey employeeAttendanceKey) {
+    public void setEmployeeAttendanceKey(EmployeeAttendanceKey employeeAttendanceKey) {
         this.employeeAttendanceKey = employeeAttendanceKey;
     }
 }

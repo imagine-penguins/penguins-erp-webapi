@@ -2,7 +2,9 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ public class UserService{
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    LeaveRequestRepository leaveRequestRepository;
 
     public User newUser(User user) {
         return userRepository.save(user);
@@ -38,4 +42,9 @@ public class UserService{
     public Optional<Privilege> getPrivilege(String username, String endPoint){
         return null;
     }
+
+    public LeaveRequest saveLeaveRequest(Optional<LeaveRequest> leaveRequest) {
+        return leaveRequest.map(leaveRequestRepository::save).orElse(null);
+    }
+
 }

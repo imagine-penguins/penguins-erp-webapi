@@ -20,11 +20,4 @@ public class DbServiceApplication {
 		return new BCryptPasswordEncoder();
 	}
 
-//	@Bean
-//	CommandLineRunner runner(){
-//		return args -> {
-//			System.out.println("CommandLineRunner running in the DBServiceApplication class...");
-//		};
-//	}
-
 }

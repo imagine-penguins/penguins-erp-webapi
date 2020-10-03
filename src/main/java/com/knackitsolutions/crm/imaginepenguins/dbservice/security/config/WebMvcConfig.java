@@ -1,6 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.security.config;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter.request.RequestParameterConverter;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter.RequestParameterConverter;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +19,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private ListableBeanFactory listableBeanFactory;
 
     @Value("${angular-client:http://localhost:4200}")
-    private String angularClient;
+    private String[] angularClient;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {

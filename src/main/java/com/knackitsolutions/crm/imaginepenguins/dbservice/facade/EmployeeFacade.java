@@ -4,7 +4,10 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.Employ
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeLoginResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.EmployeeAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.EmployeeNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.DepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
@@ -17,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -69,6 +73,20 @@ public class EmployeeFacade {
                 .map(employee -> employeeLoginResponseMapper.toDTO(employee))
                 .collect(Collectors.toList());
         return employeeResponseDTOList;
+    }
+
+    public EmployeeAttendanceResponseDTO mapStudentAttendanceToStudent(EmployeeAttendance employeeAttendance) {
+
+
+        EmployeeAttendanceResponseDTO dto = new EmployeeAttendanceResponseDTO();
+        dto.setAttendanceId(Optional.ofNullable(employeeAttendance.getEmployeeAttendanceKey().getAttendanceId()));
+        dto.setUserId(employeeAttendance.getEmployeeAttendanceKey().getEmployeeId());
+        dto.setStatus(Optional.ofNullable(employeeAttendance.getAttendance().getAttendanceStatus()));
+        UserProfile profile = employeeAttendance.getEmployee().getUserProfile();
+        dto.setFirstName(profile.getFirstName());
+        dto.setLastName(profile.getLastName());
+        dto.setAttendanceDate(employeeAttendance.getAttendance().getAttendanceDate());
+        return dto;
     }
 
 }

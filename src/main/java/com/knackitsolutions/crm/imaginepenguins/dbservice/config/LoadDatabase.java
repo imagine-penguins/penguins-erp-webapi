@@ -325,6 +325,9 @@ public class LoadDatabase {
                 , "Attendance", "Attendance Module");
         Privilege privilege2 = new Privilege(1, PrivilegeCode.CALENDAR
                 , "Calendar", "Calendar Module");
+        privilege1 = privilegeRepository.save(privilege1);
+        privilege2 = privilegeRepository.save(privilege2);
+
         Privilege privilege3 = new Privilege(1, PrivilegeCode.VIEW_SELF_ATTENDANCE
                 , "View Self Attendance", "View Self Attendance");
         Privilege privilege4 = new Privilege(1, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
@@ -333,8 +336,15 @@ public class LoadDatabase {
                 , "Mark Student Attendance", "Mark Student Attendance");
         Privilege privilege6 = new Privilege(1, PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY
                 , "View Students Attendance History", "View Students Attendance History");
+
+        Privilege privilege7 = new Privilege(1, PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY
+                , "Edit Students Attendance History", "Edit Students Attendance History");
+        Privilege privilege8 = new Privilege(1, PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY
+                , "Edit Employee Attendance History", "Edit Employee Attendance History");
+
+        Stream.of(privilege3, privilege4, privilege5, privilege6, privilege7, privilege8).forEach(privilege1::setPrivileges);
         privileges.addAll(Stream.of(
-                privilege1, privilege2, privilege3, privilege4, privilege5, privilege6
+                privilege3, privilege4, privilege5, privilege6, privilege7, privilege8
         ).map(privilegeRepository::save).collect(Collectors.toList()));
 
     }
@@ -347,41 +357,46 @@ public class LoadDatabase {
         }).collect(Collectors.toList()));
 
         //student department privilege
-        InstituteDepartmentPrivilege instituteDepartmentPrivilege1 =
-                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(2));
-        departments.get(1).setPrivileges(instituteDepartmentPrivilege1);
-        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
+//        InstituteDepartmentPrivilege instituteDepartmentPrivilege1 =
+//                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(0));
+//        departments.get(1).setPrivileges(instituteDepartmentPrivilege1);
+//        privileges.get(0).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
 
         //teacher department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege2 =
-                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(4));
+                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(2));
 
         departments.get(2).setPrivileges(instituteDepartmentPrivilege2);
-        privileges.get(4).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
+        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
+
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege3 =
+                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(3));
+        departments.get(2).setPrivileges(instituteDepartmentPrivilege3);
+        privileges.get(3).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege4 =
-                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(5));
+                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(4));
         departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
-        privileges.get(5).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
+        privileges.get(4).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
 
         //parent department privilege
-        InstituteDepartmentPrivilege instituteDepartmentPrivilege3 =
-                new InstituteDepartmentPrivilege(departments.get(3), privileges.get(2));
-
-        departments.get(3).setPrivileges(instituteDepartmentPrivilege3);
-        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
+//        InstituteDepartmentPrivilege instituteDepartmentPrivilege5 =
+//                new InstituteDepartmentPrivilege(departments.get(3), privileges.get(2));
+//
+//        departments.get(3).setPrivileges(instituteDepartmentPrivilege3);
+//        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
 
 
         instituteDepartmentPrivileges.addAll(departments.stream().map(department -> {
-            InstituteDepartmentPrivilege privilege = new InstituteDepartmentPrivilege(department, privileges.get(1));
+            InstituteDepartmentPrivilege privilege = new InstituteDepartmentPrivilege(department, privileges.get(0));
             department.setPrivileges(privilege);
-            privileges.get(1).addInstituteDepartmentPrivilege(privilege);
+            privileges.get(0).addInstituteDepartmentPrivilege(privilege);
             repository.save(privilege);
             return privilege;
         }).collect(Collectors.toList()));
 
-        instituteDepartmentPrivileges.addAll(Stream.of(instituteDepartmentPrivilege1
-                , instituteDepartmentPrivilege2
+        instituteDepartmentPrivileges.addAll(Stream.of(
+                  instituteDepartmentPrivilege2
                 , instituteDepartmentPrivilege3
                 , instituteDepartmentPrivilege4)
                 .map(repository::save)
@@ -396,17 +411,17 @@ public class LoadDatabase {
         employees.get(1).setUserDepartment(userDepartment2);
         departments.get(0).addUserDepartment(userDepartment2);
 
-        //Teacher teacher department
+        //teacher department
         UserDepartment userDepartment3 = new UserDepartment(teachers.get(0), departments.get(2));
         teachers.get(0).setUserDepartment(userDepartment3);
         departments.get(2).addUserDepartment(userDepartment3);
 
-        //Teacher admin department
+        //admin department
         UserDepartment userDepartment4 = new UserDepartment(teachers.get(0), departments.get(0));
         teachers.get(0).setUserDepartment(userDepartment4);
         departments.get(0).addUserDepartment(userDepartment4);
 
-        //Teacher teacher department
+        //teacher department
         UserDepartment userDepartment5 = new UserDepartment(teachers.get(1), departments.get(2));
         teachers.get(1).setUserDepartment(userDepartment5);
         departments.get(2).addUserDepartment(userDepartment5);

@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter.attribute;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;

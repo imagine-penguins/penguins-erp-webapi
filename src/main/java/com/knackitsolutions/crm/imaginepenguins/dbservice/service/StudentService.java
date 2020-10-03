@@ -1,6 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentInfo;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
@@ -15,7 +15,7 @@ public interface StudentService {
 
     List<Student> all();
 
-    List<StudentInfo> loadClassStudents(Long id);
+    List<StudentAttendanceResponseDTO> loadClassStudents(Long id);
 
     Optional<StudentAttendance> saveAttendance(StudentAttendance studentAttendance);
 

@@ -36,9 +36,9 @@ public class Privilege {
 
     @ManyToOne
     @JoinColumn(name = "parent_privilege_id")
-    Privilege privilege;
+    Privilege parentPrivilege;
 
-    @OneToMany(mappedBy = "privilege")
+    @OneToMany(mappedBy = "parentPrivilege", fetch = FetchType.EAGER)
     Set<Privilege> privileges = new HashSet<>();
 
     public Privilege() {
@@ -68,12 +68,12 @@ public class Privilege {
         if (!(o instanceof Privilege)) return false;
         Privilege privilege = (Privilege) o;
         return Objects.equals(id, privilege.id) &&
-                Objects.equals(privilegeName, privilege.privilegeName);
+                Objects.equals(privilegeCode, privilege.privilegeCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, privilegeName);
+        return Objects.hash(id, privilegeCode);
     }
 
     @Override
@@ -81,7 +81,10 @@ public class Privilege {
         return "Privilege{" +
                 "id=" + id +
                 ", privilegeName='" + privilegeName + '\'' +
+                ", privilegeCode=" + privilegeCode +
                 ", privilegeDesc='" + privilegeDesc + '\'' +
+                ", logo='" + logo + '\'' +
+                ", parentPrivilege=" + Optional.ofNullable(parentPrivilege).map(parentPrivilege -> parentPrivilege.getId()).orElse(null) +
                 '}';
     }
 
@@ -149,12 +152,12 @@ public class Privilege {
         this.dashboards.add(dashboard);
     }
 
-    public Privilege getPrivilege() {
-        return privilege;
+    public Privilege getParentPrivilege() {
+        return parentPrivilege;
     }
 
-    public void setPrivilege(Privilege privilege) {
-        this.privilege = privilege;
+    public void setParentPrivilege(Privilege parentPrivilege) {
+        this.parentPrivilege = parentPrivilege;
     }
 
     public Set<Privilege> getPrivileges() {
@@ -162,11 +165,13 @@ public class Privilege {
     }
 
     public void setPrivileges(Set<Privilege> privileges) {
-        this.privileges.addAll(privileges);
+        privileges.forEach(this::setParentPrivilege);
     }
 
     public void setPrivileges(Privilege privilege) {
         privileges.add(privilege);
+        privilege.setParentPrivilege(this);
+
     }
 
     public String getLogo() {
@@ -176,5 +181,7 @@ public class Privilege {
     public void setLogo(String logo) {
         this.logo = logo;
     }
+
+
 
 }

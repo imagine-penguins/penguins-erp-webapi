@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter.request;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.constant.converter;
 
 import org.springframework.stereotype.Component;
 

@@ -4,21 +4,25 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.TeacherModel
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ClassSectionSubjectMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.ClassSectionSubjectDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.TeacherLoginResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.TeacherFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.TeacherService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 @RestController
+@Slf4j
 @RequestMapping("/teachers")
 public class TeacherController {
 
@@ -50,5 +54,6 @@ public class TeacherController {
         return EntityModel.of(facade.loadClasses(teacherId));
 
     }
+
 
 }

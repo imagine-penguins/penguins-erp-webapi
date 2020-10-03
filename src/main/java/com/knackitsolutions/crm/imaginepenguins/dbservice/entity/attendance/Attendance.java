@@ -17,16 +17,16 @@ public class Attendance {
     @Column(name = "attendance_id")
     private Long id;
 
-    @Column(name = "load_dt_tm")
+    @Column(name = "load_dt_tm", nullable = false)
     @Temporal(TemporalType.DATE)
     private Date attendanceDate;
 
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private AttendanceStatus attendanceStatus;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "supervisor_id")
-    private User user;
+    @JoinColumn(name = "supervisor_id", nullable = false)
+    private User supervisor;
 
     @OneToMany(mappedBy = "attendance")
     private Set<StudentAttendance> studentAttendances = new HashSet<>();
@@ -34,17 +34,24 @@ public class Attendance {
     @OneToMany(mappedBy = "attendance")
     private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
 
-    @Column(name = "update_dt_tm")
+    @Column(name = "update_dt_tm", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
     public Attendance() {
+        updateTime = new Date(System.currentTimeMillis());
     }
 
     public Attendance(Long id, Date attendanceDate, AttendanceStatus attendanceStatus) {
+        this();
         this.id = id;
         this.attendanceDate = attendanceDate;
         this.attendanceStatus = attendanceStatus;
+    }
+
+    public Attendance(Long id, Date attendanceDate, AttendanceStatus attendanceStatus, User supervisor) {
+        this(id, attendanceDate, attendanceStatus);
+        this.supervisor = supervisor;
     }
 
     public Long getId() {
@@ -76,12 +83,12 @@ public class Attendance {
         employeeAttendance.setAttendance(this);
     }
 
-    public User getUser() {
-        return user;
+    public User getSupervisor() {
+        return supervisor;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setSupervisor(User supervisor) {
+        this.supervisor = supervisor;
     }
 
     public Set<StudentAttendance> getStudentAttendances() {
@@ -103,5 +110,16 @@ public class Attendance {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return "Attendance{" +
+                ", attendanceDate=" + attendanceDate +
+                ", attendanceStatus=" + attendanceStatus +
+                ", updateTime=" + updateTime +
+                '}';
     }
 }
