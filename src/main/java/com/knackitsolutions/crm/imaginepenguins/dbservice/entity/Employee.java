@@ -2,6 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,11 @@ public class Employee extends User{
     @JoinColumn(name = "manager_id")
     private Employee manager;
 
-    @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "manager")
     private Set<Employee> subordinates = new HashSet<>();
+
+    @OneToMany(mappedBy = "employee")
+    private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
 
     public Employee() {
     }
@@ -123,6 +127,8 @@ public class Employee extends User{
         this.institute = institute;
     }
 
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -134,6 +140,20 @@ public class Employee extends User{
                 Objects.equals(getInstitute(), employee.getInstitute()) &&
                 Objects.equals(getManager(), employee.getManager()) &&
                 Objects.equals(getSubordinates(), employee.getSubordinates());
+    }
+
+    public Set<EmployeeAttendance> getEmployeeAttendances() {
+        return employeeAttendances;
+    }
+
+    public void setEmployeeAttendances(Set<EmployeeAttendance> employeeAttendances) {
+        employeeAttendances.forEach(this::setEmployeeAttendances);
+    }
+
+    public void setEmployeeAttendances(EmployeeAttendance employeeAttendance) {
+        this.employeeAttendances.add(employeeAttendance);
+        employeeAttendance.setEmployee(this);
+
     }
 
     @Override

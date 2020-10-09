@@ -7,7 +7,16 @@ import java.util.List;
 public class AttendanceHistoryDTO extends RepresentationModel<AttendanceHistoryDTO> {
 
     private List<StudentAttendanceResponseDTO> students;
+    private List<UserAttendanceResponseDTO> users;
     private GraphData graphData;
+
+    public List<UserAttendanceResponseDTO> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<UserAttendanceResponseDTO> users) {
+        this.users = users;
+    }
 
     public List<StudentAttendanceResponseDTO> getStudents() {
         return students;
@@ -54,4 +63,6 @@ public class AttendanceHistoryDTO extends RepresentationModel<AttendanceHistoryD
             this.leavePercent = leavePercent;
         }
     }
+
+
 }

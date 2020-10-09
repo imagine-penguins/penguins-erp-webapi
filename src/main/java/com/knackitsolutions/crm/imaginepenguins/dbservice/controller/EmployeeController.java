@@ -96,7 +96,7 @@ public class EmployeeController {
 
         return employeeAttendances
                 .stream()
-                .map(employeeFacade::mapStudentAttendanceToStudent)
+                .map(employeeFacade::mapEmployeeAttendanceToEmployee)
                 .collect(Collectors.toList());
     }
 

@@ -47,4 +47,8 @@ public class UserService{
         return leaveRequest.map(leaveRequestRepository::save).orElse(null);
     }
 
+    public List<User> findByDepartmentId(Long departmentId) {
+        return userRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
+    }
+
 }

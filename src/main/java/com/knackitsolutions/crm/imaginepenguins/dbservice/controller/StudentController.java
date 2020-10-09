@@ -51,7 +51,7 @@ public class StudentController {
     @GetMapping("/classes/{id}/students")
     public CollectionModel<StudentAttendanceResponseDTO> loadClassStudents(@PathVariable("id") Long classSectionId) {
         List<StudentAttendanceResponseDTO> studentInfoList = studentService
-                .loadClassStudents(classSectionId)
+                .loadStudentResponseDTOWithClassSectionId(classSectionId)
                 .stream()
                 .map(studentInfo -> (StudentAttendanceResponseDTO)studentInfo
                         .add(linkTo(methodOn(StudentController.class).one(studentInfo.getUserId()))

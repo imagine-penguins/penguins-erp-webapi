@@ -20,4 +20,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             "from Student s WHERE s.instituteClassSection.id = :classSectionId")
     List<StudentAttendanceResponseDTO> findAllByClassSectionId(@Param("classSectionId") Long id);
 
+    List<Student> findByInstituteClassSectionId(Long instituteClassSectionId);
+
+
 }

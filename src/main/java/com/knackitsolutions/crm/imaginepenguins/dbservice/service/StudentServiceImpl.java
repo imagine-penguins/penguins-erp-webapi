@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
@@ -43,7 +44,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<StudentAttendanceResponseDTO> loadClassStudents(Long classSectionId) {
+    public List<StudentAttendanceResponseDTO> loadStudentResponseDTOWithClassSectionId(Long classSectionId) {
         return studentRepository.findAllByClassSectionId(classSectionId);
     }
 
@@ -105,5 +106,15 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentAttendance> getStudentAttendanceByClassSubjectId(Long subjectClassId, Date updateTimeStart, Date updateTimeEnd) {
         return attendanceRepository.findByInstituteClassSectionSubjectIdAndAttendanceAttendanceDateBetween(subjectClassId
                 , updateTimeStart, updateTimeEnd);
+    }
+
+    @Override
+    public List<StudentAttendanceRequestDTO> loadStudentsWithClassSubjectId(Long classSectionSubjectId) {
+        return null;
+    }
+
+    @Override
+    public List<Student> loadStudentWithClassSectionId(Long classSectionId) {
+        return studentRepository.findByInstituteClassSectionId(classSectionId);
     }
 }

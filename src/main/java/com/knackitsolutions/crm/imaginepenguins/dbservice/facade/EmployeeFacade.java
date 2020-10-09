@@ -75,7 +75,7 @@ public class EmployeeFacade {
         return employeeResponseDTOList;
     }
 
-    public EmployeeAttendanceResponseDTO mapStudentAttendanceToStudent(EmployeeAttendance employeeAttendance) {
+    public EmployeeAttendanceResponseDTO mapEmployeeAttendanceToEmployee(EmployeeAttendance employeeAttendance) {
 
 
         EmployeeAttendanceResponseDTO dto = new EmployeeAttendanceResponseDTO();

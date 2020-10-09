@@ -1,6 +1,5 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.constant;
 
-import com.google.common.collect.ImmutableList;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.*;
 import org.springframework.hateoas.Link;
 
@@ -51,7 +50,7 @@ public enum PrivilegeCode {
         @Override
         public List<Link> getLinks() {
             return Arrays.asList(linkTo(methodOn(AttendanceController.class)
-                    .attendanceHistory(null, null, null, null))
+                    .userAttendanceHistory(null, null, null, null, null))
                     .withRel("view-attendance-history"));
         }
 
@@ -70,6 +69,28 @@ public enum PrivilegeCode {
             return Arrays.asList(linkTo(methodOn(AttendanceController.class)
                     .updateAttendance(null, null, null))
                     .withRel("edit-attendance-history"));
+        }
+    },
+    APPLY_LEAVE_REQUEST("ALR"){
+        @Override
+        public List<Link> getLinks() {
+            return Arrays.asList(
+                    linkTo(methodOn(UserControllerImpl.class).saveLeaveRequest(null))
+                            .withRel("leave-request"),
+                    linkTo(methodOn(UserControllerImpl.class).updateLeaveRequest(null, null))
+                            .withRel("update-leave-request")
+            );
+        }
+    },
+    UPDATE_LEAVE_REQUEST("ULR"){
+        @Override
+        public List<Link> getLinks() {
+            return Arrays.asList(
+                    linkTo(methodOn(UserControllerImpl.class).updateLeaveRequestStatus(null, null, null))
+                            .withRel("update-leave-request-status"),
+                    linkTo(methodOn(AttendanceController.class).leaveRequestHistory(null, null, null))
+                            .withRel("view-leave-request-history")
+            );
         }
     };
 

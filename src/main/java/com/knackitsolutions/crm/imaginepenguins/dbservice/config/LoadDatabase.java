@@ -342,9 +342,17 @@ public class LoadDatabase {
         Privilege privilege8 = new Privilege(1, PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY
                 , "Edit Employee Attendance History", "Edit Employee Attendance History");
 
-        Stream.of(privilege3, privilege4, privilege5, privilege6, privilege7, privilege8).forEach(privilege1::setPrivileges);
+        Privilege privilege9 = new Privilege(1, PrivilegeCode.APPLY_LEAVE_REQUEST
+                , "Apply for leave request", "Apply for leave request.");
+
+        Privilege privilege10 = new Privilege(1, PrivilegeCode.UPDATE_LEAVE_REQUEST
+                , "Approve/Reject User Leave Request", "Approve/Reject User Leave Request");
+
+        Stream.of(privilege3, privilege4, privilege5, privilege6, privilege7, privilege8, privilege9, privilege10)
+                .forEach(privilege1::setPrivileges);
+
         privileges.addAll(Stream.of(
-                privilege3, privilege4, privilege5, privilege6, privilege7, privilege8
+                privilege3, privilege4, privilege5, privilege6, privilege7, privilege8, privilege9, privilege10
         ).map(privilegeRepository::save).collect(Collectors.toList()));
 
     }
@@ -357,15 +365,14 @@ public class LoadDatabase {
         }).collect(Collectors.toList()));
 
         //student department privilege
-//        InstituteDepartmentPrivilege instituteDepartmentPrivilege1 =
-//                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(0));
-//        departments.get(1).setPrivileges(instituteDepartmentPrivilege1);
-//        privileges.get(0).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege1 =
+                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(6));
+        departments.get(1).setPrivileges(instituteDepartmentPrivilege1);
+        privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
 
         //teacher department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege2 =
                 new InstituteDepartmentPrivilege(departments.get(2), privileges.get(2));
-
         departments.get(2).setPrivileges(instituteDepartmentPrivilege2);
         privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
 
@@ -378,6 +385,16 @@ public class LoadDatabase {
                 new InstituteDepartmentPrivilege(departments.get(2), privileges.get(4));
         departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
         privileges.get(4).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
+
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege5 =
+                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(6));
+        departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
+        privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
+
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege6 =
+                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(7));
+        departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
+        privileges.get(7).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
 
         //parent department privilege
 //        InstituteDepartmentPrivilege instituteDepartmentPrivilege5 =
@@ -398,7 +415,9 @@ public class LoadDatabase {
         instituteDepartmentPrivileges.addAll(Stream.of(
                   instituteDepartmentPrivilege2
                 , instituteDepartmentPrivilege3
-                , instituteDepartmentPrivilege4)
+                , instituteDepartmentPrivilege4
+                , instituteDepartmentPrivilege5
+                , instituteDepartmentPrivilege6)
                 .map(repository::save)
                 .collect(Collectors.toList()));
     }

@@ -1,12 +1,14 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveType;
 
 import java.util.Date;
 
-public class LeaverRequestDTO {
+public class LeaveResponseDTO {
 
+    private Long id;
     private Long userId;
     private Long approverId;
 
@@ -19,18 +21,11 @@ public class LeaverRequestDTO {
 
     private String leaveReason;
 
-    public LeaverRequestDTO() {
-    }
+    private LeaveRequestStatus status;
 
-    public LeaverRequestDTO(Long userId, Long approverId, Date startDate, Date endDate
-            , LeaveType leaveType, String leaveReason) {
-        this.userId = userId;
-        this.approverId = approverId;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.leaveType = leaveType;
-        this.leaveReason = leaveReason;
-    }
+    private String rejectedReason;
+
+    private Long approvedByUserId;
 
     public Long getUserId() {
         return userId;
@@ -78,5 +73,37 @@ public class LeaverRequestDTO {
 
     public void setLeaveReason(String leaveReason) {
         this.leaveReason = leaveReason;
+    }
+
+    public LeaveRequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(LeaveRequestStatus status) {
+        this.status = status;
+    }
+
+    public String getRejectedReason() {
+        return rejectedReason;
+    }
+
+    public void setRejectedReason(String rejectedReason) {
+        this.rejectedReason = rejectedReason;
+    }
+
+    public Long getApprovedByUserId() {
+        return approvedByUserId;
+    }
+
+    public void setApprovedByUserId(Long approvedByUserId) {
+        this.approvedByUserId = approvedByUserId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

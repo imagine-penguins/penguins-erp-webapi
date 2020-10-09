@@ -1,15 +1,17 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.EmployeeAttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.AttendanceRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteClassSectionRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteClassSectionSubjectRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,9 @@ public class AttendanceRequestMapper {
     private UserService userService;
 
     @Autowired
+    private EmployeeService employeeService;
+
+    @Autowired
     private AttendanceRepository attendanceRepository;
 
     @Autowired
@@ -39,10 +44,18 @@ public class AttendanceRequestMapper {
     @Autowired
     private InstituteClassSectionSubjectRepository classSectionSubjectRepository;
 
-    private StudentAttendanceKey createCompositeKey(Long studentId, Long attendanceId) {
+    @Autowired
+    private InstituteDepartmentRepository instituteDepartmentRepository;
+
+    private StudentAttendanceKey createStudentCompositeKey(Long studentId, Long attendanceId) {
         StudentAttendanceKey compositeKey = new StudentAttendanceKey();
         compositeKey.setAttendanceId(attendanceId);
         compositeKey.setStudentId(studentId);
+        return compositeKey;
+    }
+
+    private EmployeeAttendanceKey createEmployeeCompositeKey(Long employeeId, Long attendanceId) {
+        EmployeeAttendanceKey compositeKey = new EmployeeAttendanceKey(employeeId, attendanceId);
         return compositeKey;
     }
 
@@ -52,6 +65,31 @@ public class AttendanceRequestMapper {
         return attendanceRepository.save(attendance);
     }
 
+    public EmployeeAttendance dtoToEntity(UserAttendanceRequestDTO dto, EmployeeAttendanceRequestDTO employeeAttendanceRequestDTO) {
+        if (dto == null) {
+            return null;
+        }
+        EmployeeAttendance employeeAttendance = new EmployeeAttendance();
+        employeeService
+                .findById(dto.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(dto.getUserId()))
+                .setEmployeeAttendances(employeeAttendance);
+        Attendance attendance = saveAttendance(employeeAttendanceRequestDTO.getAttendanceDate(), dto.getStatus()
+                , userService.findById(employeeAttendanceRequestDTO.getSupervisorId()));
+        attendance.setEmployeeAttendance(employeeAttendance);
+
+        EmployeeAttendanceKey compositeKey = createEmployeeCompositeKey(dto.getUserId(), attendance.getId());
+
+        employeeAttendance.setEmployeeAttendanceKey(compositeKey);
+
+        if (employeeAttendanceRequestDTO.getDepartmentId() != null) {
+            instituteDepartmentRepository.findById(employeeAttendanceRequestDTO.getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Department not found with id: " + employeeAttendanceRequestDTO.getDepartmentId()))
+                    .setEmployeeAttendances(employeeAttendance);
+
+        }
+        return employeeAttendance;
+    }
     public StudentAttendance dtoToEntity(UserAttendanceRequestDTO dto, StudentAttendanceRequestDTO studentAttendanceRequestDTO) {
         if (dto == null) {
             return null;
@@ -65,7 +103,7 @@ public class AttendanceRequestMapper {
 
         attendance.setStudentAttendance(studentAttendance);
 
-        StudentAttendanceKey compositeKey = createCompositeKey(dto.getUserId(), attendance.getId());
+        StudentAttendanceKey compositeKey = createStudentCompositeKey(dto.getUserId(), attendance.getId());
 
         studentAttendance.setStudentAttendanceKey(compositeKey);
 
@@ -87,5 +125,15 @@ public class AttendanceRequestMapper {
             return null;
         }
         return dto.getAttendanceData().stream().map(studentDto -> dtoToEntity(studentDto, dto)).collect(Collectors.toList());
+    }
+
+    public List<EmployeeAttendance> dtoToEntity(EmployeeAttendanceRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        return dto.getAttendanceData()
+                .stream()
+                .map(employeeDTO -> dtoToEntity(employeeDTO, dto))
+                .collect(Collectors.toList());
     }
 }

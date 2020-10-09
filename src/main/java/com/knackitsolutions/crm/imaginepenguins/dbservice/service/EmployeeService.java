@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +45,6 @@ public class EmployeeService {
                 .orElseThrow(() -> new EmployeeNotFoundException(id)));
     }
 
-
     public List<EmployeeAttendance> getEmployeeAttendancesByEmployeeId(Long employeeId, Optional<Date> startDate, Optional<Date> endDate) {
         if (startDate.isPresent() && endDate.isPresent()) {
             return attendanceRepository.findByEmployeeAttendanceKeyEmployeeIdAndAttendanceAttendanceDateBetween(employeeId, startDate.get(), endDate.get());
@@ -61,5 +61,15 @@ public class EmployeeService {
     public Optional<EmployeeAttendance> saveAttendance(EmployeeAttendance employeeAttendance) {
         return Optional.ofNullable(attendanceRepository.save(employeeAttendance));
 
+    }
+
+    public List<EmployeeAttendance> saveAttendance(List<EmployeeAttendance> employeeAttendances) {
+        return attendanceRepository.saveAll(employeeAttendances);
+
+    }
+
+    public List<EmployeeAttendance> getEmployeeAttendancesByDepartmentId(Long departmentId
+            , Optional<Date> startDate, Optional<Date> endDate) {
+        return attendanceRepository.findByEmployeeUserDepartmentsInstituteDepartmentId(departmentId);
     }
 }

@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Objects;
@@ -26,6 +28,9 @@ public class InstituteDepartment {
 
     @OneToMany(mappedBy = "instituteDepartment")
     private Set<UserDepartment> userDepartments = new HashSet<>();
+
+    @OneToMany(mappedBy = "instituteDepartment")
+    private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
 
     public InstituteDepartment() {
     }
@@ -56,6 +61,19 @@ public class InstituteDepartment {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Set<EmployeeAttendance> getEmployeeAttendances() {
+        return employeeAttendances;
+    }
+
+    public void setEmployeeAttendances(Set<EmployeeAttendance> employeeAttendances) {
+        employeeAttendances.forEach(this::setEmployeeAttendances);
+    }
+
+    public void setEmployeeAttendances(EmployeeAttendance employeeAttendance) {
+        this.employeeAttendances.add(employeeAttendance);
+        employeeAttendance.setInstituteDepartment(this);
     }
 
     public String getDepartmentName() {
