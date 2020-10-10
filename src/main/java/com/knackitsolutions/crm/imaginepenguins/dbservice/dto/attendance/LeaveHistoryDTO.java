@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
+import java.util.Objects;
 
 public class LeaveHistoryDTO extends RepresentationModel<LeaveHistoryDTO> {
 
@@ -27,7 +28,7 @@ public class LeaveHistoryDTO extends RepresentationModel<LeaveHistoryDTO> {
 
     public static class GraphData {
         private String month;
-        private Long leaveCount;
+        private Integer leaveCount;
 
         public String getMonth() {
             return month;
@@ -37,12 +38,41 @@ public class LeaveHistoryDTO extends RepresentationModel<LeaveHistoryDTO> {
             this.month = month;
         }
 
-        public Long getLeaveCount() {
+        public Integer getLeaveCount() {
             return leaveCount;
         }
 
-        public void setLeaveCount(Long leaveCount) {
+        public void setLeaveCount(Integer leaveCount) {
             this.leaveCount = leaveCount;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof GraphData)) return false;
+            GraphData graphData = (GraphData) o;
+            return getMonth().equals(graphData.getMonth());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getMonth(), getLeaveCount());
+        }
+
+        @Override
+        public String toString() {
+            return "GraphData{" +
+                    "month='" + month + '\'' +
+                    ", leaveCount=" + leaveCount +
+                    '}';
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "LeaveHistoryDTO{" +
+                "leaveResponseDTO=" + leaveResponseDTO +
+                ", graphData=" + graphData +
+                '}';
     }
 }

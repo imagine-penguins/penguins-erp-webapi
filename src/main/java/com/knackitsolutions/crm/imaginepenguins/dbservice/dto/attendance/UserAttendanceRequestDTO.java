@@ -30,4 +30,12 @@ public class UserAttendanceRequestDTO {
     public void setStatus(AttendanceStatus status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "UserAttendanceRequestDTO{" +
+                "userId=" + userId +
+                ", status=" + status +
+                '}';
+    }
 }

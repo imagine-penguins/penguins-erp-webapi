@@ -15,6 +15,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeServic
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import java.time.*;
 import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @RestController
@@ -61,7 +63,8 @@ public class AttendanceController {
 
     @PostMapping("/students")
     public ResponseEntity<String> studentAttendance(@RequestBody StudentAttendanceRequestDTO dtoList) {
-        log.debug("Saving Student Attendance");
+        log.debug("Saving Student Attendance: {}", dtoList);
+
         studentService.saveAttendance(mapper.dtoToEntity(dtoList));
         log.debug("Student Attendance Saved");
         return ResponseEntity
@@ -105,7 +108,7 @@ public class AttendanceController {
         return Optional.ofNullable(date);
     }
 
-    @GetMapping(value = {""})
+    @GetMapping()
     public AttendanceHistoryDTO userAttendanceHistory(@RequestParam(name = "classId") Optional<Long> classId
             , @RequestParam(name = "departmentId") Optional<Long> departmentId
             , @RequestParam(name = "studentId") Optional<Long> userId
@@ -133,7 +136,7 @@ public class AttendanceController {
                         , period
                                 .map(p -> periodDateValue(p, value, false))
                                 .orElse(Optional.empty())
-                ))).orElse(null);
+                ))).orElse(new ArrayList<>());
 
         employeeAttendances = departmentId.map(did -> userId.map(
                 uid -> employeeService.getEmployeeAttendancesByEmployeeId(uid
@@ -151,7 +154,7 @@ public class AttendanceController {
                         , period
                                 .map(p -> periodDateValue(p, value, false))
                                 .orElse(Optional.empty()))
-        )).orElse(null);
+        )).orElse(new ArrayList<>());
 
         studentAttendances.forEach(studentAttendance -> log.debug("Student Attendance: {}", studentAttendance));
         employeeAttendances.forEach(employeeAttendance -> log.debug("Student Attendance: {}", employeeAttendance));
@@ -269,26 +272,132 @@ public class AttendanceController {
     public LeaveHistoryDTO leaveRequestHistory(@RequestParam(name = "class") Optional<Long> classId
             , @RequestParam(name = "department") Optional<Long> departmentId
             , @RequestParam(name = "user") Optional<Long> userId) {
+
+        log.info("Leave Request History");
+        log.info("class: {}, department: {}, user: {}", classId, departmentId, userId);
         LeaveHistoryDTO historyDTO = new LeaveHistoryDTO();
 
         List<Student> students = classId
-                .map(id -> studentService.loadStudentWithClassSectionId(id)).orElse(null);
+                .map(id -> studentService.loadStudentWithClassSectionId(id)).orElse(new ArrayList<>());
 
         List<User> users = departmentId
-                .map(id -> userService.findByDepartmentId(id)).orElse(null);
+                .map(id -> userService.findByDepartmentId(id)).orElse(new ArrayList<>());
 
+        User user = userId.map(userService::findById).orElse(null);
 
-        if (users == null) {
-            if (students != null)
-                users = students.stream().map(student -> (User)student).collect(Collectors.toList());
-            else
-                users = Collections.EMPTY_LIST;
+        log.info("User: {}", user);
+        if (!students.isEmpty()) {
+            users = students.stream().map(student -> (User) student).collect(Collectors.toList());
+        }
+        if (user != null) {
+            users.add(user);
         }
 
         historyDTO.setLeaveResponseDTO(leaveRequestMapper.leaveResponseDTOFromUser(users));
+        List<LeaveHistoryDTO.GraphData> graphData = new ArrayList<>();
+        users
+                .stream()
+                .map(this::getMonthlyLeaveCountForUser)
+                .map(this::convertMapsToGraphData)
+                .forEach(list -> updateGraphDataList(list, graphData));
+        historyDTO.setGraphData(graphData);
 
         return historyDTO;
 
+    }
+
+    private void updateGraphDataList(List<LeaveHistoryDTO.GraphData> graphDataList, List<LeaveHistoryDTO.GraphData> graphData) {
+        log.info("Creating list of graph data");
+        for (LeaveHistoryDTO.GraphData graphData1 : graphDataList) {
+            log.debug("Graph Data 1: {}", graphData1);
+            LeaveHistoryDTO.GraphData graphData2 = null;
+            if (!graphData.contains(graphData1)) {
+                graphData2 = new LeaveHistoryDTO.GraphData();
+            }else{
+                graphData2 = graphData
+                        .stream()
+                        .filter(g -> graphData1.equals(g))
+                        .findFirst().orElseThrow(() -> new RuntimeException("Month name is invalid: {}" + graphData1.getMonth()));
+            }
+            graphData2.setMonth(graphData1.getMonth());
+            graphData2.setLeaveCount(graphData1.getLeaveCount());
+            log.debug("Graph Data 2: {}", graphData2);
+            graphData.add(graphData2);
+        }
+    }
+
+    private List<LeaveHistoryDTO.GraphData> convertMapsToGraphData(List<Map<Month, Integer>> listOfMonthlyCountMaps){
+        log.info("Starting convertMapsToGraphData method.");
+        Map<Month, Integer> singleMap = new HashMap<>();
+
+        for (Map<Month, Integer> map : listOfMonthlyCountMaps) {
+            map.keySet().stream().forEach(key -> {
+                if (!singleMap.containsKey(key))
+                    singleMap.put(key, map.get(key));
+                else
+                    singleMap.put(key, map.get(key) + 1);
+            });
+        }
+
+        return singleMap
+                .entrySet()
+                .stream()
+                .map(this::getGraphDataFromMapEntry)
+                .collect(Collectors.toList());
+    }
+
+    private LeaveHistoryDTO.GraphData getGraphDataFromMapEntry(Map.Entry<Month, Integer> monthlyCount) {
+        log.info("Starting getGraphDataFromMapEntry method.");
+        LeaveHistoryDTO.GraphData gData = new LeaveHistoryDTO.GraphData();
+        gData.setMonth(monthlyCount.getKey().toString());
+        gData.setLeaveCount(monthlyCount.getValue());
+        log.info("Graph Data: {}", gData);
+        return gData;
+    }
+
+    private List<Map<Month, Integer>> getMonthlyLeaveCountForUser(User user){
+        log.info("Starting getMonthlyLeaveCountForUser method.");
+        List<LeaveRequest> leaveRequests = user.getLeaveRequests();
+
+        return
+                leaveRequests
+                    .stream()
+                    .map(this::getLeavesDates)
+                    .map(this::getMonthlyLeaveCount)
+                    .collect(Collectors.toList());
+
+    }
+
+    private Map<Month, Integer> getMonthlyLeaveCount(List<Date> dates) {
+        log.info("Starting getMonthlyLeaveCount method.");
+        Map<Month, Integer> monthlyCount = new HashMap<>();
+        dates.stream().forEach(date -> {
+            Month month = date.toInstant().atZone(ZoneId.systemDefault()).getMonth();
+            Integer count = 0;
+            if (monthlyCount.containsKey(month))
+                count = monthlyCount.get(month);
+            monthlyCount.put(month, count + 1);
+        });
+        monthlyCount.entrySet()
+                .stream()
+                .forEach(entry -> log.info("monthly count key: {}, value:{}", entry.getKey(), entry.getValue()));
+        return monthlyCount;
+    }
+
+    private List<Date> getLeavesDates(LeaveRequest leaveRequest) {
+        log.info("Starting getLeavesDates method.");
+        List<Date> dates = new ArrayList<>();
+        Date startDate = leaveRequest.getStartDate();
+        while (!leaveRequest.getEndDate().before(startDate)) {
+            log.info("next start date: {}", startDate);
+            dates.add(startDate);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(startDate);
+            calendar.add(Calendar.DATE, 1);
+            startDate = calendar.getTime();
+
+        }
+        return dates;
     }
 
     public enum Period {

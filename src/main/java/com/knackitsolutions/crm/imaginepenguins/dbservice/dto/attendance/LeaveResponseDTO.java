@@ -106,4 +106,20 @@ public class LeaveResponseDTO {
     public void setId(Long id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "LeaveResponseDTO{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", approverId=" + approverId +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", leaveType=" + leaveType +
+                ", leaveReason='" + leaveReason + '\'' +
+                ", status=" + status +
+                ", rejectedReason='" + rejectedReason + '\'' +
+                ", approvedByUserId=" + approvedByUserId +
+                '}';
+    }
 }

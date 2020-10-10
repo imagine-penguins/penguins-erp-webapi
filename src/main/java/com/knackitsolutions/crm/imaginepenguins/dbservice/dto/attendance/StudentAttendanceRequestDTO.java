@@ -65,4 +65,15 @@ public class StudentAttendanceRequestDTO {
     public void setClassSectionId(Long classSectionId) {
         this.classSectionId = classSectionId;
     }
+
+    @Override
+    public String toString() {
+        return "StudentAttendanceRequestDTO{" +
+                "subjectClassID=" + subjectClassID +
+                ", supervisorId=" + supervisorId +
+                ", attendanceDate=" + attendanceDate +
+                ", attendanceData=" + attendanceData +
+                ", classSectionId=" + classSectionId +
+                '}';
+    }
 }

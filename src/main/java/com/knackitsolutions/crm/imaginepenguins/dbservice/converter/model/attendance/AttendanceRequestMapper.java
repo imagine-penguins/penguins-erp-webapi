@@ -96,7 +96,9 @@ public class AttendanceRequestMapper {
         }
         StudentAttendance studentAttendance = new StudentAttendance();
 
-        studentService.one(dto.getUserId()).setStudentAttendances(studentAttendance);
+        studentService
+                .one(dto.getUserId())
+                .setStudentAttendances(studentAttendance);
 
         Attendance attendance = saveAttendance(studentAttendanceRequestDTO.getAttendanceDate(), dto.getStatus()
                 , userService.findById(studentAttendanceRequestDTO.getSupervisorId()));

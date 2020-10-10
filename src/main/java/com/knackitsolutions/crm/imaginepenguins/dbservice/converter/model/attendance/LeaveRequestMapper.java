@@ -7,6 +7,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class LeaveRequestMapper {
 
     @Autowired
@@ -56,7 +58,10 @@ public class LeaveRequestMapper {
         LeaveResponseDTO dto = new LeaveResponseDTO();
         dto.setUserId(entity.getUser().getId());
         dto.setId(entity.getId());
-        dto.setApprovedByUserId(entity.getApprovedBy().getId());
+
+        if (entity.getApprovedBy() != null)
+            dto.setApprovedByUserId(entity.getApprovedBy().getId());
+
         dto.setApproverId(entity.getApprover().getId());
         dto.setEndDate(entity.getEndDate());
         dto.setStartDate(entity.getStartDate());
@@ -79,6 +84,7 @@ public class LeaveRequestMapper {
     }
 
     public List<LeaveResponseDTO> leaveResponseDTOFromUser(List<User> users) {
+
         List<LeaveResponseDTO> dtos = new ArrayList<>();
         users
                 .stream()
@@ -86,7 +92,7 @@ public class LeaveRequestMapper {
                         .stream()
                         .map(this::entityToDTO).collect(Collectors.toList()))
                 .forEach(dtos::addAll);
-
+        dtos.forEach(System.out::println);
         return dtos;
 
     }
