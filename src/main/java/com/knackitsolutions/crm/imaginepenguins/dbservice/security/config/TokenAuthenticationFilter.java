@@ -1,11 +1,14 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.security.config;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -21,6 +24,7 @@ public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingF
     private static final Logger log = LoggerFactory.getLogger(TokenAuthenticationFilter.class);
 
     private static final String BEARER = "Bearer";
+    private static final String HEADER = "Authorization";
 
     TokenAuthenticationFilter(final RequestMatcher requestMatcher) {
         super(requestMatcher);
@@ -33,14 +37,14 @@ public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingF
         String endPoint = request.getRequestURL().toString();
 
         log.debug("Request URL: {}", endPoint);
-        final String param = Optional.ofNullable(request.getHeader("Authorization"))
+        final String param = Optional.ofNullable(request.getHeader(HEADER))
                 .orElse(request.getParameter("token"));
 
         final String token = Optional.ofNullable(param)
                 .map(value -> removeFromStartAndTrim(value, BEARER))
                 .orElseThrow(() -> new BadCredentialsException("Missing Authentication Token."));
 
-        final Authentication authRequest = new UsernamePasswordAuthenticationToken(endPoint, token);
+        final Authentication authRequest = new UsernamePasswordAuthenticationToken(null, token, null);
 
         return getAuthenticationManager().authenticate(authRequest);
     }
@@ -54,6 +58,7 @@ public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingF
     protected void successfulAuthentication(final HttpServletRequest request
             , final HttpServletResponse response
             , final FilterChain chain, final Authentication authResult) throws IOException, ServletException {
+        log.debug("Successfully Authenticated...");
         super.successfulAuthentication(request, response, chain, authResult);
         chain.doFilter(request, response);
     }

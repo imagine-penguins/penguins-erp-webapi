@@ -3,10 +3,11 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveType;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.util.Date;
 
-public class LeaveResponseDTO {
+public class LeaveResponseDTO extends RepresentationModel<LeaveResponseDTO> {
 
     private Long id;
     private Long userId;

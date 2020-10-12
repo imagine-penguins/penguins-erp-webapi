@@ -1,21 +1,26 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.LeaveRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.EmployeeFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.StudentFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.AttendanceRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +34,6 @@ import java.time.*;
 import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @RestController
@@ -61,25 +65,40 @@ public class AttendanceController {
     @Autowired
     LeaveRequestMapper leaveRequestMapper;
 
-    @PostMapping("/students")
-    public ResponseEntity<String> studentAttendance(@RequestBody StudentAttendanceRequestDTO dtoList) {
-        log.debug("Saving Student Attendance: {}", dtoList);
+    @Autowired
+    LeaveRequestRepository leaveRequestRepository;
 
-        studentService.saveAttendance(mapper.dtoToEntity(dtoList));
-        log.debug("Student Attendance Saved");
+    @Autowired
+    AttendanceResponseMapper attendanceResponseMapper;
+
+    @Autowired
+    IAuthenticationFacade authenticationFacade;
+
+    @PostMapping
+    public ResponseEntity<String> userAttendance(@RequestBody AttendanceRequestDTO dto
+            , @RequestParam("class") Optional<Long> classId, @RequestParam("department") Optional<Long> departmentId
+            , @RequestParam("subject") Optional<Long> subjectId) {
+        log.debug("Saving Attendance");
+        if ( !(classId.isPresent() || subjectId.isPresent() || departmentId.isPresent()) ) {
+            throw new RuntimeException("One of the class or subject or department must be present in the optional parameter of the request.");
+        }
+        else if( classId.isPresent() && subjectId.isPresent() && departmentId.isPresent() ){
+            throw new RuntimeException("Only one of the class or subject or department should be present in the optional parameter of the request.");
+        }
+
+        if (classId.isPresent() || subjectId.isPresent()) {
+            log.debug("Saving Student Attendance");
+            studentService.saveAttendance(mapper.dtoToEntity(dto, classId, subjectId));
+        } else if (departmentId.isPresent()) {
+            log.debug("Saving employee Attendance");
+            employeeService.saveAttendance(mapper.dtoToEntity(dto, departmentId));
+        }
+
+        log.debug("Attendance Saved.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body("Attendance Saved");
-    }
 
-    @PostMapping("/employee")
-    public ResponseEntity<String> employeeAttendance(@RequestBody EmployeeAttendanceRequestDTO dtoList) {
-        log.debug("Saving Student Attendance");
-        employeeService.saveAttendance(mapper.dtoToEntity(dtoList));
-        log.debug("Student Attendance Saved");
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body("Attendance Saved");
     }
 
     private Integer getCount(List<UserAttendanceResponseDTO> users, AttendanceStatus status) {
@@ -108,13 +127,14 @@ public class AttendanceController {
         return Optional.ofNullable(date);
     }
 
-    @GetMapping()
+    @GetMapping
     public AttendanceHistoryDTO userAttendanceHistory(@RequestParam(name = "classId") Optional<Long> classId
             , @RequestParam(name = "departmentId") Optional<Long> departmentId
             , @RequestParam(name = "studentId") Optional<Long> userId
             , @RequestParam(name = "period") Optional<Period> period
             , @RequestParam(name = "value") Optional<String> value) {
-        log.debug("Attendance History for departmentId: {}, classID: {}, period: {}, value: {}, studentId: {}", departmentId, classId, period, value, userId);
+        log.debug("Attendance History for departmentId: {}, classID: {}, period: {}, value: {}, studentId: {}"
+                , departmentId, classId, period, value, userId);
 
         List<StudentAttendance> studentAttendances = null;
         List<EmployeeAttendance> employeeAttendances = null;
@@ -159,42 +179,55 @@ public class AttendanceController {
         studentAttendances.forEach(studentAttendance -> log.debug("Student Attendance: {}", studentAttendance));
         employeeAttendances.forEach(employeeAttendance -> log.debug("Student Attendance: {}", employeeAttendance));
 
+        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        List<PrivilegeCode> privilegeCodes = user.getUserPrivileges()
+                        .stream()
+                        .map(userPrivilege -> userPrivilege.getDepartmentPrivilege().getPrivilege().getPrivilegeCode())
+                        .collect(Collectors.toList());
+
         log.debug("Preparing students information.");
         List<StudentAttendanceResponseDTO> students = studentAttendances.stream()
-                .map(studentFacade::mapStudentAttendanceToStudent)
+                .map(attendanceResponseMapper::mapStudentAttendanceToStudent)
                 .map(student -> {
                     student.add(linkTo(methodOn(StudentController.class)
                             .one(student.getUserId())).withRel("profile"));
                     student.add(linkTo(methodOn(AttendanceController.class)
                             .userAttendanceHistory(classId, departmentId, Optional.ofNullable(student.getUserId())
                                     , period, value)).withRel("view-self-attendance"));
-                    return (StudentAttendanceResponseDTO)student.add(linkTo(methodOn(AttendanceController.class)
-                            .updateStudentAttendance(student.getAttendanceId().get()
-                                    , student.getUserId(), null))
-                            .withRel("update-attendance")
-                    );
+                    if (privilegeCodes.contains(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY)) {
+                        student.add(linkTo(methodOn(AttendanceController.class)
+                                .updateStudentAttendance(student.getAttendanceId().get()
+                                        , student.getUserId(), null))
+                                .withRel(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode()));
+                    }
+                    return student;
                 })
                 .collect(Collectors.toList());
 
-        List<UserAttendanceResponseDTO> users = employeeAttendances.stream()
-                .map(employeeAttendance -> employeeFacade.mapEmployeeAttendanceToEmployee(employeeAttendance))
+
+        List<EmployeeAttendanceResponseDTO> employees = employeeAttendances.stream()
+                .map(employeeAttendance -> attendanceResponseMapper.mapEmployeeAttendanceToEmployee(employeeAttendance))
                 .map(employee -> {
-                    employee.add(linkTo(methodOn(AttendanceController.class)
-                            .userAttendanceHistory(classId, departmentId, Optional.ofNullable(employee.getUserId())
-                                    , period, value)).withRel("self-attendance"));
                     employee.add(linkTo(methodOn(EmployeeController.class).one(employee.getUserId())).withRel("profile"));
-                    return (UserAttendanceResponseDTO) employee.add(linkTo(methodOn(AttendanceController.class)
-                            .updateAttendance(employee.getAttendanceId().get(), employee.getUserId()
-                                    , null)).withRel("update-attendance"));
+                    if (privilegeCodes.contains(PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY)){
+                        employee.add(linkTo(methodOn(AttendanceController.class)
+                                .updateAttendance(employee.getAttendanceId().get(), employee.getUserId()
+                                        , null)).withRel("update-attendance"));
+                    }
+                    return employee;
                 })
                 .collect(Collectors.toList());
 
         log.debug("Preparing graph data.");
 
         AttendanceHistoryDTO.GraphData graphData = new AttendanceHistoryDTO.GraphData();
+        List<UserAttendanceResponseDTO> users = null;
 
         if ( students != null && !students.isEmpty())
-            users = students.stream().map(student -> (UserAttendanceResponseDTO) student).collect(Collectors.toList());
+            users = (List<UserAttendanceResponseDTO>) (List<?>) students;
+        else if( employees != null && !employees.isEmpty() ){
+            users = (List<UserAttendanceResponseDTO>) (List<?>) employees;
+        }
 
         graphData.setLeavePercent(getCount(users, AttendanceStatus.LEAVE));
         graphData.setPresentPercent(getCount(users, AttendanceStatus.PRESENT));
@@ -204,9 +237,14 @@ public class AttendanceController {
         if ( students != null || !students.isEmpty())
             dto.setStudents(students);
         if (users != null && !users.isEmpty())
-            dto.setUsers(users);
+            dto.setEmployees(employees);
         dto.setGraphData(graphData);
         log.debug("Attendance History Request Completed");
+        dto.add(
+            linkTo(methodOn(AttendanceController.class)
+                    .userAttendanceHistory(classId, departmentId, userId, period, value))
+                    .withRel("view-attendance-history")
+        );
         return dto;
     }
 
@@ -268,6 +306,25 @@ public class AttendanceController {
         return updateEmployeeAttendance(attendanceId, userId, userAttendanceUpdateRequestDTO);
     }
 
+    @PutMapping("/leave-request/{leaveRequestId}/status/{status}")
+    public ResponseEntity<String> updateLeaveRequestStatus(@PathVariable("leaveRequestId") Long leaveRequestId
+            , @PathVariable("status") LeaveRequestStatus status
+            , @RequestParam("reason") Optional<String> reason) {
+        LeaveRequest oldLeaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new RuntimeException("Leave Request Not Found With the provided Id"));
+        if (status == LeaveRequestStatus.REJECTED) {
+            oldLeaveRequest
+                    .setRejectedReason(
+                            reason.orElseThrow(() -> new RuntimeException("For rejected request reason is required.")));
+        }
+        oldLeaveRequest.setLeaveRequestStatus(status);
+
+        leaveRequestRepository.save(oldLeaveRequest);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Status Updated.");
+
+    }
+
     @GetMapping("/leave-request")
     public LeaveHistoryDTO leaveRequestHistory(@RequestParam(name = "class") Optional<Long> classId
             , @RequestParam(name = "department") Optional<Long> departmentId
@@ -293,111 +350,34 @@ public class AttendanceController {
             users.add(user);
         }
 
-        historyDTO.setLeaveResponseDTO(leaveRequestMapper.leaveResponseDTOFromUser(users));
-        List<LeaveHistoryDTO.GraphData> graphData = new ArrayList<>();
+        historyDTO.setLeaveResponseDTO(
+                leaveRequestMapper
+                        .leaveResponseDTOFromUser(users)
+                        .stream()
+                        .map(leaveResponseDTO -> leaveResponseDTO.add(
+                                linkTo(methodOn(AttendanceController.class)
+                                        .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
+                                .withRel("update-leave-request-status")))
+                        .collect(Collectors.toList())
+        );
+
+        List<Date> allLeavesDates = new ArrayList<>();
         users
                 .stream()
-                .map(this::getMonthlyLeaveCountForUser)
-                .map(this::convertMapsToGraphData)
-                .forEach(list -> updateGraphDataList(list, graphData));
+                .map(leaveRequestMapper::getUserLeavesDates)
+                .forEach(allLeavesDates::addAll);
+
+        List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
+                .getMonthlyLeaveCount(allLeavesDates)
+                .entrySet()
+                .stream()
+                .map(leaveRequestMapper::getGraphDataFromMapEntry)
+                .collect(Collectors.toList());
+
         historyDTO.setGraphData(graphData);
 
         return historyDTO;
 
-    }
-
-    private void updateGraphDataList(List<LeaveHistoryDTO.GraphData> graphDataList, List<LeaveHistoryDTO.GraphData> graphData) {
-        log.info("Creating list of graph data");
-        for (LeaveHistoryDTO.GraphData graphData1 : graphDataList) {
-            log.debug("Graph Data 1: {}", graphData1);
-            LeaveHistoryDTO.GraphData graphData2 = null;
-            if (!graphData.contains(graphData1)) {
-                graphData2 = new LeaveHistoryDTO.GraphData();
-            }else{
-                graphData2 = graphData
-                        .stream()
-                        .filter(g -> graphData1.equals(g))
-                        .findFirst().orElseThrow(() -> new RuntimeException("Month name is invalid: {}" + graphData1.getMonth()));
-            }
-            graphData2.setMonth(graphData1.getMonth());
-            graphData2.setLeaveCount(graphData1.getLeaveCount());
-            log.debug("Graph Data 2: {}", graphData2);
-            graphData.add(graphData2);
-        }
-    }
-
-    private List<LeaveHistoryDTO.GraphData> convertMapsToGraphData(List<Map<Month, Integer>> listOfMonthlyCountMaps){
-        log.info("Starting convertMapsToGraphData method.");
-        Map<Month, Integer> singleMap = new HashMap<>();
-
-        for (Map<Month, Integer> map : listOfMonthlyCountMaps) {
-            map.keySet().stream().forEach(key -> {
-                if (!singleMap.containsKey(key))
-                    singleMap.put(key, map.get(key));
-                else
-                    singleMap.put(key, map.get(key) + 1);
-            });
-        }
-
-        return singleMap
-                .entrySet()
-                .stream()
-                .map(this::getGraphDataFromMapEntry)
-                .collect(Collectors.toList());
-    }
-
-    private LeaveHistoryDTO.GraphData getGraphDataFromMapEntry(Map.Entry<Month, Integer> monthlyCount) {
-        log.info("Starting getGraphDataFromMapEntry method.");
-        LeaveHistoryDTO.GraphData gData = new LeaveHistoryDTO.GraphData();
-        gData.setMonth(monthlyCount.getKey().toString());
-        gData.setLeaveCount(monthlyCount.getValue());
-        log.info("Graph Data: {}", gData);
-        return gData;
-    }
-
-    private List<Map<Month, Integer>> getMonthlyLeaveCountForUser(User user){
-        log.info("Starting getMonthlyLeaveCountForUser method.");
-        List<LeaveRequest> leaveRequests = user.getLeaveRequests();
-
-        return
-                leaveRequests
-                    .stream()
-                    .map(this::getLeavesDates)
-                    .map(this::getMonthlyLeaveCount)
-                    .collect(Collectors.toList());
-
-    }
-
-    private Map<Month, Integer> getMonthlyLeaveCount(List<Date> dates) {
-        log.info("Starting getMonthlyLeaveCount method.");
-        Map<Month, Integer> monthlyCount = new HashMap<>();
-        dates.stream().forEach(date -> {
-            Month month = date.toInstant().atZone(ZoneId.systemDefault()).getMonth();
-            Integer count = 0;
-            if (monthlyCount.containsKey(month))
-                count = monthlyCount.get(month);
-            monthlyCount.put(month, count + 1);
-        });
-        monthlyCount.entrySet()
-                .stream()
-                .forEach(entry -> log.info("monthly count key: {}, value:{}", entry.getKey(), entry.getValue()));
-        return monthlyCount;
-    }
-
-    private List<Date> getLeavesDates(LeaveRequest leaveRequest) {
-        log.info("Starting getLeavesDates method.");
-        List<Date> dates = new ArrayList<>();
-        Date startDate = leaveRequest.getStartDate();
-        while (!leaveRequest.getEndDate().before(startDate)) {
-            log.info("next start date: {}", startDate);
-            dates.add(startDate);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(startDate);
-            calendar.add(Calendar.DATE, 1);
-            startDate = calendar.getTime();
-
-        }
-        return dates;
     }
 
     public enum Period {

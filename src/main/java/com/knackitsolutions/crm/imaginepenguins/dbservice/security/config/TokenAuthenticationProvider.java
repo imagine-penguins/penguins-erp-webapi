@@ -7,9 +7,12 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -26,6 +29,8 @@ public class TokenAuthenticationProvider extends AbstractUserDetailsAuthenticati
         this.authenticationService = authenticationService;
     }
 
+
+
     @Override
     protected void additionalAuthenticationChecks(final UserDetails userDetails, final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
 
@@ -33,25 +38,25 @@ public class TokenAuthenticationProvider extends AbstractUserDetailsAuthenticati
     }
 
     @Override
-    protected UserDetails retrieveUser(final String username, final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+    protected UserDetails retrieveUser(final String username
+            , final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
 
-        final Object endPoint = authentication.getPrincipal();
         final Object token = authentication.getCredentials();
-
-        log.debug("endPoint: {}", String.valueOf(endPoint));
 
         log.debug("token: {}",
                 Optional
                         .ofNullable(token)
                         .map(String::valueOf)
-                        .get()
+                        .orElse(null)
         );
-
-        return Optional
+        UserDetails userDetails = Optional
                 .ofNullable(token)
                 .map(String::valueOf)
                 .flatMap(authenticationService::findByToken)
                 .orElseThrow(() -> new UsernameNotFoundException("Cannot find user with authentication token: " + token));
+
+        return userDetails;
+
     }
 
     private void validatePrivileges(String username, String endPoint) throws AuthenticationCredentialsNotFoundException{

@@ -28,17 +28,5 @@ public class StudentFacade {
         return studentResponseMapper.toDTO(service.all());
     }
 
-    public StudentAttendanceResponseDTO mapStudentAttendanceToStudent(StudentAttendance studentAttendance) {
 
-
-        StudentAttendanceResponseDTO dto = new StudentAttendanceResponseDTO();
-        dto.setAttendanceId(Optional.ofNullable(studentAttendance.getStudentAttendanceKey().getAttendanceId()));
-        dto.setUserId(studentAttendance.getStudentAttendanceKey().getStudentId());
-        dto.setStatus(Optional.ofNullable(studentAttendance.getAttendance().getAttendanceStatus()));
-        dto.setRollNumber(studentAttendance.getStudent().getRollNumber());
-        dto.setFirstName(studentAttendance.getStudent().getUserProfile().getFirstName());
-        dto.setLastName(studentAttendance.getStudent().getUserProfile().getLastName());
-        dto.setAttendanceDate(studentAttendance.getAttendance().getAttendanceDate());
-        return dto;
-    }
 }

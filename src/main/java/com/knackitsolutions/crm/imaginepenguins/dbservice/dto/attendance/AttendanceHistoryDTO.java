@@ -7,15 +7,15 @@ import java.util.List;
 public class AttendanceHistoryDTO extends RepresentationModel<AttendanceHistoryDTO> {
 
     private List<StudentAttendanceResponseDTO> students;
-    private List<UserAttendanceResponseDTO> users;
+    private List<EmployeeAttendanceResponseDTO> employees;
     private GraphData graphData;
 
-    public List<UserAttendanceResponseDTO> getUsers() {
-        return users;
+    public List<EmployeeAttendanceResponseDTO> getEmployees() {
+        return employees;
     }
 
-    public void setUsers(List<UserAttendanceResponseDTO> users) {
-        this.users = users;
+    public void setEmployees(List<EmployeeAttendanceResponseDTO> employees) {
+        this.employees = employees;
     }
 
     public List<StudentAttendanceResponseDTO> getStudents() {

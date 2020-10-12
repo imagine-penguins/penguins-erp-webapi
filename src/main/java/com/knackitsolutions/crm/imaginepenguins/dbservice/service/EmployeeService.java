@@ -72,4 +72,8 @@ public class EmployeeService {
             , Optional<Date> startDate, Optional<Date> endDate) {
         return attendanceRepository.findByEmployeeUserDepartmentsInstituteDepartmentId(departmentId);
     }
+
+    public List<Employee> getEmployeeByDepartmentId(Long departmentId) {
+        return employeeRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
+    }
 }

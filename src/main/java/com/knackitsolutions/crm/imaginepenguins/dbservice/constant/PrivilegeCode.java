@@ -24,69 +24,77 @@ public enum PrivilegeCode {
             return null;
         }
     },
-    VIEW_SELF_ATTENDANCE("VSATD"){
+    VIEW_SELF_ATTENDANCE("view-self-attendance"){
         @Override
         public List<Link> getLinks() {
-            return Arrays.asList(linkTo(methodOn(UserControllerImpl.class).viewAttendance(null, null, null))
+            return Arrays.asList(linkTo(methodOn(UserControllerImpl.class).viewAttendance( null, null))
                     .withRel("view-self-attendance"));
         }
 
     },
-    MARK_EMPLOYEE_ATTENDANCE("MEATD"){
+    MARK_EMPLOYEE_ATTENDANCE("mark-employee-attendance"){
         @Override
-        public List<Link> getLinks() {
-            return Arrays.asList(linkTo(methodOn(EmployeeController.class).one(null)).withRel("employee"));
+        public List<Link> getLinks(){
+            return Arrays.asList(linkTo(methodOn(EmployeeController.class).loadEmployeesByDepartment(null))
+                            .withRel("employees")
+                    , linkTo(methodOn(UserControllerImpl.class).loadDepartments()).withRel("load-departments")
+                );
         }
     },
-    MARK_STUDENT_ATTENDANCE("MSATD"){
+    MARK_STUDENT_ATTENDANCE("mark-student-attendance"){
         @Override
         public List<Link> getLinks() {
-            return Arrays.asList(linkTo(methodOn(TeacherController.class).classes(null)).withRel("load-classes")
-                    ,linkTo(methodOn(AttendanceController.class).studentAttendance(null)).withRel("save-attendance"));
+            return Arrays.asList(linkTo(methodOn(TeacherController.class).classes()).withRel("load-classes")
+                    ,linkTo(methodOn(AttendanceController.class)
+                            .userAttendance(null, null, null, null)).withRel("save-attendance"));
         }
 
     },
-    VIEW_STUDENTS_ATTENDANCE_HISTORY("VSATDH"){
+    VIEW_STUDENTS_ATTENDANCE_HISTORY("view-student-attendance-history"){
+        @Override
+        public List<Link> getLinks() {
+            return Arrays.asList();
+        }
+
+    },
+    EDIT_STUDENTS_ATTENDANCE_HISTORY("edit-student-attendance-history") {
+        @Override
+        public List<Link> getLinks() {
+            return Arrays.asList(
+                    linkTo(methodOn(AttendanceController.class)
+                        .userAttendanceHistory(null, null, null, null, null))
+                        .withRel(PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode()),
+                    linkTo(methodOn(AttendanceController.class)
+                        .updateAttendance(null, null, null))
+                        .withRel(this.getPrivilegeCode()));
+        }
+    },
+    EDIT_EMPLOYEE_ATTENDANCE_HISTORY("edit-employee-attendance-history") {
         @Override
         public List<Link> getLinks() {
             return Arrays.asList(linkTo(methodOn(AttendanceController.class)
                     .userAttendanceHistory(null, null, null, null, null))
-                    .withRel("view-attendance-history"));
-        }
-
-    },
-    EDIT_STUDENTS_ATTENDANCE_HISTORY("ESAH") {
-        @Override
-        public List<Link> getLinks() {
-            return Arrays.asList(linkTo(methodOn(AttendanceController.class)
-                    .updateAttendance(null, null, null))
-                    .withRel("edit-attendance-history"));
+                    .withRel("attendance-history"));
         }
     },
-    EDIT_EMPLOYEE_ATTENDANCE_HISTORY("EEAH") {
-        @Override
-        public List<Link> getLinks() {
-            return Arrays.asList(linkTo(methodOn(AttendanceController.class)
-                    .updateAttendance(null, null, null))
-                    .withRel("edit-attendance-history"));
-        }
-    },
-    APPLY_LEAVE_REQUEST("ALR"){
+    APPLY_LEAVE_REQUEST("apply-leave-request"){
         @Override
         public List<Link> getLinks() {
             return Arrays.asList(
                     linkTo(methodOn(UserControllerImpl.class).saveLeaveRequest(null))
-                            .withRel("leave-request"),
+                            .withRel(this.getPrivilegeCode()),
+                    linkTo(methodOn(UserControllerImpl.class).leaveRequestHistory())
+                            .withRel("view-leave-requests"),
                     linkTo(methodOn(UserControllerImpl.class).updateLeaveRequest(null, null))
                             .withRel("update-leave-request")
             );
         }
     },
-    UPDATE_LEAVE_REQUEST("ULR"){
+    UPDATE_LEAVE_REQUEST("update-leave-request"){
         @Override
         public List<Link> getLinks() {
             return Arrays.asList(
-                    linkTo(methodOn(UserControllerImpl.class).updateLeaveRequestStatus(null, null, null))
+                    linkTo(methodOn(AttendanceController.class).updateLeaveRequestStatus(null, null, null))
                             .withRel("update-leave-request-status"),
                     linkTo(methodOn(AttendanceController.class).leaveRequestHistory(null, null, null))
                             .withRel("view-leave-request-history")

@@ -369,6 +369,11 @@ public class LoadDatabase {
                 new InstituteDepartmentPrivilege(departments.get(1), privileges.get(6));
         departments.get(1).setPrivileges(instituteDepartmentPrivilege1);
         privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
+//
+//        InstituteDepartmentPrivilege instituteDepartmentPrivilege11 =
+//                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(6));
+//        departments.get(1).setPrivileges(instituteDepartmentPrivilege11);
+//        privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege11);
 
         //teacher department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege2 =
@@ -413,7 +418,8 @@ public class LoadDatabase {
         }).collect(Collectors.toList()));
 
         instituteDepartmentPrivileges.addAll(Stream.of(
-                  instituteDepartmentPrivilege2
+                instituteDepartmentPrivilege1
+                , instituteDepartmentPrivilege2
                 , instituteDepartmentPrivilege3
                 , instituteDepartmentPrivilege4
                 , instituteDepartmentPrivilege5

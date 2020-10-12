@@ -4,16 +4,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.LeaveRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveRequestDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveRequestUpdateDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
@@ -27,8 +29,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +40,8 @@ import java.util.stream.Stream;
 @RequestMapping(value = "/users")
 public class UserControllerImpl {
 
+    @Autowired
+    private IAuthenticationFacade authenticationFacade;
     private static final Logger log = LoggerFactory.getLogger(UserControllerImpl.class);
 
     @Autowired
@@ -62,17 +68,30 @@ public class UserControllerImpl {
     @Autowired
     LeaveRequestRepository leaveRequestRepository;
 
+    @Autowired
+    InstituteDepartmentRepository instituteDepartmentRepository;
+
+    @Autowired
+    InstituteMapper instituteMapper;
+
     @GetMapping
     public CollectionModel<EntityModel<UserLoginResponseDTO>> all() {
         List<EntityModel<UserLoginResponseDTO>> userList = userFacade.findAll()
                 .stream()
-                .map(user -> EntityModel.of(user, loginLinks(user)))
+                .map(user -> {
+                    try {
+                        return EntityModel.of(user, loginLinks(user));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                })
                 .collect(Collectors.toList());
         return CollectionModel.of(userList, linkTo(methodOn(UserControllerImpl.class).all()).withSelfRel());
     }
 
     @GetMapping("/{id}")
-    public EntityModel<UserLoginResponseDTO> one(@PathVariable("id") Long id) {
+    public EntityModel<UserLoginResponseDTO> one(@PathVariable("id") Long id){
         UserLoginResponseDTO dto = userFacade.findById(id);
         return EntityModel.of(dto, loginLinks(dto)); //userLoginModelAssembler.toModel(userFacade.findById(id));
     }
@@ -127,24 +146,25 @@ public class UserControllerImpl {
         return ResponseEntity.ok(EntityModel.of(dto, loginLinks(dto)));
     }
 
-    private List<Link> loginLinks(UserLoginResponseDTO dto) {
+    private List<Link> loginLinks(UserLoginResponseDTO dto){
         List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(dto.getUserId());
         Long departmentId = userDepartments.get(0).getInstituteDepartment().getId();
         return Stream.of(linkTo(methodOn(UserControllerImpl.class).one(dto.getUserId())).withSelfRel(),
                 linkTo(methodOn(UserControllerImpl.class).all()).withRel("users"),
-                linkTo(methodOn(DashboardController.class).webDashboardDTO(
-                        dto.getUserId(), departmentId))
+                linkTo(methodOn(DashboardController.class).webDashboardDTO(departmentId))
                         .withRel("web-dashboard"),
                 linkTo(methodOn(DashboardController.class)
-                        .appDashboardDTO(dto.getUserId(), departmentId)).withRel("app-dashboard"),
-                linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute"),
-                linkTo(methodOn(UserControllerImpl.class).departments(dto.getUserId())).withRel("departments"))
-                .collect(Collectors.toList());
+                        .appDashboardDTO(departmentId)).withRel("app-dashboard"),
+                linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute")
+                ,                linkTo(methodOn(UserControllerImpl.class).myDepartments()).withRel("departments")
+                ).collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}/departments")
-    public CollectionModel<EntityModel<InstituteDepartmentDTO>> departments(@PathVariable("id") Long userId) {
-        List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(userId);
+    @GetMapping("/departments")
+    public CollectionModel<EntityModel<InstituteDepartmentDTO>> myDepartments(){
+        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+
+        List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(user.getId());
         List<EntityModel<InstituteDepartmentDTO>> dtos = userDepartments.stream().map(userDepartment -> {
             InstituteDepartmentDTO dto = new InstituteDepartmentDTO();
 
@@ -155,7 +175,12 @@ public class UserControllerImpl {
                     .getPrivileges()
                     .stream()
                     .map(instituteDepartmentPrivilege -> {
-                        return privilegeMapper.entityToDTO(instituteDepartmentPrivilege.getPrivilege());
+                        try {
+                            return privilegeMapper.entityToDTO(instituteDepartmentPrivilege.getPrivilege());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return null;
                     })
                     .collect(Collectors.toList()));
 
@@ -188,18 +213,16 @@ public class UserControllerImpl {
 
     }
 
-    @GetMapping("/{userId}")
-    public CollectionModel<?> viewAttendance(@PathVariable("employeeId") Long userId
-            , @RequestParam(name = "period") Optional<AttendanceController.Period> period
+    @GetMapping("/attendance")
+    public CollectionModel<?> viewAttendance(@RequestParam(name = "period") Optional<AttendanceController.Period> period
             , @RequestParam(name = "value") Optional<String> value) {
-
-        log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, userId);
-        User user = userService.findById(userId);
+        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, user.getId());
         List<UserAttendanceResponseDTO> dtos = null;
         if (user.getUserType() == UserType.EMPLOYEE) {
-            return CollectionModel.of(employeeController.viewAttendance(userId, period, value));
+            return CollectionModel.of(employeeController.viewAttendance(user.getId(), period, value));
         } else if (user.getUserType() == UserType.STUDENT) {
-            return CollectionModel.of(studentController.viewAttendance(userId, period, value));
+            return CollectionModel.of(studentController.viewAttendance(user.getId(), period, value));
         } else
             return CollectionModel.of(null);
     }
@@ -214,42 +237,56 @@ public class UserControllerImpl {
         return ResponseEntity.status(HttpStatus.CREATED).body("Leave Request saved.");
     }
 
-    @PutMapping("/leave-request/{leaveRequestId}")
+    @GetMapping("/attendance/leave-request")
+    public LeaveHistoryDTO leaveRequestHistory() {
+        LeaveHistoryDTO dto = new LeaveHistoryDTO();
+        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        List<LeaveResponseDTO> response = leaveRequestRepository.findByUserId(user.getId())
+                .stream()
+                .map(leaveRequestMapper::entityToDTO)
+                .collect(Collectors.toList());
+        dto.setLeaveResponseDTO(response);
+        List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
+                .getMonthlyLeaveCount(leaveRequestMapper.getUserLeavesDates(user))
+                .entrySet().stream().map(leaveRequestMapper::getGraphDataFromMapEntry).collect(Collectors.toList());
+
+        dto.setGraphData(graphData);
+        return dto;
+    }
+
+    @PutMapping("/attendance/leave-request/{leaveRequestId}")
     public ResponseEntity<String> updateLeaveRequest(@PathVariable("leaveRequestId") Long leaveRequestId
             , @RequestBody LeaveRequestUpdateDTO dto) {
         LeaveRequest oldLeaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new RuntimeException("Leave Request Not Found With the provided Id"));
         leaveRequestMapper.dtoToEntity(oldLeaveRequest, dto);
         LeaveRequest newLeaveRequest = leaveRequestRepository.save(oldLeaveRequest);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Status Updated.");
+        if (newLeaveRequest != null)
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Leave Updated.");
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Leave not Updated.");
     }
 
-    @PutMapping("/leave-request/{leaveRequestId}/status/{status}")
-    public ResponseEntity<String> updateLeaveRequestStatus(@PathVariable("leaveRequestId") Long leaveRequestId
-            , @PathVariable("status") LeaveRequestStatus status
-            , @RequestParam("reason") Optional<String> reason) {
-        LeaveRequest oldLeaveRequest = leaveRequestRepository.findById(leaveRequestId)
-                .orElseThrow(() -> new RuntimeException("Leave Request Not Found With the provided Id"));
-        if (status == LeaveRequestStatus.REJECTED) {
-            oldLeaveRequest
-                    .setRejectedReason(
-                            reason.orElseThrow(() -> new RuntimeException("Request is rejected please provide reason.")));
-        }else
-            oldLeaveRequest.setRejectedReason(reason.get());
-        oldLeaveRequest.setLeaveRequestStatus(status);
+    @GetMapping("/institute/departments")
+    public CollectionModel<EntityModel<InstituteDepartmentDTO>> loadDepartments(){
+        User user = (User) authenticationFacade.getAuthentication();
+        Employee employee = null;
+        if (!(user instanceof Employee)) {
+            throw new RuntimeException("User is not an Employee of any institute.");
+        }
+        employee = (Employee) user;
+        List<EntityModel<InstituteDepartmentDTO>> dtos = instituteMapper.entityToDTO(instituteDepartmentRepository
+                .findByInstituteId(employee.getInstitute().getId()))
+                .stream()
+                .map(EntityModel::of)
+                .map(em -> em.add(
+                        linkTo(methodOn(EmployeeController.class)
+                                .loadEmployeesByDepartment(em.getContent().getId())).withRel("load-employees")
+                ))
+                .collect(Collectors.toList());
 
-        leaveRequestRepository.save(oldLeaveRequest);
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Status Updated.");
-
-
+        return CollectionModel.of(dtos
+                , linkTo(methodOn(UserControllerImpl.class).loadDepartments()).withSelfRel()
+                , linkTo(methodOn(TeacherController.class).classes()).withRel("load-classes"));
     }
 
-    //Admin load all department for that institute
-    public Object loadDepartments(Long userId) {
-        User user = userService.findById(userId);
-        return null;
-
-    }
 }

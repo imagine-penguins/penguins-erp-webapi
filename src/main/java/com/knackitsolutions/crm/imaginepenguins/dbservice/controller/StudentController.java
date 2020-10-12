@@ -1,6 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.StudentModelAssembler;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.StudentLoginResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
@@ -35,6 +36,9 @@ public class StudentController {
     @Autowired
     StudentService studentService;
 
+    @Autowired
+    AttendanceResponseMapper attendanceResponseMapper;
+
     @GetMapping("/students")
     public CollectionModel<EntityModel<StudentLoginResponseDTO>> all(){
         return CollectionModel.of(facade.all().stream()
@@ -48,22 +52,24 @@ public class StudentController {
         return assembler.toModel(facade.getOne(id));
     }
 
-    @GetMapping("/classes/{id}/students")
+    @GetMapping("attendance/classes/{id}/students")
     public CollectionModel<StudentAttendanceResponseDTO> loadClassStudents(@PathVariable("id") Long classSectionId) {
         List<StudentAttendanceResponseDTO> studentInfoList = studentService
-                .loadStudentResponseDTOWithClassSectionId(classSectionId)
+                .loadStudentWithClassSectionId(classSectionId)
                 .stream()
-                .map(studentInfo -> (StudentAttendanceResponseDTO)studentInfo
-                        .add(linkTo(methodOn(StudentController.class).one(studentInfo.getUserId()))
+                .map(student -> (StudentAttendanceResponseDTO)attendanceResponseMapper
+                        .entityToDTO(student)
+                        .add(linkTo(methodOn(StudentController.class)
+                                .one(student.getId()))
                                         .withRel("profile")))
                 .collect(Collectors.toList());
         return CollectionModel.of(studentInfoList
                 , linkTo(methodOn(StudentController.class).all()).withRel("all-students")
                 , linkTo(methodOn(StudentController.class).loadClassStudents(classSectionId)).withSelfRel()
-                , linkTo(methodOn(AttendanceController.class).studentAttendance(null)).withRel("save-attendance"));
+                , linkTo(methodOn(AttendanceController.class).userAttendance(null, null, null, null)).withRel("save-attendance"));
     }
 
-    @GetMapping("/students/{studentId}")
+    @GetMapping("attendance/students/{studentId}")
     public List<StudentAttendanceResponseDTO> viewAttendance(@PathVariable("studentId") Long userId
             , @RequestParam(name = "period") Optional<AttendanceController.Period> period
             , @RequestParam(name = "value") Optional<String> value) {
@@ -81,7 +87,7 @@ public class StudentController {
 
         return studentAttendances
                 .stream()
-                .map(facade::mapStudentAttendanceToStudent)
+                .map(attendanceResponseMapper::mapStudentAttendanceToStudent)
                 .collect(Collectors.toList());
     }
 

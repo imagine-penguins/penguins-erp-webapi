@@ -12,4 +12,6 @@ public interface UserDepartmentRepository extends JpaRepository<UserDepartment, 
     UserDepartment findByUserIdAndInstituteDepartmentId(Long userId, Long departmentId);
 
     List<UserDepartment> findByUserId(Long userId);
+
+
 }

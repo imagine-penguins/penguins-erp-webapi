@@ -75,18 +75,5 @@ public class EmployeeFacade {
         return employeeResponseDTOList;
     }
 
-    public EmployeeAttendanceResponseDTO mapEmployeeAttendanceToEmployee(EmployeeAttendance employeeAttendance) {
-
-
-        EmployeeAttendanceResponseDTO dto = new EmployeeAttendanceResponseDTO();
-        dto.setAttendanceId(Optional.ofNullable(employeeAttendance.getEmployeeAttendanceKey().getAttendanceId()));
-        dto.setUserId(employeeAttendance.getEmployeeAttendanceKey().getEmployeeId());
-        dto.setStatus(Optional.ofNullable(employeeAttendance.getAttendance().getAttendanceStatus()));
-        UserProfile profile = employeeAttendance.getEmployee().getUserProfile();
-        dto.setFirstName(profile.getFirstName());
-        dto.setLastName(profile.getLastName());
-        dto.setAttendanceDate(employeeAttendance.getAttendance().getAttendanceDate());
-        return dto;
-    }
 
 }

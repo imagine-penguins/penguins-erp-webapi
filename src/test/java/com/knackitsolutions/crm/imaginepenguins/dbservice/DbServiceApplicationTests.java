@@ -6,10 +6,10 @@ import com.google.common.collect.ImmutableList;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceHistoryDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceRequestDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
@@ -17,6 +17,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Atte
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.AppDashboardFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.StudentFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.TeacherFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
 
@@ -675,11 +676,16 @@ class DbServiceApplicationTests {
 	}
 
 	@Test
-	void studentInfo_isNotEmpty(@Autowired StudentRepository repository
-		, @Autowired InstituteClassSectionRepository instituteClassSectionRepository) {
+	void studentInfo_isNotEmpty(@Autowired StudentAttendanceRepository repository
+		, @Autowired InstituteClassSectionRepository instituteClassSectionRepository
+			, @Autowired AttendanceResponseMapper mapper) {
 		List<InstituteClassSection> instituteClassSections = instituteClassSectionRepository.findAll();
 		log.debug("class id: {}", instituteClassSections.get(0).getId());
-		List<StudentAttendanceResponseDTO> studentsInfo = repository.findAllByClassSectionId(instituteClassSections.get(0).getId());
+		List<StudentAttendanceResponseDTO> studentsInfo = repository
+				.findByClassSectionId(instituteClassSections.get(0).getId())
+				.stream()
+				.map(mapper::mapStudentAttendanceToStudent)
+				.collect(Collectors.toList());
 
 		assertThat(studentsInfo).isNotNull();
 		assertThat(studentsInfo).isNotEmpty();
@@ -697,23 +703,25 @@ class DbServiceApplicationTests {
 		Student student = studentRepository.findAll().get(0);
 		Teacher teacher = teacherRepository.findAll().get(0);
 
-		UserAttendanceRequestDTO dto = new UserAttendanceRequestDTO(student.getId()
-				, teacher.getId(), AttendanceStatus.PRESENT);
+		AttendanceRequestDTO.UserAttendanceRequestDTO dto = new AttendanceRequestDTO.UserAttendanceRequestDTO(student.getId()
+				, AttendanceStatus.PRESENT);
 
-		StudentAttendanceRequestDTO studentAttendanceRequestDTO =
-				new StudentAttendanceRequestDTO(
-						teacher
-								.getInstituteClassSectionSubjects()
-								.stream()
-								.findFirst()
-								.get()
-								.getId()
-						, teacher.getId()
-						, new Date(System.currentTimeMillis())
-						, ImmutableList.of(dto)
-				);
+		AttendanceRequestDTO attendanceRequestDTO =
+				new AttendanceRequestDTO();
+		Long subjectId = teacher
+				.getInstituteClassSectionSubjects()
+				.stream()
+				.findFirst()
+				.get()
+				.getId();
 
-		List<StudentAttendance> entities = mapper.dtoToEntity(studentAttendanceRequestDTO);
+		Long teacherId = teacher.getId();
+		Date date = new Date(System.currentTimeMillis());
+		attendanceRequestDTO.setAttendanceData(ImmutableList.of(dto));
+		attendanceRequestDTO.setAttendanceDate(date);
+		attendanceRequestDTO.setSupervisorId(teacherId);
+		List<StudentAttendance> entities =
+				mapper.dtoToEntity(attendanceRequestDTO, Optional.empty(), Optional.ofNullable(subjectId));
 
 		assertThat(entities).isNotNull();
 		assertThat(entities).isNotEmpty();

@@ -22,8 +22,8 @@ public class UserLoginModelAssembler implements RepresentationModelAssembler<Use
         return EntityModel.of(dto,
                     linkTo(methodOn(UserControllerImpl.class).one(dto.getUserId())).withSelfRel(),
                     linkTo(methodOn(UserControllerImpl.class).all()).withRel("users"),
-                    linkTo(methodOn(DashboardController.class).appDashboardDTO(dto.getUserId(), 1l)).withRel("app-dashboard"),
-                    linkTo(methodOn(DashboardController.class).webDashboardDTO(dto.getUserId(), 1l)).withRel("web-dashboard"),
+                    linkTo(methodOn(DashboardController.class).appDashboardDTO( null)).withRel("app-dashboard"),
+                    linkTo(methodOn(DashboardController.class).webDashboardDTO( null)).withRel("web-dashboard"),
                     linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute")
                 );
     }

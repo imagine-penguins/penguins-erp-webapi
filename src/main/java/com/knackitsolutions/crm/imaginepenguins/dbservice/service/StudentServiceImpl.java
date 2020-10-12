@@ -1,6 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceRequestDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
@@ -41,11 +41,6 @@ public class StudentServiceImpl implements StudentService {
     public Student newStudent(Student student) {
         student.setPassword(passwordEncoder.encode(student.getPassword()));
         return studentRepository.save(student);
-    }
-
-    @Override
-    public List<StudentAttendanceResponseDTO> loadStudentResponseDTOWithClassSectionId(Long classSectionId) {
-        return studentRepository.findAllByClassSectionId(classSectionId);
     }
 
     @Override
@@ -109,7 +104,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<StudentAttendanceRequestDTO> loadStudentsWithClassSubjectId(Long classSectionSubjectId) {
+    public List<AttendanceRequestDTO> loadStudentsWithClassSubjectId(Long classSectionSubjectId) {
         return null;
     }
 

@@ -55,7 +55,14 @@ public class InstituteDepartmentFacade {
     public InstituteDepartmentDTO convertToInstituteDepartmentDTO(InstituteDepartment instituteDepartment){
         List<PrivilegeDTO> privileges = instituteDepartment.getPrivileges()
                 .stream()
-                .map(privilege->privilegeMapper.entityToDTO(privilege.getPrivilege()))
+                .map(privilege-> {
+                    try {
+                        return privilegeMapper.entityToDTO(privilege.getPrivilege());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                })
                 .collect(Collectors.toList());
         InstituteDepartmentDTO dto = new InstituteDepartmentDTO();
         dto.setPrivileges(privileges);

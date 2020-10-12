@@ -4,10 +4,12 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity(name = "user")
 @Table(name = "users")
@@ -48,7 +50,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = {
             CascadeType.MERGE,
             CascadeType.PERSIST
-    })
+    }, fetch = FetchType.EAGER)
     private List<UserPrivilege> userPrivileges;
 
     @OneToMany(mappedBy = "supervisor")
@@ -65,7 +67,14 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<>();
+        return getUserPrivileges()
+                .stream()
+                .map(userPrivilege -> new SimpleGrantedAuthority(userPrivilege
+                        .getDepartmentPrivilege()
+                        .getPrivilege()
+                        .getPrivilegeCode()
+                        .toString())
+                ).collect(Collectors.toList());
     }
 
     @Override

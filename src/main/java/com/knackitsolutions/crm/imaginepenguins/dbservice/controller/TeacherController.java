@@ -5,7 +5,9 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ClassS
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.ClassSectionSubjectDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.TeacherLoginResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.TeacherFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.TeacherService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,9 @@ public class TeacherController {
     @Autowired
     private TeacherModelAssembler assembler;
 
+    @Autowired
+    private IAuthenticationFacade authenticationFacade;
+
     @GetMapping("")
     public CollectionModel<TeacherLoginResponseDTO> all() {
         return null;
@@ -48,9 +53,9 @@ public class TeacherController {
         return assembler.toModel(facade.findById(id));
     }
 
-    @GetMapping("/{id}/classes")
-    public EntityModel<ClassSectionSubjectDTO> classes(@PathVariable("id") Long teacherId){
-
+    @GetMapping("/classes")
+    public EntityModel<ClassSectionSubjectDTO> classes(){
+        Long teacherId = ((User) authenticationFacade.getAuthentication().getPrincipal()).getId();
         return EntityModel.of(facade.loadClasses(teacherId));
 
     }

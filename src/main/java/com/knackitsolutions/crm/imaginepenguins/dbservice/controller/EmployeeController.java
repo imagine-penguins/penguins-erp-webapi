@@ -1,11 +1,16 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.EmployeeModelAssembler;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeLoginResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.EmployeeAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.EmployeeFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.EmployeeAttendanceRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +42,13 @@ public class EmployeeController {
 
     @Autowired
     EmployeeFacade employeeFacade;
+
+
+    @Autowired
+    EmployeeAttendanceRepository employeeAttendanceRepository;
+
+    @Autowired
+    AttendanceResponseMapper attendanceResponseMapper;
 
     @GetMapping("/employees")
     public CollectionModel<EntityModel<EmployeeLoginResponseDTO>> all() {
@@ -79,8 +91,8 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{employeeId}")
-    public List<UserAttendanceResponseDTO> viewAttendance(@PathVariable("employeeId") Long userId
+    @GetMapping("attendance/employees/{employeeId}")
+    public List<EmployeeAttendanceResponseDTO> viewAttendance(@PathVariable("employeeId") Long userId
             , @RequestParam(name = "period") Optional<AttendanceController.Period> period
             , @RequestParam(name = "value") Optional<String> value) {
         log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, userId);
@@ -96,7 +108,7 @@ public class EmployeeController {
 
         return employeeAttendances
                 .stream()
-                .map(employeeFacade::mapEmployeeAttendanceToEmployee)
+                .map(attendanceResponseMapper::mapEmployeeAttendanceToEmployee)
                 .collect(Collectors.toList());
     }
 
@@ -117,5 +129,19 @@ public class EmployeeController {
                     " Expected format dd-MM-yyyy ex. 01-01-2020 translates to 1 Jan 2020");
         }
         return Optional.ofNullable(date);
+    }
+
+    @GetMapping("attendance/departments/{departmentId}/employees")
+    public CollectionModel<EmployeeAttendanceResponseDTO> loadEmployeesByDepartment(
+            @PathVariable("departmentId") Long departmentId) {
+        List<EmployeeAttendanceResponseDTO> dtos = employeeService
+                .getEmployeeByDepartmentId(departmentId)
+                .stream()
+                .map(attendanceResponseMapper::entityToDTO)
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(dtos
+                , linkTo(methodOn(EmployeeController.class).loadEmployeesByDepartment(departmentId)).withSelfRel());
+
     }
 }

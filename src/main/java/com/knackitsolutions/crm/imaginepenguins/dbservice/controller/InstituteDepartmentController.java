@@ -29,4 +29,6 @@ public class InstituteDepartmentController {
     public EntityModel<InstituteDepartmentDTO> one(@PathVariable("id") Long id){
         return assembler.toModel(facade.findById(id));
     }
+
+
 }

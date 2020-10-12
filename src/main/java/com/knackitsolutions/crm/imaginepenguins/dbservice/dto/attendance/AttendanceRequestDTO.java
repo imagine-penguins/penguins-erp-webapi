@@ -1,38 +1,23 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
 
 import java.util.Date;
 import java.util.List;
 
-public class StudentAttendanceRequestDTO {
+public class AttendanceRequestDTO {
 
-    private Long subjectClassID;
     private Long supervisorId;
 
     @JsonFormat(pattern = "dd-MM-yyyy")
     private Date attendanceDate;
 
     private List<UserAttendanceRequestDTO> attendanceData;
-    private Long classSectionId;
 
-    public StudentAttendanceRequestDTO() {
+    public AttendanceRequestDTO() {
     }
 
-    public StudentAttendanceRequestDTO(Long classSectionSubjectId, Long supervisorId, Date attendanceDate, List<UserAttendanceRequestDTO> attendanceData) {
-        this.subjectClassID = classSectionSubjectId;
-        this.supervisorId = supervisorId;
-        this.attendanceDate = attendanceDate;
-        this.attendanceData = attendanceData;
-    }
-
-    public Long getSubjectClassID() {
-        return subjectClassID;
-    }
-
-    public void setSubjectClassID(Long subjectClassID) {
-        this.subjectClassID = subjectClassID;
-    }
 
     public Long getSupervisorId() {
         return supervisorId;
@@ -58,22 +43,50 @@ public class StudentAttendanceRequestDTO {
         this.attendanceDate = attendanceDate;
     }
 
-    public Long getClassSectionId() {
-        return classSectionId;
-    }
-
-    public void setClassSectionId(Long classSectionId) {
-        this.classSectionId = classSectionId;
-    }
-
     @Override
     public String toString() {
         return "StudentAttendanceRequestDTO{" +
-                "subjectClassID=" + subjectClassID +
                 ", supervisorId=" + supervisorId +
                 ", attendanceDate=" + attendanceDate +
                 ", attendanceData=" + attendanceData +
-                ", classSectionId=" + classSectionId +
                 '}';
+    }
+
+    public static class UserAttendanceRequestDTO {
+
+        private Long userId;
+        private AttendanceStatus status;
+
+        public UserAttendanceRequestDTO() {
+        }
+
+        public UserAttendanceRequestDTO(Long userId, AttendanceStatus status) {
+            this.userId = userId;
+            this.status = status;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        public AttendanceStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(AttendanceStatus status) {
+            this.status = status;
+        }
+
+        @Override
+        public String toString() {
+            return "UserAttendanceRequestDTO{" +
+                    "userId=" + userId +
+                    ", status=" + status +
+                    '}';
+        }
     }
 }
