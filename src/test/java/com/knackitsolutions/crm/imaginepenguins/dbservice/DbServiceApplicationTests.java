@@ -412,9 +412,9 @@ class DbServiceApplicationTests {
 			, InstituteDepartmentPrivilegeRepository instituteDepartmentPrivilegeRepository) {
 		List<User> users = userRepository.findAll();
 //		users.forEach(user -> log.info("user: {}", user));
-		log.info("Fill User privileges for employees");
+		log.info("Fill UserDTO privileges for employees");
 		users.stream().filter(user -> user.getUserType() == UserType.EMPLOYEE).forEach(user -> {
-			log.info("User: {}", user);
+			log.info("UserDTO: {}", user);
 			user.getUserDepartments()
 					.forEach(userDepartment -> {
 						userPrivileges.addAll(
@@ -429,9 +429,9 @@ class DbServiceApplicationTests {
 										}).collect(Collectors.toList()));
 					});
 		});
-		log.info("Fill User privileges for Students");
+		log.info("Fill UserDTO privileges for Students");
 		users.stream().filter(user -> user.getUserType() == UserType.STUDENT).forEach(user -> {
-			log.info("User: {}", user);
+			log.info("UserDTO: {}", user);
 			user.getUserDepartments()
 					.forEach(userDepartment -> {
 						userPrivileges.addAll(
@@ -447,7 +447,7 @@ class DbServiceApplicationTests {
 			});
 		});
 
-		repository.findAll().forEach(userPrivilege -> log.info("User Privileges: {}", userPrivilege));
+		repository.findAll().forEach(userPrivilege -> log.info("UserDTO Privileges: {}", userPrivilege));
 
 	}
 

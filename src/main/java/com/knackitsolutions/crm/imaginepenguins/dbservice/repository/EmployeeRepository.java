@@ -5,6 +5,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
 
     List<Employee> findByInstituteId(Integer instituteId);
 
@@ -29,4 +30,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByEmployeeType(EmployeeType employeeType);
 
     List<Employee> findByUserDepartmentsInstituteDepartmentId(Long departmentId);
+
+
 }

@@ -62,7 +62,7 @@ public class TokenAuthenticationProvider extends AbstractUserDetailsAuthenticati
     private void validatePrivileges(String username, String endPoint) throws AuthenticationCredentialsNotFoundException{
         authenticationService
                 .getPrivilege(username, endPoint)
-                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("User not authorized: " + username));
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("UserDTO not authorized: " + username));
     }
 
     @NonNull

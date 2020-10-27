@@ -84,21 +84,6 @@ public class UserFacade {
             throw new UserLoginFailed(requestDTO.getUsername());
         }
 
-//        if (user.getUserType() == UserType.EMPLOYEE){
-//            Employee employee = employeeService.getOne(user.getId())
-//                    .orElseThrow(()->new EmployeeNotFoundException(user.getId()));
-//            if (employee.getEmployeeType() == EmployeeType.TEACHER)
-//                return teacherFacade.findById(user.getId());
-//            else
-//                return employeeResponseMapper.toDTO(employee);
-//        }
-//        else if(user.getUserType() == UserType.STUDENT){
-//            return studentFacade.getOne(user.getId());
-//        }
-//        else if(user.getUserType() == UserType.PARENT){
-//            return parentFacade.findById(user.getId());
-//        }
-
         UserLoginResponseDTO dto = new UserLoginResponseDTO();
         dto.setUserId(user.getId());
         dto.setApiKey(null);
@@ -110,7 +95,7 @@ public class UserFacade {
     public List<InstituteDTO> getInstitutes(Long userId){
         User user = userService.findById(userId);
         List<InstituteDTO> institutes = new ArrayList<>();
-        log.info("User Type-------------->: {}", user.getUserType());
+        log.info("UserDTO Type-------------->: {}", user.getUserType());
         if (user.getUserType() == UserType.EMPLOYEE){
             Employee employee = employeeService.findById(userId)
                     .orElseThrow(()->new EmployeeNotFoundException(userId));

@@ -55,11 +55,11 @@ public class Student extends User{
 //        this.id = id;
 //    }
 //
-//    public User getUser() {
+//    public UserDTO getUser() {
 //        return user;
 //    }
 //
-//    public void setUser(User user) {
+//    public void setUser(UserDTO user) {
 //        this.user = user;
 //    }
 

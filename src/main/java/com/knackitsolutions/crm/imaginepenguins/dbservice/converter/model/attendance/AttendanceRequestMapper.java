@@ -1,6 +1,8 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.AttendanceController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.*;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -147,6 +150,31 @@ public class AttendanceRequestMapper {
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + departmentId))
                 .setEmployeeAttendances(employeeAttendance);
         return employeeAttendance;
+    }
+
+    public Optional<Date> periodStartDateValue(Period period, Optional<String> value) {
+        Date date = null;
+        String v = value.orElseThrow(() -> new IllegalArgumentException("value of the period is not found"));
+        try {
+                date = period.startDate(v);
+                log.debug("start date: {}", date);
+        } catch (ParseException parseException) {
+            throw new IllegalArgumentException("value of the period is invalid." +
+                    " Expected format dd-MM-yyyy ex. 01-01-2020 translates to 1 Jan 2020");
+        }
+        return Optional.ofNullable(date);
+    }
+    public Optional<Date> periodEndDateValue(Period period, Optional<String> value) {
+        Date date = null;
+        String v = value.orElseThrow(() -> new IllegalArgumentException("value of the period is not found"));
+        try {
+                date = period.endDate(v);
+                log.debug("end date: {}", date);
+        } catch (ParseException parseException) {
+            throw new IllegalArgumentException("value of the period is invalid." +
+                    " Expected format dd-MM-yyyy ex. 01-01-2020 translates to 1 Jan 2020");
+        }
+        return Optional.ofNullable(date);
     }
 
 }

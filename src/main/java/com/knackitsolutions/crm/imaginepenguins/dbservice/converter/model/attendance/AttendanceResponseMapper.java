@@ -1,19 +1,33 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeLoginResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.StudentLoginResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.EmployeeAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class AttendanceResponseMapper {
+
+    @Autowired
+    StudentService studentService;
+
+    @Autowired
+    EmployeeService employeeService;
+
     public StudentAttendanceResponseDTO entityToDTO(Student entity) {
         if (entity == null) {
             return null;
@@ -67,4 +81,38 @@ public class AttendanceResponseMapper {
         dto.setAttendanceDate(entity.getAttendance().getAttendanceDate());
         return dto;
     }
+    public List<StudentAttendanceResponseDTO> getStudentAttendanceResponseDTOList(Optional<Long> classId
+            , Optional<Long> userId, Optional<Date> startDate, Optional<Date> endDate) {
+
+        List<StudentAttendance> studentAttendances = classId.map(cid -> userId
+                .map(sid -> studentService.getStudentAttendancesByStudentId(sid, startDate, endDate))
+                .orElseGet(() -> studentService.getStudentAttendancesByClassId(cid, startDate, endDate)))
+                .orElse(new ArrayList<>());
+
+        studentAttendances.forEach(studentAttendance -> log.debug("Student Attendance: {}", studentAttendance));
+        List<StudentAttendanceResponseDTO> students = studentAttendances.stream()
+                .map(this::mapStudentAttendanceToStudent)
+                .collect(Collectors.toList());
+
+        return students;
+    }
+
+    public List<EmployeeAttendanceResponseDTO> getEmployeeDTOList(Optional<Long> departmentId, Optional<Long> userId
+            , Optional<Date> startDate, Optional<Date> endDate) {
+
+        List<EmployeeAttendance> employeeAttendances = departmentId.map(did -> userId.map(
+                uid -> employeeService.getEmployeeAttendancesByEmployeeId(uid, startDate, endDate))
+                .orElseGet(() -> employeeService.getEmployeeAttendancesByDepartmentId(did, startDate, endDate))
+        ).orElse(new ArrayList<>());
+
+
+        employeeAttendances.forEach(employeeAttendance -> log.debug("Student Attendance: {}", employeeAttendance));
+
+        List<EmployeeAttendanceResponseDTO> employees = employeeAttendances.stream()
+                .map(this::mapEmployeeAttendanceToEmployee)
+                .collect(Collectors.toList());
+
+        return employees;
+    }
+
 }

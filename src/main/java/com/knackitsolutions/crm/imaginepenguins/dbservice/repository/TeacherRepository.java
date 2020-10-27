@@ -6,6 +6,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassS
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassSectionSubject;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TeacherRepository extends JpaRepository<Teacher, Long> {
+public interface TeacherRepository extends JpaRepository<Teacher, Long>, JpaSpecificationExecutor<Teacher> {
 
     List<Teacher> findByInstituteId(Integer instituteId);
 

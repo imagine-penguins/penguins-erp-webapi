@@ -50,7 +50,7 @@ public class EmployeeFacade {
 
         Employee employee = employeeMapperImpl.toEmployee(employeeDTO);
 //                convertToEmployee(employeeDTO);
-//        User newUser = userService.newUser(employee.getUser());
+//        UserDTO newUser = userService.newUser(employee.getUser());
 
         Employee newEmployee = employeeService.newEmployee(employee);
 

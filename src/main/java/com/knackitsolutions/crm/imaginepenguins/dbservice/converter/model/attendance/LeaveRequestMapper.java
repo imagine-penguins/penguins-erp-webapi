@@ -90,11 +90,11 @@ public class LeaveRequestMapper {
         List<LeaveResponseDTO> dtos = new ArrayList<>();
         users
                 .stream()
-                .map(user -> user.getLeaveRequests()
+                .flatMap(user -> user.getLeaveRequests()
                         .stream()
-                        .map(this::entityToDTO).collect(Collectors.toList()))
-                .forEach(dtos::addAll);
-        dtos.forEach(System.out::println);
+                        .map(this::entityToDTO))
+                .forEach(dtos::add);
+
         return dtos;
 
     }

@@ -5,6 +5,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.Student
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Date;
 import java.util.List;
@@ -38,5 +39,7 @@ public interface StudentService {
 
     List<StudentAttendance> getStudentAttendanceByClassSubjectId(Long subjectClassId);
     List<StudentAttendance> getStudentAttendanceByClassSubjectId(Long subjectClassId, Date updateTimeStart, Date updateTimeEnd);
+    List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active, Pageable pageable);
 
+    List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active);
 }

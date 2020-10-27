@@ -8,15 +8,6 @@ import java.util.List;
 @PrimaryKeyJoinColumn(name = "parent_id")
 public class Parent extends User{
 
-//    @Id
-//    @Column(name = "parent_id")
-//    Long id;
-
-//    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
-//    @MapsId
-//    @JoinColumn(name = "parent_id", referencedColumnName = "user_id")
-//    User user;
-
     //QR Code
 
     private String QR;

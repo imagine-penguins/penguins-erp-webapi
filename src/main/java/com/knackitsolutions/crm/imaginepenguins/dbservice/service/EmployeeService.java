@@ -1,19 +1,18 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.AttendanceController;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendanceKey;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.EmployeeNotFoundException;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.EmployeeAttendanceRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
+import javax.persistence.criteria.JoinType;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -75,5 +74,34 @@ public class EmployeeService {
 
     public List<Employee> getEmployeeByDepartmentId(Long departmentId) {
         return employeeRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
+    }
+
+    public List<Employee> listEmployeesWith(Integer instituteId, Optional<Boolean> active, Pageable pageable) {
+        Specification<Employee> specification = employeesByInstituteId(instituteId);
+        active
+                .map(EmployeeService::employeesByActive)
+                .ifPresent(specification::and);
+        return employeeRepository.findAll(specification, pageable).toList();
+    }
+
+    public List<Employee> listEmployeesWith(Integer instituteId, Optional<Boolean> active) {
+        Specification<Employee> specification = employeesByInstituteId(instituteId);
+        active
+                .map(EmployeeService::employeesByActive)
+                .ifPresent(specification::and);
+        return employeeRepository.findAll(specification);
+    }
+
+    public static Specification<Employee> employeesByActive(Boolean active) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("active"), active);
+    }
+
+    public static Specification<Employee> employeesByInstituteId(Integer instituteId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder
+                .equal(root
+                        .join("institute", JoinType.LEFT)
+                        .get("id")
+                        , instituteId
+                );
     }
 }

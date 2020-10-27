@@ -211,7 +211,7 @@ public class User implements UserDetails {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "UserDTO{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", userType=" + userType +

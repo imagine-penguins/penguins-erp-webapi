@@ -346,7 +346,7 @@ public class LoadDatabase {
                 , "Apply for leave request", "Apply for leave request.");
 
         Privilege privilege10 = new Privilege(1, PrivilegeCode.UPDATE_LEAVE_REQUEST
-                , "Approve/Reject User Leave Request", "Approve/Reject User Leave Request");
+                , "Approve/Reject UserDTO Leave Request", "Approve/Reject UserDTO Leave Request");
 
         Stream.of(privilege3, privilege4, privilege5, privilege6, privilege7, privilege8, privilege9, privilege10)
                 .forEach(privilege1::setPrivileges);
@@ -468,9 +468,9 @@ public class LoadDatabase {
             , InstituteDepartmentPrivilegeRepository instituteDepartmentPrivilegeRepository) {
         List<User> users = userRepository.findAll();
 //		users.forEach(user -> log.info("user: {}", user));
-        log.info("Fill User privileges for employees");
+        log.info("Fill UserDTO privileges for employees");
         users.stream().filter(user -> user.getUserType() == UserType.EMPLOYEE).forEach(user -> {
-            log.info("User: {}", user);
+            log.info("UserDTO: {}", user);
             user.getUserDepartments()
                     .forEach(userDepartment -> {
                         userPrivileges.addAll(
@@ -485,9 +485,9 @@ public class LoadDatabase {
                                         }).collect(Collectors.toList()));
                     });
         });
-        log.info("Fill User privileges for Students");
+        log.info("Fill UserDTO privileges for Students");
         users.stream().filter(user -> user.getUserType() == UserType.STUDENT).forEach(user -> {
-            log.info("User: {}", user);
+            log.info("UserDTO: {}", user);
             user.getUserDepartments()
                     .forEach(userDepartment -> {
                         userPrivileges.addAll(
@@ -503,7 +503,7 @@ public class LoadDatabase {
                     });
         });
 
-        repository.findAll().forEach(userPrivilege -> log.info("User Privileges: {}", userPrivilege));
+        repository.findAll().forEach(userPrivilege -> log.info("UserDTO Privileges: {}", userPrivilege));
 
     }
 

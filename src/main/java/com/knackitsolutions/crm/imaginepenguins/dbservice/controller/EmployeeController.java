@@ -1,6 +1,8 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.EmployeeModelAssembler;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeLoginResponseDTO;
@@ -45,7 +47,7 @@ public class EmployeeController {
 
 
     @Autowired
-    EmployeeAttendanceRepository employeeAttendanceRepository;
+    AttendanceRequestMapper attendanceRequestMapper;
 
     @Autowired
     AttendanceResponseMapper attendanceResponseMapper;
@@ -93,17 +95,17 @@ public class EmployeeController {
 
     @GetMapping("attendance/employees/{employeeId}")
     public List<EmployeeAttendanceResponseDTO> viewAttendance(@PathVariable("employeeId") Long userId
-            , @RequestParam(name = "period") Optional<AttendanceController.Period> period
+            , @RequestParam(name = "period") Optional<Period> period
             , @RequestParam(name = "value") Optional<String> value) {
         log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, userId);
 
         List<EmployeeAttendance> employeeAttendances = employeeService.getEmployeeAttendancesByEmployeeId(
                 userId
                 , period
-                        .map(p -> periodDateValue(p, value, true))
+                        .map(p -> attendanceRequestMapper.periodStartDateValue(p, value))
                         .orElse(Optional.empty())
                 , period
-                        .map(p -> periodDateValue(p, value, false))
+                        .map(p -> attendanceRequestMapper.periodEndDateValue(p, value))
                         .orElse(Optional.empty()));
 
         return employeeAttendances
@@ -112,25 +114,7 @@ public class EmployeeController {
                 .collect(Collectors.toList());
     }
 
-    private Optional<Date> periodDateValue(AttendanceController.Period period, Optional<String> value, Boolean startDate) {
-        Date date = null;
-        String v = value.orElseThrow(() -> new IllegalArgumentException("value of the period is not found"));
-        try {
-            if (startDate) {
-                date = period.startDate(v);
-                log.debug("start date: {}", date);
-            }
-            else {
-                date = period.endDate(v);
-                log.debug("end date: {}", date);
-            }
-        } catch (ParseException parseException) {
-            throw new IllegalArgumentException("value of the period is invalid." +
-                    " Expected format dd-MM-yyyy ex. 01-01-2020 translates to 1 Jan 2020");
-        }
-        return Optional.ofNullable(date);
-    }
-
+    //Load employee for marking attendance
     @GetMapping("attendance/departments/{departmentId}/employees")
     public CollectionModel<EmployeeAttendanceResponseDTO> loadEmployeesByDepartment(
             @PathVariable("departmentId") Long departmentId) {

@@ -27,7 +27,7 @@ public class InstituteService {
 
     public Integer findAllUser(Integer instituteId, UserType type){
         Integer total = 0;
-//        List<User> users = ;
+//        List<UserDTO> users = ;
         return total;
     }
 

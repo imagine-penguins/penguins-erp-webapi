@@ -2,6 +2,8 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Parent;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
@@ -10,9 +12,14 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.StudentAtte
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -111,5 +118,42 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<Student> loadStudentWithClassSectionId(Long classSectionId) {
         return studentRepository.findByInstituteClassSectionId(classSectionId);
+    }
+
+    public List<Student> findByInstituteId(Integer instituteId) {
+        return studentRepository.findByInstituteId(instituteId);
+    }
+
+    public List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active, Pageable pageable) {
+        Specification<Student> specification = studentsByInstituteId(instituteId);
+        active
+                .map(StudentServiceImpl::studentsByActive)
+                .ifPresent(specification::and);
+        return studentRepository.findAll(specification, pageable).toList();
+    }
+
+    public List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active) {
+        Specification<Student> specification = studentsByInstituteId(instituteId);
+        active
+                .map(StudentServiceImpl::studentsByActive)
+                .ifPresent(specification::and);
+        return studentRepository.findAll(specification);
+    }
+
+    public static Specification<Student> studentsByInstituteId(Integer instituteId) {
+        return (root, query, criteriaBuilder) -> {
+            Join<Parent, Institute> parentInstituteJoin = root
+                    .join("instituteClassSection", JoinType.LEFT)
+                    .join("instituteClass", JoinType.LEFT)
+                    .join("institute", JoinType.LEFT);
+            Predicate equalPredicate = criteriaBuilder.equal(parentInstituteJoin.get("id"), instituteId);
+            return equalPredicate;
+        };
+    }
+
+    public static Specification<Student> studentsByActive(Boolean active) {
+        return (root, query, criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get("active"), active);
+        };
     }
 }

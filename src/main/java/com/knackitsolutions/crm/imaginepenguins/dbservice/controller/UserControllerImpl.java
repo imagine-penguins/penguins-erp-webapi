@@ -2,26 +2,28 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.LeaveRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserDepartment;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.ParentService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -29,10 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,7 +73,20 @@ public class UserControllerImpl {
     @Autowired
     InstituteMapper instituteMapper;
 
-    @GetMapping
+    @Autowired
+    StudentService studentService;
+
+    @Autowired
+    ParentService parentService;
+
+    @Autowired
+    EmployeeService employeeService;
+
+    @Autowired
+    @Qualifier("userMapperImpl")
+    UserMapperImpl userMapper;
+
+/*    @GetMapping
     public CollectionModel<EntityModel<UserLoginResponseDTO>> all() {
         List<EntityModel<UserLoginResponseDTO>> userList = userFacade.findAll()
                 .stream()
@@ -88,7 +100,7 @@ public class UserControllerImpl {
                 })
                 .collect(Collectors.toList());
         return CollectionModel.of(userList, linkTo(methodOn(UserControllerImpl.class).all()).withSelfRel());
-    }
+    }*/
 
     @GetMapping("/{id}")
     public EntityModel<UserLoginResponseDTO> one(@PathVariable("id") Long id){
@@ -97,19 +109,19 @@ public class UserControllerImpl {
     }
 /*
     @Override
-    public ResponseEntity<?> newUser(User user) {
+    public ResponseEntity<?> newUser(UserDTO user) {
         user.getUserProfile().setUser(user);
-        log.info("User: {}", user);
-        log.info("User Employee: {}", user.getEmployee());
-        log.info("User Type: {}", user.getUserType());
+        log.info("UserDTO: {}", user);
+        log.info("UserDTO Employee: {}", user.getEmployee());
+        log.info("UserDTO Type: {}", user.getUserType());
         if (user.getUserType() == UserType.EMPLOYEE) {
-            log.info("Setting User in Employee");
+            log.info("Setting UserDTO in Employee");
             log.info("Employee: {}", user.getEmployee());
             log.info("Employee's user: {}", user.getEmployee().getUser());
-            log.info("User: {}", user);
+            log.info("UserDTO: {}", user);
             user.getEmployee().setUser(user);
         }
-        EntityModel<User> entityModel = userModelAssembler
+        EntityModel<UserDTO> entityModel = userModelAssembler
                 .toModel(userRepository.save(user));
 
         return ResponseEntity.created(
@@ -118,15 +130,15 @@ public class UserControllerImpl {
     }
 
     @Override
-    public ResponseEntity<?> replaceUser(User newUser, Long id) {
-        User replacedUser = userRepository.findById(id)
+    public ResponseEntity<?> replaceUser(UserDTO newUser, Long id) {
+        UserDTO replacedUser = userRepository.findById(id)
                 .map(user -> {
                     user.setUserType(newUser.getUserType());
                     user.setAdmin(newUser.getAdmin());
                     return userRepository.save(user);
                 })
                 .orElseThrow(() -> new UserNotFoundException(id));
-        EntityModel<User> entityModel = userModelAssembler.toModel(replacedUser);
+        EntityModel<UserDTO> entityModel = userModelAssembler.toModel(replacedUser);
 
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
                 .body(entityModel);
@@ -150,7 +162,7 @@ public class UserControllerImpl {
         List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(dto.getUserId());
         Long departmentId = userDepartments.get(0).getInstituteDepartment().getId();
         return Stream.of(linkTo(methodOn(UserControllerImpl.class).one(dto.getUserId())).withSelfRel(),
-                linkTo(methodOn(UserControllerImpl.class).all()).withRel("users"),
+                linkTo(methodOn(UserControllerImpl.class).all(0, 10, null, null , null, null, null)).withRel("users"),
                 linkTo(methodOn(DashboardController.class).webDashboardDTO(departmentId))
                         .withRel("web-dashboard"),
                 linkTo(methodOn(DashboardController.class)
@@ -162,7 +174,7 @@ public class UserControllerImpl {
 
     @GetMapping("/departments")
     public CollectionModel<EntityModel<InstituteDepartmentDTO>> myDepartments(){
-        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User user = (com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User) authenticationFacade.getAuthentication().getPrincipal();
 
         List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(user.getId());
         List<EntityModel<InstituteDepartmentDTO>> dtos = userDepartments.stream().map(userDepartment -> {
@@ -214,9 +226,9 @@ public class UserControllerImpl {
     }
 
     @GetMapping("/attendance")
-    public CollectionModel<?> viewAttendance(@RequestParam(name = "period") Optional<AttendanceController.Period> period
+    public CollectionModel<?> viewAttendance(@RequestParam(name = "period") Optional<Period> period
             , @RequestParam(name = "value") Optional<String> value) {
-        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User user = (com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User) authenticationFacade.getAuthentication().getPrincipal();
         log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, user.getId());
         List<UserAttendanceResponseDTO> dtos = null;
         if (user.getUserType() == UserType.EMPLOYEE) {
@@ -240,7 +252,7 @@ public class UserControllerImpl {
     @GetMapping("/attendance/leave-request")
     public LeaveHistoryDTO leaveRequestHistory() {
         LeaveHistoryDTO dto = new LeaveHistoryDTO();
-        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User user = (com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User) authenticationFacade.getAuthentication().getPrincipal();
         List<LeaveResponseDTO> response = leaveRequestRepository.findByUserId(user.getId())
                 .stream()
                 .map(leaveRequestMapper::entityToDTO)
@@ -268,10 +280,10 @@ public class UserControllerImpl {
 
     @GetMapping("/institute/departments")
     public CollectionModel<EntityModel<InstituteDepartmentDTO>> loadDepartments(){
-        User user = (User) authenticationFacade.getAuthentication();
+        com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User user = (com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User) authenticationFacade.getAuthentication();
         Employee employee = null;
         if (!(user instanceof Employee)) {
-            throw new RuntimeException("User is not an Employee of any institute.");
+            throw new RuntimeException("UserDTO is not an Employee of any institute.");
         }
         employee = (Employee) user;
         List<EntityModel<InstituteDepartmentDTO>> dtos = instituteMapper.entityToDTO(instituteDepartmentRepository
@@ -288,5 +300,67 @@ public class UserControllerImpl {
                 , linkTo(methodOn(UserControllerImpl.class).loadDepartments()).withSelfRel()
                 , linkTo(methodOn(TeacherController.class).classes()).withRel("load-classes"));
     }
+
+    @GetMapping
+    public UserListDTO all(@RequestParam(defaultValue = "0") int page
+            , @RequestParam(defaultValue = "10") int size
+            , @RequestParam(name = "userType") Optional<UserType> userType
+            , @RequestParam(name = "userRole") Optional<PrivilegeCode> privilegeCode
+            , @RequestParam(name = "active") Optional<Boolean> active
+            , @RequestParam(name = "sort", defaultValue = "name") SortField sortField
+            , @RequestParam(name = "order", defaultValue = "asc") SortOrder sortOrder) {
+        Employee employee = (Employee) authenticationFacade.getAuthentication().getPrincipal();
+        Institute institute = employee.getInstitute();
+        Integer instituteId = institute.getId();
+
+        List<Student> students = new ArrayList<>();
+        List<Employee> employees = new ArrayList<>();
+        List<Parent> parents = new ArrayList<>();
+
+        if (userType.isPresent()) {
+            UserType type = userType.get();
+            if (type == UserType.STUDENT) {
+                students.addAll(studentService.listStudentWith(instituteId, active));
+            } else if (type == UserType.EMPLOYEE) {
+                employees.addAll(employeeService.listEmployeesWith(instituteId, active));
+            } else if (type == UserType.PARENT) {
+                parents.addAll(parentService.listParentWith(instituteId, active));
+            }
+        }else{
+            students.addAll(studentService.listStudentWith(instituteId, active));
+            employees.addAll(employeeService.listEmployeesWith(instituteId, active));
+            parents.addAll(parentService.listParentWith(instituteId, active));
+        }
+
+        List<User> users = new ArrayList<>();
+        students.stream().map(student -> (User) student).forEach(users::add);
+        employees.stream().map(employee1 -> (User)employee1).forEach(users::add);
+        parents.stream().map(parent -> (User)parent).forEach(users::add);
+
+        int totalUsers = users.size();
+        int totalPages = (int) Math.ceil(totalUsers / size) ;
+        int offset = page * size;
+        List<UserListDTO.UserDTO> userDTOS = new ArrayList<>();
+
+        users
+                .stream()
+                .filter(user -> user.getId() != employee.getId())
+                .map(userMapper::userToUserDTO)
+                .sorted(sortOrder.order(sortField.comparator()))
+                .skip(offset)
+                .limit(size)
+                .forEach(userDTOS::add);
+
+        UserListDTO userListDTO = new UserListDTO();
+        userListDTO.setUserDTOS(userDTOS);
+        userListDTO.setPageNumber(page);
+        userListDTO.setPageSize(size);
+        userListDTO.setTotalUsers(totalUsers);
+        userListDTO.setTotalPages(totalPages);
+
+        return userListDTO;
+    }
+
+
 
 }

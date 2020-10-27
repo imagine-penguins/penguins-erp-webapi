@@ -1,6 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserCreationDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserListDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserPrivilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.PrivilegeService;
@@ -11,7 +12,7 @@ import javax.annotation.Generated;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+@Component("userMapperImpl")
 public class UserMapperImpl {
 
     @Autowired
@@ -19,6 +20,9 @@ public class UserMapperImpl {
 
     @Autowired
     private UserProfileMapperImpl userProfileMapper;
+
+    @Autowired
+    private ContactMapperImpl contactMapper;
 
     public void userToUserCreationDTO(UserCreationDTO userCreationDTO, User user) {
         if ( user == null || userCreationDTO == null) {
@@ -44,7 +48,7 @@ public class UserMapperImpl {
             return ;
         }
 
-//        User user = new User();
+//        UserDTO user = new UserDTO();
 
         user.setUserProfile( userProfileMapper.dtoToUserProfile( dto.getProfile() ) );
         user.setId( dto.getId() );
@@ -71,6 +75,21 @@ public class UserMapperImpl {
         .stream()
         .map(id -> new UserPrivilege())
         .collect(Collectors.toList()));
+    }
+
+    public UserListDTO.UserDTO userToUserDTO(User entity) {
+        UserListDTO.UserDTO dto = new UserListDTO.UserDTO();
+        if (entity == null) {
+            return null;
+        }
+        dto.setActive(entity.getActive());
+        dto.setContact(contactMapper.contactToContactDTO(entity.getUserProfile().getContact()));
+        dto.setFirstName(entity.getUserProfile().getFirstName());
+        dto.setLastName(entity.getUserProfile().getLastName());
+        dto.setId(entity.getId());
+        dto.setProfilePic(entity.getUserProfile().getProfilePic());
+        dto.setUserType(entity.getUserType());
+        return dto;
     }
 
 }

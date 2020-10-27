@@ -40,7 +40,7 @@ public class PrivilegeMapper {
 
     public List<PrivilegeDTO> entityToDTO(List<Privilege> userPrivileges) {
         log.info("Creating DTO list from privileges");
-        //User will only have sub privileges not the parent
+        //UserDTO will only have sub privileges not the parent
         List<PrivilegeDTO> dtos = new ArrayList<>();
 
         while(!userPrivileges.isEmpty()){

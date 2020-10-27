@@ -40,7 +40,7 @@ public class TokenAuthenticationService implements UserAuthenticationService {
         return Optional.ofNullable(userService
                 .login(username))
                 .filter(user -> {
-                    log.debug("User found now matching the password");
+                    log.debug("UserDTO found now matching the password");
                     return passwordEncoder.matches(password, user.getPassword());
                 })
                 .map(user -> {
