@@ -86,9 +86,10 @@ public class EmployeeService {
 
     public List<Employee> listEmployeesWith(Integer instituteId, Optional<Boolean> active) {
         Specification<Employee> specification = employeesByInstituteId(instituteId);
-        active
+        specification = active
                 .map(EmployeeService::employeesByActive)
-                .ifPresent(specification::and);
+                .map(specification::and)
+                .orElse(specification);
         return employeeRepository.findAll(specification);
     }
 

@@ -78,6 +78,8 @@ public class LoadDatabase {
                 , new Address("D74", "Gali16", "Delhi", "India", "110053")
                 , new Contact("1010", "gautam@gmail.com")), EmployeeType.NON_TEACHER
                 , "None", institute1, null, null);
+        employee1.setVerified(true);
+        employee1.setActive(true);
 
         institute1.addEmployee(employee1);
 
@@ -89,6 +91,9 @@ public class LoadDatabase {
                 , "None", institute1, null, null);
         institute1.addEmployee(employee2);
 
+        employee2.setVerified(true);
+        employee2.setActive(false);
+
         employees.addAll(Stream.of(employee1, employee2)
                 .map(employee -> {
                     employee.getUserProfile().setUser(employee);
@@ -99,14 +104,19 @@ public class LoadDatabase {
     public static void setupTeachers(TeacherServiceImpl teacherServiceImpl) {
         Institute institute1 = institutes.get(0);
         Institute institute2 = institutes.get(1);
-        Teacher teacher1 = new Teacher(1l, "manish", "manish003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
-                new UserProfile("asdf", "dgsh",
+        Teacher teacher1 = new Teacher(1l, "manisha", "manisha003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+                new UserProfile("Manisha", "Sharma",
                         new Address("d", "74", "Delhi", "India", "110043"),
                         new Contact("9000", "mj01@gmail.com")), EmployeeType.TEACHER, "HOD");
-        Teacher teacher2 = new Teacher(1l, "nisha", "nisha003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
+        teacher1.setVerified(true);
+        teacher1.setActive(false);
+        Teacher teacher2 = new Teacher(1l, "nishi", "nishi003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                 new UserProfile("t2", "t2",
                         new Address("d", "22", "Delhi", "India", "110043"),
                         new Contact("888", "nisha1@gmail.com")), EmployeeType.TEACHER, "CI");
+        teacher2.setVerified(true);
+        teacher2.setActive(true);
+
         institute1.addEmployee(teacher1);
         institute1.addEmployee(teacher2);
 
@@ -186,6 +196,8 @@ public class LoadDatabase {
                         , new Address("D74", "Gali-16", "Telangana", "India", "140088")
                         , new Contact("9003321", "naman@gmail.com")), instituteClassSection1, null);
         student1.setRollNumber("1");
+        student1.setVerified(true);
+        student1.setActive(true);
         instituteClassSection1.addStudent(student1);
 
         Student student2 = new Student(1l, "manan", "manan003", UserType.STUDENT, false, false,
@@ -193,6 +205,8 @@ public class LoadDatabase {
                         , new Address("D34", "Gali-26", "Telangana", "India", "140088")
                         , new Contact("8003312", "manan@gmail.com")), instituteClassSection1, null);
         student2.setRollNumber("2");
+        student2.setVerified(true);
+        student2.setActive(false);
         instituteClassSection1.addStudent(student2);
 
         Student student3 = new Student(1l, "kishor", "kishor003", UserType.STUDENT, false, false,

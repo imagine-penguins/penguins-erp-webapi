@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.UserControllerImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserListDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Generated;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component("userMapperImpl")
 public class UserMapperImpl {
@@ -89,6 +93,15 @@ public class UserMapperImpl {
         dto.setId(entity.getId());
         dto.setProfilePic(entity.getUserProfile().getProfilePic());
         dto.setUserType(entity.getUserType());
+
+        dto.add(
+                linkTo(methodOn(UserControllerImpl.class)
+                        .updateActiveStatus(dto.getId(), !dto.getActive()))
+                        .withRel("update-active-status"));
+        dto.add(
+                linkTo(methodOn(UserControllerImpl.class)
+                        .one(dto.getId()))
+                        .withRel("profile"));
         return dto;
     }
 

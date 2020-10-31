@@ -30,7 +30,6 @@ public enum PrivilegeCode {
             return Arrays.asList(linkTo(methodOn(UserControllerImpl.class).viewAttendance( null, null))
                     .withRel("view-self-attendance"));
         }
-
     },
     MARK_EMPLOYEE_ATTENDANCE("mark-employee-attendance"){
         @Override

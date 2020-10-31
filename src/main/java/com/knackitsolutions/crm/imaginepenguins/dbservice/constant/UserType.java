@@ -3,30 +3,32 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.constant;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.stream.Stream;
 
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+@JsonFormat(shape = JsonFormat.Shape.STRING)
 public enum UserType {
-    EMPLOYEE('E'),
-    PARENT('P'),
-    STUDENT('S');
-
-    private Character userTypeValue;
-
-    UserType(Character userTypeValue) {
-        this.userTypeValue = userTypeValue;
-    }
+    EMPLOYEE("E"),
+    PARENT("P"),
+    STUDENT("S");
 
     @JsonProperty
-    public Character getUserTypeValue() {
-        return userTypeValue;
+    private String userType;
+
+    UserType(String userType) {
+        this.userType = userType;
     }
 
-    @JsonCreator
-    public static UserType of(@JsonProperty Character userTypeValue){
+    @JsonValue
+    public String getUserType() {
+        return userType;
+    }
+
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    public static UserType of(@JsonProperty String userType){
         return Stream.of(UserType.values())
-                .filter(type -> type.getUserTypeValue() == userTypeValue)
+                .filter(type -> type.getUserType().equalsIgnoreCase(userType))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
     }

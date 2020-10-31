@@ -29,14 +29,17 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Min;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
 @RequestMapping(value = "/users")
+@Validated
 public class UserControllerImpl {
 
     @Autowired
@@ -302,8 +305,8 @@ public class UserControllerImpl {
     }
 
     @GetMapping
-    public UserListDTO all(@RequestParam(defaultValue = "0") int page
-            , @RequestParam(defaultValue = "10") int size
+    public UserListDTO all(@RequestParam(defaultValue = "0") @Min(0) int page
+            , @RequestParam(defaultValue = "10") @Min(1) int size
             , @RequestParam(name = "userType") Optional<UserType> userType
             , @RequestParam(name = "userRole") Optional<PrivilegeCode> privilegeCode
             , @RequestParam(name = "active") Optional<Boolean> active
@@ -320,22 +323,28 @@ public class UserControllerImpl {
         if (userType.isPresent()) {
             UserType type = userType.get();
             if (type == UserType.STUDENT) {
-                students.addAll(studentService.listStudentWith(instituteId, active));
+                students.addAll(studentService.listStudentsWith(instituteId, active));
             } else if (type == UserType.EMPLOYEE) {
                 employees.addAll(employeeService.listEmployeesWith(instituteId, active));
             } else if (type == UserType.PARENT) {
                 parents.addAll(parentService.listParentWith(instituteId, active));
             }
         }else{
-            students.addAll(studentService.listStudentWith(instituteId, active));
+            students.addAll(studentService.listStudentsWith(instituteId, active));
             employees.addAll(employeeService.listEmployeesWith(instituteId, active));
             parents.addAll(parentService.listParentWith(instituteId, active));
         }
 
         List<User> users = new ArrayList<>();
-        students.stream().map(student -> (User) student).forEach(users::add);
-        employees.stream().map(employee1 -> (User)employee1).forEach(users::add);
-        parents.stream().map(parent -> (User)parent).forEach(users::add);
+        students.stream()
+                .filter(student -> student.getId() != employee.getId())
+                .forEach(users::add);
+        employees.stream()
+                .filter(employee1 -> employee1.getId() != employee.getId())
+                .forEach(users::add);
+        parents.stream()
+                .filter(parent -> parent.getId() != employee.getId())
+                .forEach(users::add);
 
         int totalUsers = users.size();
         int totalPages = (int) Math.ceil(totalUsers / size) ;
@@ -344,7 +353,6 @@ public class UserControllerImpl {
 
         users
                 .stream()
-                .filter(user -> user.getId() != employee.getId())
                 .map(userMapper::userToUserDTO)
                 .sorted(sortOrder.order(sortField.comparator()))
                 .skip(offset)
@@ -358,9 +366,24 @@ public class UserControllerImpl {
         userListDTO.setTotalUsers(totalUsers);
         userListDTO.setTotalPages(totalPages);
 
+        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
+                .all(page, size, userType, privilegeCode, active, sortField, sortOrder)).withSelfRel());
+
+        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
+                .all(page + 1, size, userType, privilegeCode, active, sortField, sortOrder)).withRel("next-page"));
+
+        if (page > 0)
+            userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
+                    .all(page - 1, size, userType, privilegeCode, active, sortField, sortOrder))
+                    .withRel("previous-page"));
+
         return userListDTO;
     }
 
-
+    @PutMapping(value = "/{userId}")
+    public ResponseEntity<String> updateActiveStatus(@PathVariable(value = "userId") Long userId
+            , @RequestParam(name = "active") Boolean active) {
+        return null;
+    }
 
 }

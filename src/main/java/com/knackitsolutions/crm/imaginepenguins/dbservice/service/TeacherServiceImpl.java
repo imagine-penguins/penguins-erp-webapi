@@ -48,9 +48,10 @@ public class TeacherServiceImpl implements TeacherService{
 
     public List<Teacher> listTeachersWith(Long instituteId, Optional<Boolean> active, Pageable pageable) {
         Specification<Teacher> specification = teachersByInstituteId(instituteId);
-        active
+        specification = active
                 .map(TeacherServiceImpl::teachersByActive)
-                .ifPresent(specification::and);
+                .map(specification::and)
+                .orElse(specification);
         return teacherRepository.findAll(specification, pageable).toList();
     }
 

@@ -48,9 +48,10 @@ public class ParentService {
 
     public List<Parent> listParentWith(Integer instituteId, Optional<Boolean> active) {
         Specification<Parent> specification = parentsByInstituteId(instituteId);
-        active
+        specification = active
                 .map(ParentService::parentsByActive)
-                .ifPresent(specification::and);
+                .map(specification::and)
+                .orElse(specification);
         return parentRepository.findAll(specification);
     }
 

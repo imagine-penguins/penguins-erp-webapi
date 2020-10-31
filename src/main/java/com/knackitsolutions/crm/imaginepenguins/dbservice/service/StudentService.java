@@ -39,7 +39,7 @@ public interface StudentService {
 
     List<StudentAttendance> getStudentAttendanceByClassSubjectId(Long subjectClassId);
     List<StudentAttendance> getStudentAttendanceByClassSubjectId(Long subjectClassId, Date updateTimeStart, Date updateTimeEnd);
-    List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active, Pageable pageable);
+    List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active, Pageable pageable);
 
-    List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active);
+    List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active);
 }

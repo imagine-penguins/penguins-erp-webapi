@@ -124,7 +124,7 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.findByInstituteId(instituteId);
     }
 
-    public List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active, Pageable pageable) {
+    public List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active, Pageable pageable) {
         Specification<Student> specification = studentsByInstituteId(instituteId);
         active
                 .map(StudentServiceImpl::studentsByActive)
@@ -132,11 +132,14 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.findAll(specification, pageable).toList();
     }
 
-    public List<Student> listStudentWith(Integer instituteId, Optional<Boolean> active) {
+    public List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active) {
+        log.debug("listStudentsWith: {}, {}", instituteId, active);
         Specification<Student> specification = studentsByInstituteId(instituteId);
-        active
+        specification = active
                 .map(StudentServiceImpl::studentsByActive)
-                .ifPresent(specification::and);
+                .map(specification::and)
+                .orElse(specification);
+
         return studentRepository.findAll(specification);
     }
 
@@ -151,9 +154,7 @@ public class StudentServiceImpl implements StudentService {
         };
     }
 
-    public static Specification<Student> studentsByActive(Boolean active) {
-        return (root, query, criteriaBuilder) -> {
-            return criteriaBuilder.equal(root.get("active"), active);
-        };
+    public static Specification<Student> studentsByActive(final Boolean active) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("active"), active);
     }
 }
