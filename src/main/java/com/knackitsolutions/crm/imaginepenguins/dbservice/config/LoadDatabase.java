@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,11 +44,11 @@ public class LoadDatabase {
 
     private static List<Teacher> teachers = new ArrayList<>(10);
 
-    private static List<Student> students = new ArrayList<>();
+    private static List<Student> students = new ArrayList<>(10);
 
-    private static List<UserDepartment> userDepartments = new ArrayList<>();
+    private static List<UserDepartment> userDepartments = new ArrayList<>(10);
 
-    private static List<InstituteDepartmentPrivilege> instituteDepartmentPrivileges = new ArrayList<>();
+    private static List<InstituteDepartmentPrivilege> instituteDepartmentPrivileges = new ArrayList<>(10);
 
     private static List<UserPrivilege> userPrivileges = new ArrayList<>();
 
@@ -73,14 +74,14 @@ public class LoadDatabase {
         Institute institute1 = institutes.get(0);
         Institute institute2 = institutes.get(1);
         Employee employee1 = new Employee(1l, "gautam", "gautam003", UserType.EMPLOYEE
-                , false, false
+                , Boolean.TRUE, false
                 , new UserProfile("Gautam", "Kumar"
                 , new Address("D74", "Gali16", "Delhi", "India", "110053")
                 , new Contact("1010", "gautam@gmail.com")), EmployeeType.NON_TEACHER
-                , "None", institute1, null, null);
+                , "None", institute1, null, new HashSet<>());
         employee1.setVerified(true);
         employee1.setActive(true);
-
+        employee1.getUserProfile().setUser(employee1);
         institute1.addEmployee(employee1);
 
         Employee employee2 = new Employee(1l, "gaurav", "gaurav003", UserType.EMPLOYEE
@@ -88,17 +89,20 @@ public class LoadDatabase {
                 , new UserProfile("Gaurav", "Kumar"
                 , new Address("D14", "Gali16", "Delhi", "India", "110053")
                 , new Contact("10111", "gaurav@gmail.com")), EmployeeType.NON_TEACHER
-                , "None", institute1, null, null);
+                , "None", institute1, null, new HashSet<>());
         institute1.addEmployee(employee2);
 
         employee2.setVerified(true);
-        employee2.setActive(false);
+        employee2.setActive(true);
+        employee2.getUserProfile().setUser(employee2);
 
-        employees.addAll(Stream.of(employee1, employee2)
-                .map(employee -> {
-                    employee.getUserProfile().setUser(employee);
-                    return employeeService.newEmployee(employee);
-                }).collect(Collectors.toList()));
+        employee1 = employeeService.newEmployee(employee1);
+        employee2.setManager(employee1);
+        employee1.setSubordinates(employee2);
+
+        employee2 = employeeService.newEmployee(employee2);
+
+        employees.addAll(ImmutableList.of(employee1, employee2));
     }
 
     public static void setupTeachers(TeacherServiceImpl teacherServiceImpl) {
@@ -114,6 +118,8 @@ public class LoadDatabase {
                 new UserProfile("t2", "t2",
                         new Address("d", "22", "Delhi", "India", "110043"),
                         new Contact("888", "nisha1@gmail.com")), EmployeeType.TEACHER, "CI");
+
+
         teacher2.setVerified(true);
         teacher2.setActive(true);
 
@@ -123,11 +129,15 @@ public class LoadDatabase {
         teacher1.getUserProfile().setUser(teacher1);
         teacher2.getUserProfile().setUser(teacher2);
 
+        teacher1.setManager(employees.get(0));
+        employees.get(0).setSubordinates(teacher1);
         teacher1 = teacherServiceImpl.newTeacher(teacher1);
-        teacher2 = teacherServiceImpl.newTeacher(teacher2);
 
+        teacher2.setManager(teacher1);
+        teacher1.setSubordinates(teacher2);
+
+        teacher2 = teacherServiceImpl.newTeacher(teacher2);
         teachers.addAll(ImmutableList.of(teacher1, teacher2));
-//        Stream.of(teacher1, teacher2).map(teacherServiceImpl::newTeacher).collect(Collectors.toCollection(() -> teachers));
 
     }
 

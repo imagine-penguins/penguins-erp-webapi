@@ -18,10 +18,6 @@ public class Employee extends User{
 
     private static final Logger log = LoggerFactory.getLogger(Employee.class);
 
-//    @Id
-//    @Column(name = "employee_id", updatable = false)
-//    private Long id;
-
     @Column(name = "employee_type")
     private EmployeeType employeeType;
 
@@ -158,7 +154,7 @@ public class Employee extends User{
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getEmployeeType(), getDesignation(), getInstitute(), getManager(), getSubordinates());
+        return Objects.hash(super.hashCode(), getEmployeeType(), getDesignation(), getInstitute());
     }
 
     @Override

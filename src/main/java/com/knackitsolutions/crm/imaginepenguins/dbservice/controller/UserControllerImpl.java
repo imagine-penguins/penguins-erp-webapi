@@ -11,6 +11,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
@@ -33,9 +34,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping(value = "/users")
@@ -172,7 +177,7 @@ public class UserControllerImpl {
                         .appDashboardDTO(departmentId)).withRel("app-dashboard"),
                 linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute")
                 ,                linkTo(methodOn(UserControllerImpl.class).myDepartments()).withRel("departments")
-                ).collect(Collectors.toList());
+        ).collect(Collectors.toList());
     }
 
     @GetMapping("/departments")
@@ -312,10 +317,41 @@ public class UserControllerImpl {
             , @RequestParam(name = "active") Optional<Boolean> active
             , @RequestParam(name = "sort", defaultValue = "name") SortField sortField
             , @RequestParam(name = "order", defaultValue = "asc") SortOrder sortOrder) {
-        Employee employee = (Employee) authenticationFacade.getAuthentication().getPrincipal();
-        Institute institute = employee.getInstitute();
-        Integer instituteId = institute.getId();
 
+        User user = (User)authenticationFacade.getAuthentication().getPrincipal();
+        if ( !(user instanceof Employee) )
+            throw new RuntimeException("User is not employee hence not permitted here.");
+
+        Employee employee = (Employee) user;
+
+        List<User> users = getUsers(employee, employee.getInstitute().getId(), active, userType);
+
+        List<UserListDTO.UserDTO> userDTOS = new ArrayList<>();
+        users
+                .stream()
+                .map(userMapper::userToUserDTO)
+                .sorted(sortOrder.order(sortField.comparator()))
+                .skip(page * size)
+                .limit(size)
+                .forEach(userDTOS::add);
+
+        UserListDTO userListDTO = newUserListDTO(userDTOS, page, size, users.size());
+
+        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
+                .all(page, size, userType, privilegeCode, active, sortField, sortOrder)).withSelfRel());
+
+        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
+                .all(page + 1, size, userType, privilegeCode, active, sortField, sortOrder)).withRel("next-page"));
+
+        if (page > 0)
+            userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
+                    .all(page - 1, size, userType, privilegeCode, active, sortField, sortOrder))
+                    .withRel("previous-page"));
+
+        return userListDTO;
+    }
+
+    private List<User> getUsers(Employee requester, Integer instituteId, Optional<Boolean> active, Optional<UserType> userType) {
         List<Student> students = new ArrayList<>();
         List<Employee> employees = new ArrayList<>();
         List<Parent> parents = new ArrayList<>();
@@ -336,54 +372,78 @@ public class UserControllerImpl {
         }
 
         List<User> users = new ArrayList<>();
+
         students.stream()
-                .filter(student -> student.getId() != employee.getId())
+                .filter(student -> student.getId() != requester.getId())
                 .forEach(users::add);
         employees.stream()
-                .filter(employee1 -> employee1.getId() != employee.getId())
+                .filter(employee1 -> employee1.getId() != requester.getId())
                 .forEach(users::add);
         parents.stream()
-                .filter(parent -> parent.getId() != employee.getId())
+                .filter(parent -> parent.getId() != requester.getId())
                 .forEach(users::add);
 
-        int totalUsers = users.size();
-        int totalPages = (int) Math.ceil(totalUsers / size) ;
-        int offset = page * size;
-        List<UserListDTO.UserDTO> userDTOS = new ArrayList<>();
+        return users;
+    }
 
-        users
-                .stream()
-                .map(userMapper::userToUserDTO)
-                .sorted(sortOrder.order(sortField.comparator()))
-                .skip(offset)
-                .limit(size)
-                .forEach(userDTOS::add);
-
+    private UserListDTO newUserListDTO(List<UserListDTO.UserDTO> users, int page, int size, int totalUsers) {
+        int totalPages = (int) Math.ceil(totalUsers / size);
         UserListDTO userListDTO = new UserListDTO();
-        userListDTO.setUserDTOS(userDTOS);
+
+        userListDTO.setUserDTOS(users);
         userListDTO.setPageNumber(page);
         userListDTO.setPageSize(size);
         userListDTO.setTotalUsers(totalUsers);
         userListDTO.setTotalPages(totalPages);
-
-        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
-                .all(page, size, userType, privilegeCode, active, sortField, sortOrder)).withSelfRel());
-
-        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
-                .all(page + 1, size, userType, privilegeCode, active, sortField, sortOrder)).withRel("next-page"));
-
-        if (page > 0)
-            userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
-                    .all(page - 1, size, userType, privilegeCode, active, sortField, sortOrder))
-                    .withRel("previous-page"));
-
         return userListDTO;
     }
 
     @PutMapping(value = "/{userId}")
-    public ResponseEntity<String> updateActiveStatus(@PathVariable(value = "userId") Long userId
+    public ResponseEntity<EntityModel<String>> updateActiveStatus(@PathVariable(value = "userId") Long userId
             , @RequestParam(name = "active") Boolean active) {
-        return null;
+        User user = userService.findById(userId);
+        if (active == user.getActive())
+            return ResponseEntity.badRequest().body(EntityModel.of("Status is already " +  active));
+
+        user.setActive(active);
+        User updatedUser = userService.save(user);
+        if (updatedUser.getActive() == active) {
+            return ResponseEntity
+                    .created(linkTo(methodOn(UserControllerImpl.class).updateActiveStatus(userId, active)).toUri())
+                    .body(
+                            EntityModel
+                                    .of("Status Successfully Updated")
+                                    .add(
+                                            linkTo(methodOn(UserControllerImpl.class).updateActiveStatus(userId, !active))
+                                                    .withRel("update-active-status")
+                                    )
+                    );
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @GetMapping("/hierarchy")
+    public ResponseEntity<EntityModel<EmployeeHierarchy>> hierarchy(@RequestParam Optional<Long> userId) {
+        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        log.debug("User type is: {}", user.getUserType());
+
+        if ( !(user instanceof Employee)) {
+            throw new RuntimeException("User is not employee");
+        }
+
+        Employee employee = userId
+                .map(aLong -> employeeService.findById(aLong).orElseThrow(() -> new UserNotFoundException(userId.get())))
+                .orElse((Employee)user);
+
+        return ResponseEntity.ok(
+                EntityModel.of(
+                        new EmployeeHierarchy(employee),
+                        linkTo(methodOn(UserControllerImpl.class)
+                                .hierarchy(Optional.of(employee.getId()))).withSelfRel(),
+                        linkTo(methodOn(UserControllerImpl.class)
+                                .hierarchy(Optional.of(employee.getManager().getId()))).withRel("manager")
+                )
+        );
     }
 
 }

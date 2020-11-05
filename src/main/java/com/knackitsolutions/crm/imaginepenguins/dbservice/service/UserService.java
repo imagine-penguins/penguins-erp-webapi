@@ -21,7 +21,7 @@ public class UserService{
     @Autowired
     LeaveRequestRepository leaveRequestRepository;
 
-    public User newUser(User user) {
+    public User save(User user) {
         return userRepository.save(user);
     }
 

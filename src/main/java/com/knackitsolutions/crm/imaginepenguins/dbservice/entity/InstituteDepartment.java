@@ -1,39 +1,56 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "departments")
+@NoArgsConstructor
+@AllArgsConstructor
 public class InstituteDepartment {
 
     @Id
     @Column(name = "department_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Setter@Getter
     private Long id;
 
     @Column(name = "department_name")
+    @Setter@Getter
     private String departmentName;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "institute_id")
+    @Setter@Getter
     private Institute institute;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "head")
+    @Getter@Setter
+    private User user;
+
     @OneToMany(mappedBy = "instituteDepartment")
+    @Getter
     private Set<InstituteDepartmentPrivilege> privileges = new HashSet<>();
 
     @OneToMany(mappedBy = "instituteDepartment")
+    @Getter
     private Set<UserDepartment> userDepartments = new HashSet<>();
 
     @OneToMany(mappedBy = "instituteDepartment")
+    @Getter
     private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
 
-    public InstituteDepartment() {
-    }
+    @OneToMany(mappedBy = "instituteDepartment")
+    @Getter
+    private Set<DepartmentPosition> departmentPositions = new HashSet<>();
 
     public InstituteDepartment(String departmentName){
         this.departmentName = departmentName;
@@ -55,18 +72,6 @@ public class InstituteDepartment {
         this.privileges = privileges;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Set<EmployeeAttendance> getEmployeeAttendances() {
-        return employeeAttendances;
-    }
-
     public void setEmployeeAttendances(Set<EmployeeAttendance> employeeAttendances) {
         employeeAttendances.forEach(this::setEmployeeAttendances);
     }
@@ -76,32 +81,8 @@ public class InstituteDepartment {
         employeeAttendance.setInstituteDepartment(this);
     }
 
-    public String getDepartmentName() {
-        return departmentName;
-    }
-
-    public void setDepartmentName(String departmentName) {
-        this.departmentName = departmentName;
-    }
-
-    public Set<InstituteDepartmentPrivilege> getPrivileges() {
-        return privileges;
-    }
-
     public void setPrivileges(Set<InstituteDepartmentPrivilege> privileges) {
         privileges.forEach(this::setPrivileges);
-    }
-
-    public Institute getInstitute() {
-        return institute;
-    }
-
-    public void setInstitute(Institute institute) {
-        this.institute = institute;
-    }
-
-    public Set<UserDepartment> getUserDepartments() {
-        return userDepartments;
     }
 
     public void addUserDepartment(Set<UserDepartment> userDepartments) {
@@ -118,29 +99,12 @@ public class InstituteDepartment {
         privilege.setInstituteDepartment(this);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof InstituteDepartment)) return false;
-        InstituteDepartment that = (InstituteDepartment) o;
-        return getId().equals(that.getId()) &&
-                getDepartmentName().equals(that.getDepartmentName()) &&
-                getInstitute().equals(that.getInstitute()) &&
-                Objects.equals(getPrivileges(), that.getPrivileges()) &&
-                Objects.equals(getUserDepartments(), that.getUserDepartments());
+    public void setDepartmentPositions(Set<DepartmentPosition> departmentPositions) {
+        departmentPositions.forEach(this::setDepartmentPositions);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), getDepartmentName(), getInstitute(), getPrivileges(), getUserDepartments());
-    }
-
-    @Override
-    public String toString() {
-        return "InstituteDepartment{" +
-                "id=" + id +
-                ", departmentName='" + departmentName + '\'' +
-//                ", institute=" + institute +
-                '}';
+    public void setDepartmentPositions(DepartmentPosition departmentPosition) {
+        this.departmentPositions.add(departmentPosition);
+        departmentPosition.setInstituteDepartment(this);
     }
 }
