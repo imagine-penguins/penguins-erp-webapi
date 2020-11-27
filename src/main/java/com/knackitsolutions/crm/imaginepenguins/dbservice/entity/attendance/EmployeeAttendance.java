@@ -23,7 +23,7 @@ public class EmployeeAttendance {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
-    @ManyToOne
+/*    @ManyToOne
     @JoinColumn(name = "institute_department_id")
     private InstituteDepartment instituteDepartment;
 
@@ -33,7 +33,7 @@ public class EmployeeAttendance {
 
     public void setInstituteDepartment(InstituteDepartment instituteDepartment) {
         this.instituteDepartment = instituteDepartment;
-    }
+    }*/
 
     public Attendance getAttendance() {
         return attendance;

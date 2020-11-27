@@ -25,7 +25,6 @@ public class ParentModelAssembler implements RepresentationModelAssembler<Parent
     @Override
     public EntityModel<ParentLoginResponseDTO> toModel(ParentLoginResponseDTO entity) {
         return EntityModel.of(entity,
-                linkTo(methodOn(ParentController.class).one(entity.getUserId())).withSelfRel(),
                 linkTo(methodOn(ParentController.class).all()).withRel("/parents"));
     }
 }

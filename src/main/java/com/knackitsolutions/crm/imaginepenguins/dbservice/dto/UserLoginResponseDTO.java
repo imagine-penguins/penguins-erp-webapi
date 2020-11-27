@@ -1,41 +1,15 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserLoginResponseDTO extends RepresentationModel<UserLoginResponseDTO> {
-
-    private String apiKey;
-
-    private Long userId;
-
+    private String token;
+    private String refreshToken;
     private String responseMessage;
-
-    public UserLoginResponseDTO() {
-
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getResponseMessage() {
-        return responseMessage;
-    }
-
-    public void setResponseMessage(String responseMessage) {
-        this.responseMessage = responseMessage;
-    }
-
 }

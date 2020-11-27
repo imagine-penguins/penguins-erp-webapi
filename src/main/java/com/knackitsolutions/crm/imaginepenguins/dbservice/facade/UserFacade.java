@@ -1,63 +1,48 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.auth.api.UserAuthenticationService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.EmployeeLoginResponseMapper;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.DashboardController;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.DepartmentController;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.UserControllerImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteMapper;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserProfileMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.EmployeeNotFoundException;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserLoginFailed;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.ParentService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentServiceImpl;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class UserFacade {
 
-    private static final Logger log = LoggerFactory.getLogger(UserFacade.class);
-
-    @Autowired
-    UserAuthenticationService userAuthenticationService;
-
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    EmployeeService employeeService;
-
-    @Autowired
-    UserLoginResponseMapper userLoginResponseMapper;
-
-    @Autowired
-    InstituteMapper instituteMapper;
-
-    @Autowired
-    StudentServiceImpl studentServiceImpl;
-
-    @Autowired
-    ParentService parentService;
-
-    public UserLoginResponseDTO newUser(){
-        return null;
-    }
+    private final UserService userService;
+    private final EmployeeService employeeService;
+    private final UserLoginResponseMapper userLoginResponseMapper;
+    private final InstituteMapper instituteMapper;
+    private final StudentServiceImpl studentServiceImpl;
+    private final ParentService parentService;
+    private final UserDepartmentRepository userDepartmentRepository;
+    private final StudentService studentService;
 
     public List<UserLoginResponseDTO> findAll(){
         return userService.findAll()
@@ -67,33 +52,11 @@ public class UserFacade {
     }
 
     public UserLoginResponseDTO findById(Long id){
-        return userLoginResponseMapper.entityToDTO(userService.findById(id));
-    }
-
-    public UserLoginResponseDTO authLogin(UserLoginRequestDTO requestDTO) {
-        return userAuthenticationService
-                .login(requestDTO.getUsername(), requestDTO.getPassword())
-                .orElseThrow(() -> new UserLoginFailed(requestDTO.getUsername()));
-    }
-
-    public UserLoginResponseDTO login(UserLoginRequestDTO requestDTO){
-
-        User user = userService.login(requestDTO.getUsername());
-
-        if (user == null || user.getPassword() == null || !user.getPassword().equals(requestDTO.getPassword())){
-            throw new UserLoginFailed(requestDTO.getUsername());
-        }
-
-        UserLoginResponseDTO dto = new UserLoginResponseDTO();
-        dto.setUserId(user.getId());
-        dto.setApiKey(null);
-        dto.setResponseMessage("Login Success");
-
-        return dto;
+        return userLoginResponseMapper.entityToDTO(userService.findById(id).orElseThrow(() -> new UserNotFoundException(id)));
     }
 
     public List<InstituteDTO> getInstitutes(Long userId){
-        User user = userService.findById(userId);
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         List<InstituteDTO> institutes = new ArrayList<>();
         log.info("UserDTO Type-------------->: {}", user.getUserType());
         if (user.getUserType() == UserType.EMPLOYEE){
@@ -101,10 +64,6 @@ public class UserFacade {
                     .orElseThrow(()->new EmployeeNotFoundException(userId));
 
             institutes.add(instituteMapper.entityToDTO(employee.getInstitute()));
-//            if (employee.getEmployeeType() == EmployeeType.TEACHER)
-//                return teacherFacade.findById(user.getId());
-//            else
-//                return employeeResponseMapper.toDTO(employee);
         }
         else if(user.getUserType() == UserType.STUDENT){
             institutes.add(instituteMapper.entityToDTO(studentServiceImpl
@@ -114,7 +73,6 @@ public class UserFacade {
                     .getInstitute()));
         }
         else if(user.getUserType() == UserType.PARENT){
-//            instituteMapper.entityToDTO(
                     parentService.findById(userId)
                             .getStudents()
                             .stream()
@@ -123,10 +81,71 @@ public class UserFacade {
                                     .getInstituteClass()
                                     .getInstitute()))
                             .forEach(institutes::add);
-
-//            parentFacade.findById(user.getId());
         }
         return institutes;
     }
 
+    public List<Link> loginLinks(Long userId){
+        List<UserDepartment> userDepartments = userDepartmentRepository.findByUserId(userId);
+        Long departmentId = userDepartments.get(0).getInstituteDepartment().getId();
+        return Stream.of(linkTo(methodOn(UserControllerImpl.class).one(userId)).withSelfRel(),
+                linkTo(methodOn(UserControllerImpl.class).all(0, 10, null, null)).withRel("users"),
+                linkTo(methodOn(DashboardController.class).webDashboardDTO(departmentId))
+                        .withRel("web-dashboard"),
+                linkTo(methodOn(DashboardController.class)
+                        .appDashboardDTO(departmentId)).withRel("app-dashboard"),
+                linkTo(methodOn(UserControllerImpl.class).myInstitute()).withRel("institute")
+                ,                linkTo(methodOn(DepartmentController.class).myDepartments()).withRel("departments")
+        ).collect(Collectors.toList());
+    }
+
+    public List<User> getUsers(Employee requester, Integer instituteId, Optional<Boolean> active, Set<UserType> userTypes) {
+        List<Student> students = new ArrayList<>();
+        List<Employee> employees = new ArrayList<>();
+        List<Parent> parents = new ArrayList<>();
+
+        for (UserType userType : userTypes) {
+            if (userType == UserType.STUDENT) {
+                students.addAll(studentService.listStudentsWith(instituteId, active));
+            }
+            if (userType == UserType.EMPLOYEE) {
+                employees.addAll(employeeService.listEmployeesWith(instituteId, active));
+            }
+            if (userType == UserType.PARENT) {
+                parents.addAll(parentService.listParentWith(instituteId, active));
+            }
+        }
+
+        if (userTypes == null || userTypes.isEmpty()){
+            students.addAll(studentService.listStudentsWith(instituteId, active));
+            employees.addAll(employeeService.listEmployeesWith(instituteId, active));
+            parents.addAll(parentService.listParentWith(instituteId, active));
+        }
+
+        List<User> users = new ArrayList<>();
+
+        students.stream()
+                .filter(student -> student.getId() != requester.getId())
+                .forEach(users::add);
+        employees.stream()
+                .filter(employee1 -> employee1.getId() != requester.getId())
+                .forEach(users::add);
+        parents.stream()
+                .filter(parent -> parent.getId() != requester.getId())
+                .forEach(users::add);
+
+        return users;
+    }
+
+    public UserListDTO newUserListDTO(List<UserListDTO.UserDTO> users, int page, int size, int totalUsers) {
+        int totalPages = (int) Math.ceil(totalUsers / size);
+        UserListDTO userListDTO = new UserListDTO();
+
+        userListDTO.setUserDTOS(users);
+        userListDTO.setPageNumber(page);
+        userListDTO.setPageSize(size);
+        userListDTO.setTotalUsers(totalUsers);
+        userListDTO.setTotalPages(totalPages);
+        return userListDTO;
+    }
 }

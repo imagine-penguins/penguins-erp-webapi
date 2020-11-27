@@ -15,17 +15,10 @@ import org.springframework.stereotype.Component;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class LeaveRequestMapper {
-
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    LeaveRequestRepository leaveRequestRepository;
 
     public void dtoToEntity(LeaveRequest entity, LeaveRequestDTO dto) {
         if (entity == null || dto == null) {
@@ -35,12 +28,6 @@ public class LeaveRequestMapper {
         entity.setStartDate(dto.getStartDate());
         entity.setEndDate(dto.getEndDate());
         entity.setLeaveType(dto.getLeaveType());
-
-        User user = userService.findById(dto.getUserId());
-        user.setLeaveRequests(entity);
-
-        User approver = userService.findById(dto.getApproverId());
-        approver.setLeaveRequestsApprover(entity);
 
     }
 
@@ -64,7 +51,7 @@ public class LeaveRequestMapper {
         if (entity.getApprovedBy() != null)
             dto.setApprovedByUserId(entity.getApprovedBy().getId());
 
-        dto.setApproverId(entity.getApprover().getId());
+        dto.setApprovesId(entity.getApprover().getId());
         dto.setEndDate(entity.getEndDate());
         dto.setStartDate(entity.getStartDate());
         dto.setLeaveReason(entity.getLeaveReason());

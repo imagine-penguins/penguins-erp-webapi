@@ -16,6 +16,9 @@ public class LeaveRequest {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(name = "title")
+    private String title;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
     private User user;

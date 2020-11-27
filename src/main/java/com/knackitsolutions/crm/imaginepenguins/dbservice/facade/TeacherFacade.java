@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.AttendanceController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.StudentController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ClassSectionSubjectMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.TeacherLoginResponseMapper;
@@ -44,7 +45,7 @@ public class TeacherFacade {
         ClassSectionSubjectDTO.MyClassDTO myClassDTO = mapper.entityToDTO(classSection);
         Long classSectionId = classSection.getId();
         log.debug("class id: {}", classSection);
-        Link link = linkTo(methodOn(StudentController.class).loadClassStudents(classSectionId)).withRel("class-students");
+        Link link = linkTo(methodOn(AttendanceController.class).loadClassStudents(classSectionId)).withRel("class-students");
         log.debug("link: {}", link);
         myClassDTO.add(link);
         return myClassDTO;
@@ -59,9 +60,7 @@ public class TeacherFacade {
         ClassSectionSubjectDTO.MySubjectClassDTO mySubjectClassDTO = mapper.entityToDTO(subjectClass);
         Long classSectionID = subjectClass.getInstituteClassSection().getId();
         log.debug("class id: {}", classSectionID);
-        Link link = linkTo(methodOn(StudentController.class)
-                            .loadClassStudents(classSectionID))
-                        .withRel("class-students");
+        Link link = linkTo(methodOn(AttendanceController.class).loadClassStudents(classSectionID)).withRel("class-students");
         log.debug("link: {}", link);
         mySubjectClassDTO.add(link);
         return mySubjectClassDTO;

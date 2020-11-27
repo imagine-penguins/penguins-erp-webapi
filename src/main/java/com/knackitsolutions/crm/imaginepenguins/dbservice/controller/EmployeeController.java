@@ -1,56 +1,33 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.EmployeeModelAssembler;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.EmployeeLoginResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.EmployeeAttendanceResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.EmployeeFacade;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.EmployeeAttendanceRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
+@RequiredArgsConstructor
+@Slf4j
 public class EmployeeController {
 
-    private static final Logger log = LoggerFactory.getLogger(EmployeeController.class);
-
-    @Autowired
-    EmployeeService employeeService;
-
-    @Autowired
-    EmployeeModelAssembler employeeModelAssembler;
-
-    @Autowired
-    EmployeeFacade employeeFacade;
-
-
-    @Autowired
-    AttendanceRequestMapper attendanceRequestMapper;
-
-    @Autowired
-    AttendanceResponseMapper attendanceResponseMapper;
+    private final EmployeeService employeeService;
+    private final EmployeeModelAssembler employeeModelAssembler;
+    private final EmployeeFacade employeeFacade;
+    private final AttendanceResponseMapper attendanceResponseMapper;
 
     @GetMapping("/employees")
     public CollectionModel<EntityModel<EmployeeLoginResponseDTO>> all() {
@@ -93,29 +70,8 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("attendance/employees/{employeeId}")
-    public List<EmployeeAttendanceResponseDTO> viewAttendance(@PathVariable("employeeId") Long userId
-            , @RequestParam(name = "period") Optional<Period> period
-            , @RequestParam(name = "value") Optional<String> value) {
-        log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, userId);
-
-        List<EmployeeAttendance> employeeAttendances = employeeService.getEmployeeAttendancesByEmployeeId(
-                userId
-                , period
-                        .map(p -> attendanceRequestMapper.periodStartDateValue(p, value))
-                        .orElse(Optional.empty())
-                , period
-                        .map(p -> attendanceRequestMapper.periodEndDateValue(p, value))
-                        .orElse(Optional.empty()));
-
-        return employeeAttendances
-                .stream()
-                .map(attendanceResponseMapper::mapEmployeeAttendanceToEmployee)
-                .collect(Collectors.toList());
-    }
-
     //Load employee for marking attendance
-    @GetMapping("attendance/departments/{departmentId}/employees")
+    /*@GetMapping("attendance/departments/{departmentId}/employees")
     public CollectionModel<EmployeeAttendanceResponseDTO> loadEmployeesByDepartment(
             @PathVariable("departmentId") Long departmentId) {
         List<EmployeeAttendanceResponseDTO> dtos = employeeService
@@ -127,5 +83,5 @@ public class EmployeeController {
         return CollectionModel.of(dtos
                 , linkTo(methodOn(EmployeeController.class).loadEmployeesByDepartment(departmentId)).withSelfRel());
 
-    }
+    }*/
 }

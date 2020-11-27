@@ -6,6 +6,8 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.EmployeeNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.InstituteDepartmentService;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,11 +18,9 @@ import java.util.stream.Collectors;
 @Component
 public class EmployeeMapperImpl extends UserMapperImpl{
 
-    @Autowired
-    InstituteDepartmentService departmentService;
-
-    @Autowired
-    EmployeeService employeeService;
+    public EmployeeMapperImpl(UserProfileMapperImpl userProfileMapper, ContactMapperImpl contactMapper) {
+        super(userProfileMapper, contactMapper);
+    }
 
     public EmployeeCreationDTO toDTO(Employee employee) {
         if ( employee == null ) {
@@ -56,7 +56,7 @@ public class EmployeeMapperImpl extends UserMapperImpl{
         Employee employee = new Employee();
 
         userCreationDTOToUser(employee, employeeCreationDTO);
-        employee.setManager( fromId( employeeCreationDTO.getManagerId() ) );
+//        employee.setManager( fromId( employeeCreationDTO.getManagerId() ) );
         employee.setSubordinates( longSetToEmployeeSet( employeeCreationDTO.getSubordinates() ) );
 //        employee.setUserProfile( userProfileMapper.dtoToUserProfile( employeeCreationDTO.getProfile() ) );
 //        employee.setId( employeeCreationDTO.getId() );
@@ -68,7 +68,7 @@ public class EmployeeMapperImpl extends UserMapperImpl{
         employee.setEmployeeType( employeeCreationDTO.getEmployeeType() );
 
 //        userPrivileges( employeeCreationDTO, employee );
-        setEmployeeDepartments( employeeCreationDTO, employee );
+//        setEmployeeDepartments( employeeCreationDTO, employee );
 
         return employee;
     }
@@ -92,18 +92,18 @@ public class EmployeeMapperImpl extends UserMapperImpl{
         }
 
         Set<Employee> set1 = new HashSet<Employee>( Math.max( (int) ( set.size() / .75f ) + 1, 16 ) );
-        for ( Long long1 : set ) {
-            set1.add( fromId( long1 ) );
-        }
+//        for ( Long long1 : set ) {
+//            set1.add( fromId( long1 ) );
+//        }
 
         return set1;
     }
 
-    protected void setEmployeeDepartments(EmployeeCreationDTO creationDTO, Employee employee){
-        employee.setUserDepartments(creationDTO.getDepartments().stream().map(
-                id -> new UserDepartment(employee, departmentService.findOneByDepartmentId(id))
-        ).collect(Collectors.toSet()));
-    }
+//    protected void setEmployeeDepartments(EmployeeCreationDTO creationDTO, Employee employee){
+//        employee.setUserDepartments(creationDTO.getDepartments().stream().map(
+//                id -> new UserDepartment(employee, departmentService.findOneByDepartmentId(id))
+//        ).collect(Collectors.toSet()));
+//    }
     protected  void setEmployeeDTODepartments(EmployeeCreationDTO creationDTO, Employee employee){
         creationDTO.setDepartments(employee.getUserDepartments()
                 .stream()
@@ -113,7 +113,7 @@ public class EmployeeMapperImpl extends UserMapperImpl{
     protected Long idFromEmployee(Employee employee){
         return employee.getId();
     }
-    protected Employee fromId(Long id){
-        return employeeService.findById(id).orElseThrow(()->new EmployeeNotFoundException(id));
-    }
+//    protected Employee fromId(Long id){
+//        return employeeService.findById(id).orElseThrow(()->new EmployeeNotFoundException(id));
+//    }
 }

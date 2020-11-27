@@ -1,53 +1,20 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.Embeddable;
 import java.util.Objects;
 
 @Embeddable
+@NoArgsConstructor
+@Data
 public class Contact {
 
     private String phone;
     private String email;
-
     private String alternatePhone;
     private String alternateEmail;
-
-    public String getAlternateEmail() {
-        return alternateEmail;
-    }
-
-    public void setAlternateEmail(String alternateEmail) {
-        this.alternateEmail = alternateEmail;
-    }
-
-
-    public String getAlternatePhone() {
-        return alternatePhone;
-    }
-
-    public void setAlternatePhone(String alternatePhone) {
-        this.alternatePhone = alternatePhone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public Contact(){
-
-    }
 
     public Contact(String phone, String email){
         this.phone = phone;
@@ -58,28 +25,5 @@ public class Contact {
         this(phone, email);
         this.alternatePhone = alternatePhone;
         this.alternateEmail = alternateEmail;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Contact)) return false;
-        Contact contact = (Contact) o;
-        return Objects.equals(phone, contact.phone);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(phone, email, alternatePhone, alternateEmail);
-    }
-
-    @Override
-    public String toString() {
-        return "Contact{" +
-                "phone='" + phone + '\'' +
-                ", email='" + email + '\'' +
-                ", alternatePhone='" + alternatePhone + '\'' +
-                ", alternateEmail='" + alternateEmail + '\'' +
-                '}';
     }
 }

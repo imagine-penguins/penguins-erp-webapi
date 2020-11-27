@@ -11,7 +11,6 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Arrays;
 import java.util.Map;
 
 @Slf4j
@@ -26,8 +25,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        log.debug("Cors Origins are listed below:");
-        Arrays.stream(angularClient).forEach(client -> log.debug("Cors Origin: {}", client));
         registry.addMapping("/**")
                 .allowedOrigins(angularClient)
                 .allowedMethods("GET", "PUT", "DELETE", "POST");

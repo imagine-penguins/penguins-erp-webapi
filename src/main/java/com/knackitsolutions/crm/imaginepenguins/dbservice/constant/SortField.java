@@ -1,42 +1,73 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.constant;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.common.sort.Sortable;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserListDTO;
 
 import java.util.Comparator;
 import java.util.stream.Stream;
 
 public enum SortField {
-    NAME("name"){
+    FIRST_NAME("first-name"){
         @Override
-        public Comparator<UserListDTO.UserDTO> comparator() {
+        public Comparator<Sortable> comparator() {
             return Comparator
-                    .comparing(UserListDTO.UserDTO::getFirstName)
-                    .thenComparing(UserListDTO.UserDTO::getLastName);
+                    .comparing(Sortable::getFirstName);
         }
     },
-    TYPE("type"){
+    LAST_NAME("last-name"){
         @Override
-        public Comparator<UserListDTO.UserDTO> comparator() {
-            return Comparator.comparing(UserListDTO.UserDTO::getUserType);
+        public Comparator<Sortable> comparator() {
+            return Comparator
+                    .comparing(Sortable::getLastName);
         }
     },
-    STATUS("status"){
+    ROLL_NUMBER("roll-number"){
         @Override
-        public Comparator<UserListDTO.UserDTO> comparator() {
-            return Comparator.comparing(UserListDTO.UserDTO::getActive);
+        public Comparator<Sortable> comparator() {
+            return Comparator.comparing(Sortable::getRollNumber);
+        }
+    },
+    EMPLOYEE_ID("employee-id"){
+        @Override
+        public Comparator<Sortable> comparator() {
+            return Comparator.comparing(Sortable::getEmployeeId);
+        }
+    },
+    SECTION("class-section"){
+        @Override
+        public Comparator<Sortable> comparator() {
+            return Comparator.comparing(Sortable::getSection);
+        }
+    },
+    ATTENDANCE_STATUS("attendance-status"){
+        @Override
+        public Comparator<Sortable> comparator() {
+            return Comparator.comparing(Sortable::getAttendanceStatus);
+        }
+    },
+    USER_TYPE("user-type"){
+        @Override
+        public Comparator<Sortable> comparator() {
+            return Comparator.comparing(Sortable::getUserType);
+        }
+    },
+    ACTIVE_STATUS("active-status"){
+        @Override
+        public Comparator<Sortable> comparator() {
+            return Comparator.comparing(Sortable::getActiveStatus);
         }
     },
     PHONE("phone"){
         @Override
-        public Comparator<UserListDTO.UserDTO> comparator() {
+        public Comparator<Sortable> comparator() {
             return Comparator
-                    .comparing(userDTO -> userDTO.getContact().getPhone());
+                    .comparing(Sortable::getPhone);
         }
     },
     EMAIL("email"){
         @Override
-        public Comparator<UserListDTO.UserDTO> comparator() {
-            return Comparator.comparing(userDTO -> userDTO.getContact().getEmail());
+        public Comparator<Sortable> comparator() {
+            return Comparator.comparing(Sortable::getEmail);
         }
     };
 
@@ -58,6 +89,6 @@ public enum SortField {
                 .orElseThrow(() -> new IllegalArgumentException("\"" + fieldName + "\" sorting field not found"));
     }
 
-    public abstract Comparator<UserListDTO.UserDTO> comparator();
+    public abstract Comparator<Sortable> comparator();
 
 }

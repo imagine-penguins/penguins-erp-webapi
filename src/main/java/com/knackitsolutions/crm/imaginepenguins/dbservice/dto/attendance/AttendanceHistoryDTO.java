@@ -1,67 +1,25 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 
+import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class AttendanceHistoryDTO extends RepresentationModel<AttendanceHistoryDTO> {
+    private List<UserAttendanceResponseDTO> users;
 
-    private List<StudentAttendanceResponseDTO> students;
-    private List<EmployeeAttendanceResponseDTO> employees;
     private GraphData graphData;
 
-    public List<EmployeeAttendanceResponseDTO> getEmployees() {
-        return employees;
-    }
-
-    public void setEmployees(List<EmployeeAttendanceResponseDTO> employees) {
-        this.employees = employees;
-    }
-
-    public List<StudentAttendanceResponseDTO> getStudents() {
-        return students;
-    }
-
-    public void setStudents(List<StudentAttendanceResponseDTO> students) {
-        this.students = students;
-    }
-
-    public GraphData getGraphData() {
-        return graphData;
-    }
-
-    public void setGraphData(GraphData graphData) {
-        this.graphData = graphData;
-    }
-
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class GraphData {
         private Integer presentPercent;
         private Integer absentPercent;
         private Integer leavePercent;
-
-        public Integer getPresentPercent() {
-            return presentPercent;
-        }
-
-        public void setPresentPercent(Integer presentPercent) {
-            this.presentPercent = presentPercent;
-        }
-
-        public Integer getAbsentPercent() {
-            return absentPercent;
-        }
-
-        public void setAbsentPercent(Integer absentPercent) {
-            this.absentPercent = absentPercent;
-        }
-
-        public Integer getLeavePercent() {
-            return leavePercent;
-        }
-
-        public void setLeavePercent(Integer leavePercent) {
-            this.leavePercent = leavePercent;
-        }
     }
 
 

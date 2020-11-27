@@ -43,10 +43,10 @@ public class InstituteDepartment {
     @OneToMany(mappedBy = "instituteDepartment")
     @Getter
     private Set<UserDepartment> userDepartments = new HashSet<>();
-
+/*
     @OneToMany(mappedBy = "instituteDepartment")
     @Getter
-    private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
+    private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();*/
 
     @OneToMany(mappedBy = "instituteDepartment")
     @Getter
@@ -72,14 +72,14 @@ public class InstituteDepartment {
         this.privileges = privileges;
     }
 
-    public void setEmployeeAttendances(Set<EmployeeAttendance> employeeAttendances) {
+    /*public void setEmployeeAttendances(Set<EmployeeAttendance> employeeAttendances) {
         employeeAttendances.forEach(this::setEmployeeAttendances);
     }
 
     public void setEmployeeAttendances(EmployeeAttendance employeeAttendance) {
         this.employeeAttendances.add(employeeAttendance);
         employeeAttendance.setInstituteDepartment(this);
-    }
+    }*/
 
     public void setPrivileges(Set<InstituteDepartmentPrivilege> privileges) {
         privileges.forEach(this::setPrivileges);

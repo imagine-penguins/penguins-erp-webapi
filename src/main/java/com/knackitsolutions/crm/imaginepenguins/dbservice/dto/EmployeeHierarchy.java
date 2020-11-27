@@ -7,39 +7,35 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 @Value
-@JsonPropertyOrder({"self", "manager"})
+@JsonPropertyOrder({"firstName", "lastName", "middleName", "email", "phone", "designation"})
 public class EmployeeHierarchy {
 
     @JsonIgnore
     private final Employee employee;
 
-    public EmployeeDetail getManager() {
-        return new EmployeeDetail(employee.getManager());
+    public String getFirstName() {
+        return this.employee.getUserProfile().getFirstName();
+
     }
 
-    public EmployeeDetail getSelf() {
-        return new EmployeeDetail(employee);
+    public String getMiddleName() {
+        return this.employee.getUserProfile().getMiddleName();
     }
 
+    public String getLastName() {
+        return this.employee.getUserProfile().getFirstName();
+    }
 
-    @Value
-    @JsonPropertyOrder({"email", "phone", "designation"})
-    public static class EmployeeDetail {
+    public String getEmail() {
+        return  this.employee.getUserProfile().getContact().getEmail();
+    }
 
-        @JsonIgnore
-        private final Employee employee;
+    public String getPhone() {
+        return this.employee.getUserProfile().getContact().getPhone();
+    }
 
-        public String getEmail() {
-            return  this.employee.getUserProfile().getContact().getEmail();
-        }
-
-        public String getPhone() {
-            return this.employee.getUserProfile().getContact().getPhone();
-        }
-
-        public String getDesignation() {
-            return this.employee.getDesignation();
-        }
+    public String getDesignation() {
+        return this.employee.getDesignation();
     }
 
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InstituteService {
@@ -18,9 +19,8 @@ public class InstituteService {
 
     public Institute newInstitute(Institute institute){return instituteRepository.save(institute);}
 
-    public Institute findById(Integer id){
-        return instituteRepository.findById(id)
-                .orElseThrow(() -> new InstituteNotFoundException(id));
+    public Optional<Institute> findById(Integer id){
+        return instituteRepository.findById(id);
     }
 
     public List<Institute> all(){return instituteRepository.findAll();}

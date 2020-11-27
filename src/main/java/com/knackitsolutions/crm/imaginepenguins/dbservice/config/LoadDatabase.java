@@ -1,6 +1,5 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.config;
 
-import com.google.common.collect.ImmutableList;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
@@ -18,10 +17,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -102,7 +98,7 @@ public class LoadDatabase {
 
         employee2 = employeeService.newEmployee(employee2);
 
-        employees.addAll(ImmutableList.of(employee1, employee2));
+        employees.addAll(Arrays.asList(employee1, employee2));
     }
 
     public static void setupTeachers(TeacherServiceImpl teacherServiceImpl) {
@@ -113,7 +109,7 @@ public class LoadDatabase {
                         new Address("d", "74", "Delhi", "India", "110043"),
                         new Contact("9000", "mj01@gmail.com")), EmployeeType.TEACHER, "HOD");
         teacher1.setVerified(true);
-        teacher1.setActive(false);
+        teacher1.setActive(true);
         Teacher teacher2 = new Teacher(1l, "nishi", "nishi003", UserType.EMPLOYEE, Boolean.FALSE, Boolean.FALSE,
                 new UserProfile("t2", "t2",
                         new Address("d", "22", "Delhi", "India", "110043"),
@@ -137,7 +133,7 @@ public class LoadDatabase {
         teacher1.setSubordinates(teacher2);
 
         teacher2 = teacherServiceImpl.newTeacher(teacher2);
-        teachers.addAll(ImmutableList.of(teacher1, teacher2));
+        teachers.addAll(Arrays.asList(teacher1, teacher2));
 
     }
 
@@ -345,20 +341,20 @@ public class LoadDatabase {
     }
 
     private static void setupPrivileges(PrivilegeRepository privilegeRepository) {
-        Privilege privilege1 = new Privilege(1, PrivilegeCode.ATTENDANCE
+        Privilege privilege1 = new Privilege(null, PrivilegeCode.ATTENDANCE
                 , "Attendance", "Attendance Module");
-        Privilege privilege2 = new Privilege(1, PrivilegeCode.CALENDAR
+        Privilege privilege2 = new Privilege(null, PrivilegeCode.CALENDAR
                 , "Calendar", "Calendar Module");
         privilege1 = privilegeRepository.save(privilege1);
         privilege2 = privilegeRepository.save(privilege2);
 
-        Privilege privilege3 = new Privilege(1, PrivilegeCode.VIEW_SELF_ATTENDANCE
+        Privilege privilege3 = new Privilege(null, PrivilegeCode.VIEW_SELF_ATTENDANCE
                 , "View Self Attendance", "View Self Attendance");
-        Privilege privilege4 = new Privilege(1, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
+        Privilege privilege4 = new Privilege(null, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
                 , "Mark Employee Attendance", "Mark Employee Attendance");
-        Privilege privilege5 = new Privilege(1, PrivilegeCode.MARK_STUDENT_ATTENDANCE
+        Privilege privilege5 = new Privilege(null, PrivilegeCode.MARK_STUDENT_ATTENDANCE
                 , "Mark Student Attendance", "Mark Student Attendance");
-        Privilege privilege6 = new Privilege(1, PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY
+        Privilege privilege6 = new Privilege(null, PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY
                 , "View Students Attendance History", "View Students Attendance History");
 
         Privilege privilege7 = new Privilege(1, PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY
@@ -372,7 +368,12 @@ public class LoadDatabase {
         Privilege privilege10 = new Privilege(1, PrivilegeCode.UPDATE_LEAVE_REQUEST
                 , "Approve/Reject UserDTO Leave Request", "Approve/Reject UserDTO Leave Request");
 
-        Stream.of(privilege3, privilege4, privilege5, privilege6, privilege7, privilege8, privilege9, privilege10)
+        Privilege privilege11 = new Privilege(1, PrivilegeCode.MANAGE_USERS
+                , "Manage Users", "Manage Users");
+        privilegeRepository.save(privilege11);
+
+        Stream.of(privilege3, privilege4, privilege5, privilege6, privilege7
+                , privilege8, privilege9, privilege10)
                 .forEach(privilege1::setPrivileges);
 
         privileges.addAll(Stream.of(
@@ -382,18 +383,24 @@ public class LoadDatabase {
     }
 
     private static void setupInstituteDepartmentPrivileges(InstituteDepartmentPrivilegeRepository repository) {
+        InstituteDepartment adminDepartment = departments.get(0);
+        InstituteDepartment teacherDepartment = departments.get(2);
+        InstituteDepartment studentDepartment = departments.get(1);
         //admin department privilege
-        instituteDepartmentPrivileges.addAll(privileges.stream().map(privilege -> {
-            InstituteDepartmentPrivilege departmentPrivilege = new InstituteDepartmentPrivilege(departments.get(0), privilege);
-            return repository.save(departmentPrivilege);
-        }).collect(Collectors.toList()));
+        instituteDepartmentPrivileges.addAll(
+                privileges
+                        .stream()
+                        .map(privilege -> new InstituteDepartmentPrivilege(adminDepartment, privilege))
+                        .map(repository::save)
+                        .collect(Collectors.toList())
+        );
 
         //student department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege1 =
-                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(6));
-        departments.get(1).setPrivileges(instituteDepartmentPrivilege1);
+                new InstituteDepartmentPrivilege(studentDepartment, privileges.get(6));
+        studentDepartment.setPrivileges(instituteDepartmentPrivilege1);
         privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
-//
+
 //        InstituteDepartmentPrivilege instituteDepartmentPrivilege11 =
 //                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(6));
 //        departments.get(1).setPrivileges(instituteDepartmentPrivilege11);
@@ -401,31 +408,31 @@ public class LoadDatabase {
 
         //teacher department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege2 =
-                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(2));
-        departments.get(2).setPrivileges(instituteDepartmentPrivilege2);
+                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(2));
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege2);
         privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege3 =
-                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(3));
-        departments.get(2).setPrivileges(instituteDepartmentPrivilege3);
+                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(3));
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege3);
         privileges.get(3).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege4 =
-                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(4));
-        departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
+                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(4));
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege4);
         privileges.get(4).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege5 =
-                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(6));
-        departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
+                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(6));
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege4);
         privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege6 =
-                new InstituteDepartmentPrivilege(departments.get(2), privileges.get(7));
-        departments.get(2).setPrivileges(instituteDepartmentPrivilege4);
+                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(7));
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege4);
         privileges.get(7).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
 
-        //parent department privilege
+//        parent department privilege
 //        InstituteDepartmentPrivilege instituteDepartmentPrivilege5 =
 //                new InstituteDepartmentPrivilege(departments.get(3), privileges.get(2));
 //
@@ -433,12 +440,13 @@ public class LoadDatabase {
 //        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
 
 
-        instituteDepartmentPrivileges.addAll(departments.stream().map(department -> {
+        instituteDepartmentPrivileges.addAll(
+                departments
+                        .stream().map(department -> {
             InstituteDepartmentPrivilege privilege = new InstituteDepartmentPrivilege(department, privileges.get(0));
             department.setPrivileges(privilege);
             privileges.get(0).addInstituteDepartmentPrivilege(privilege);
-            repository.save(privilege);
-            return privilege;
+            return repository.save(privilege);
         }).collect(Collectors.toList()));
 
         instituteDepartmentPrivileges.addAll(Stream.of(
@@ -452,40 +460,45 @@ public class LoadDatabase {
                 .collect(Collectors.toList()));
     }
 
-    private static void setupUserDepartment(UserDepartmentRepository userDepartmentRepository) {
-        UserDepartment userDepartment1 = new UserDepartment(employees.get(0), departments.get(0));
+    private static void setupUserDepartment(UserDepartmentRepository userDepartmentRepository, DepartmentRepository departmentRepository) {
+        InstituteDepartment admin = departmentRepository.findByDepartmentName("ADMIN");
+        InstituteDepartment teacher = departmentRepository.findByDepartmentName("TEACHER");
+        InstituteDepartment student = departmentRepository.findByDepartmentName("STUDENT");
+        UserDepartment userDepartment1 =
+                new UserDepartment(employees.get(0), admin);
         employees.get(0).setUserDepartment(userDepartment1);
         departments.get(0).addUserDepartment(userDepartment1);
-        UserDepartment userDepartment2 = new UserDepartment(employees.get(1), departments.get(0));
+
+        UserDepartment userDepartment2 = new UserDepartment(employees.get(1), admin);
         employees.get(1).setUserDepartment(userDepartment2);
         departments.get(0).addUserDepartment(userDepartment2);
 
         //teacher department
-        UserDepartment userDepartment3 = new UserDepartment(teachers.get(0), departments.get(2));
+        UserDepartment userDepartment3 = new UserDepartment(teachers.get(0), teacher);
         teachers.get(0).setUserDepartment(userDepartment3);
         departments.get(2).addUserDepartment(userDepartment3);
 
         //admin department
-        UserDepartment userDepartment4 = new UserDepartment(teachers.get(0), departments.get(0));
+        UserDepartment userDepartment4 = new UserDepartment(teachers.get(0), admin);
         teachers.get(0).setUserDepartment(userDepartment4);
         departments.get(0).addUserDepartment(userDepartment4);
 
         //teacher department
-        UserDepartment userDepartment5 = new UserDepartment(teachers.get(1), departments.get(2));
+        UserDepartment userDepartment5 = new UserDepartment(teachers.get(1), teacher);
         teachers.get(1).setUserDepartment(userDepartment5);
         departments.get(2).addUserDepartment(userDepartment5);
 
-        userDepartments.addAll(Stream.of(userDepartment1, userDepartment2, userDepartment3, userDepartment4, userDepartment5)
+        userDepartments.addAll(Stream.of(userDepartment1, userDepartment2, userDepartment3
+                , userDepartment4, userDepartment5)
                 .map(userDepartmentRepository::save).collect(Collectors.toList()));
 
         //students
-        userDepartments.addAll(students.stream().map(student -> {
-            UserDepartment department = new UserDepartment(student, departments.get(1));
-            student.setUserDepartment(department);
+        userDepartments.addAll(students.stream().map(studentT -> {
+            UserDepartment department = new UserDepartment(studentT, student);
+            studentT.setUserDepartment(department);
             departments.get(1).addUserDepartment(department);
             return userDepartmentRepository.save(department);
         }).collect(Collectors.toList()));
-
     }
 
     private static void setupUserPrivileges(UserPrivilegeRepository repository, UserRepository userRepository
@@ -551,22 +564,27 @@ public class LoadDatabase {
 
         return args -> {
             log.info("Loading Database");
-            setupInstitutes(instituteRepository);
-            setupClasses(classRepository, instituteClassRepository);
-            setupSections(sectionRepository, instituteClassSectionRepository);
-            setupEmployees(employeeService);
-            setupTeachers(teacherServiceImpl);
-            setupStudents(studentServiceImpl);
-            setupClassTeacher(teacherRepository, instituteClassSectionRepository);
-            setupSubjects(subjectRepository);
-            setupTeacherClassesAndSubjects(classSectionSubjectRepository, subjectRepository, teacherRepository);
-            setupDepartment(departmentRepository);
-            setupPrivileges(privilegeRepository);
-            setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository);
-            setupUserDepartment(userDepartmentRepository);
-            setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
+//            instituteRepository.deleteAll();
+//            setupInstitutes(instituteRepository);
+////            classRepository.deleteAll();
+////            instituteClassRepository.deleteAll();
+//            setupClasses(classRepository, instituteClassRepository);
+////            sectionRepository.deleteAll();
+//            setupSections(sectionRepository, instituteClassSectionRepository);
+//            setupEmployees(employeeService);
+//            setupTeachers(teacherServiceImpl);
+//            setupStudents(studentServiceImpl);
+//            setupClassTeacher(teacherRepository, instituteClassSectionRepository);
+//            setupSubjects(subjectRepository);
+//            setupTeacherClassesAndSubjects(classSectionSubjectRepository, subjectRepository, teacherRepository);
+//            setupDepartment(departmentRepository);
+//            setupPrivileges(privilegeRepository);
+//            setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository);
+//            setupUserDepartment(userDepartmentRepository, departmentRepository);
+//            setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
             log.info("Finished Loading Database");
         };
 
     }
+
 }

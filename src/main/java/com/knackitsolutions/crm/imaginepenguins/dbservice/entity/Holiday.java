@@ -1,10 +1,13 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "holidays")
+@NoArgsConstructor
 public class Holiday {
 
     @Id
@@ -17,7 +20,7 @@ public class Holiday {
     @Column(name = "occasion",  nullable = false)
     private String occasion;
 
-    @Column(name = "desc")
+    @Column(name = "description")
     private String desc;
 
     @ManyToOne(optional = false)

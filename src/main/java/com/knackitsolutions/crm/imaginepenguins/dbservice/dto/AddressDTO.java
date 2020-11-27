@@ -1,7 +1,5 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class AddressDTO {
 
     String line1;

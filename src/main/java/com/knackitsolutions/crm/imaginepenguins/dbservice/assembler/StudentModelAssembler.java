@@ -14,7 +14,6 @@ public class StudentModelAssembler implements RepresentationModelAssembler<Stude
     @Override
     public EntityModel<StudentLoginResponseDTO> toModel(StudentLoginResponseDTO entity) {
         return EntityModel.of(entity,
-                linkTo(methodOn(StudentController.class).one(entity.getUserId())).withSelfRel(),
                 linkTo(methodOn(StudentController.class).all()).withRel("/students"));
     }
 }

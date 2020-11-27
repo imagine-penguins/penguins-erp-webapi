@@ -2,13 +2,11 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import javax.persistence.*;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.InstituteDocumentStore;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.listner.InstituteListner;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 @EntityListeners(InstituteListner.class)
@@ -37,8 +35,8 @@ public class Institute {
 	@Temporal(TemporalType.TIME)
 	Date closeTime;
 
-	@Column(name = "log_img")
-	String logoImg;
+	@OneToMany(mappedBy = "institute")
+	List<InstituteDocumentStore> instituteDocumentStores;
 
 	@Embedded
 	@AttributeOverrides(value = {@AttributeOverride(name = "addressLine1", column = @Column(name = "house_number")),
@@ -201,12 +199,17 @@ public class Institute {
 
 	}
 
-	public String getLogoImg() {
-		return logoImg;
+	public List<InstituteDocumentStore> getInstituteDocumentStores() {
+		return instituteDocumentStores;
 	}
 
-	public void setLogoImg(String logoImg) {
-		this.logoImg = logoImg;
+	public void setInstituteDocumentStores(InstituteDocumentStore instituteDocumentStore) {
+		this.instituteDocumentStores.add(instituteDocumentStore);
+		instituteDocumentStore.setInstitute(this);
+	}
+
+	public void setInstituteDocumentStores(List<InstituteDocumentStore> instituteDocumentStores) {
+		instituteDocumentStores.forEach(this::setInstituteDocumentStores);
 	}
 
 	public Set<Employee> getEmployees() {
@@ -231,7 +234,6 @@ public class Institute {
 				", recognitionNumber='" + recognitionNumber + '\'' +
 				", openTime=" + openTime +
 				", closeTime=" + closeTime +
-				", logoImg='" + logoImg + '\'' +
 				", address=" + address +
 				", contact=" + contact +
 				'}';

@@ -10,7 +10,6 @@ public class UserLoginResponseMapper {
     public void entityToDTO(UserLoginResponseDTO userLoginResponseDTO, User user){
         if (user == null || userLoginResponseDTO == null)
             return;
-        userLoginResponseDTO.setUserId(user.getId());
     }
 
     public UserLoginResponseDTO entityToDTO(User user){

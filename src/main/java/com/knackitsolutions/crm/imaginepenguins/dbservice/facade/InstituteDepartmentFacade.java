@@ -6,6 +6,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.PrivilegeDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteDepartmentPrivilege;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.InstituteNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentPrivilegeRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.InstituteDepartmentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.InstituteService;
@@ -73,9 +74,8 @@ public class InstituteDepartmentFacade {
     }
 
     public InstituteDepartment convertToInstituteDepartmentEntity(InstituteDepartmentDTO dto){
-        Institute institute = instituteService.findById(dto.getInstituteId());
+        Institute institute = instituteService.findById(dto.getInstituteId()).orElseThrow(() -> new InstituteNotFoundException(dto.getInstituteId()));
         InstituteDepartment instituteDepartment = new InstituteDepartment(dto.getDepartmentName(), institute);
-        //InstituteDepartmentPrivilege departmentPrivilege = new InstituteDepartmentPrivilege();
         return  instituteDepartment;
     }
 

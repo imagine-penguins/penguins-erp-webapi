@@ -4,44 +4,28 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.TeacherModel
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ClassSectionSubjectMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.ClassSectionSubjectDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.TeacherLoginResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.TeacherFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.TeacherService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 
 @RestController
 @Slf4j
+@RequiredArgsConstructor
 @RequestMapping("/teachers")
 public class TeacherController {
 
-    @Autowired
-    private TeacherFacade facade;
-
-    @Autowired
-    private TeacherService teacherService;
-
-    @Autowired
-    private ClassSectionSubjectMapper classSectionSubjectMapper;
-
-    @Autowired
-    private TeacherModelAssembler assembler;
-
-    @Autowired
-    private IAuthenticationFacade authenticationFacade;
+    private final TeacherFacade facade;
+    private final TeacherService teacherService;
+    private final ClassSectionSubjectMapper classSectionSubjectMapper;
+    private final TeacherModelAssembler assembler;
+    private final IAuthenticationFacade authenticationFacade;
 
     @GetMapping("")
     public CollectionModel<TeacherLoginResponseDTO> all() {
@@ -55,7 +39,7 @@ public class TeacherController {
 
     @GetMapping("/classes")
     public EntityModel<ClassSectionSubjectDTO> classes(){
-        Long teacherId = ((User) authenticationFacade.getAuthentication().getPrincipal()).getId();
+        Long teacherId = ((UserContext) authenticationFacade.getAuthentication().getPrincipal()).getUserId();
         return EntityModel.of(facade.loadClasses(teacherId));
 
     }

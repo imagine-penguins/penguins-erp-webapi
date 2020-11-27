@@ -2,10 +2,12 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 
 @Entity(name = "userprofile")
@@ -21,6 +23,9 @@ public class UserProfile {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "middle_name")
+    private String middleName;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
     @MapsId
     @JoinColumn(name = "user_id", nullable = false)
@@ -29,11 +34,8 @@ public class UserProfile {
     @Column(name = "date_of_joining", nullable = false, updatable = false)
     private Timestamp dateOfJoining;
 
-    @JsonIgnore
     @Transient
     private String doj;
-
-    private String profilePic;
 
     @Embedded
     @AttributeOverrides(value = {
@@ -172,11 +174,12 @@ public class UserProfile {
         this.doj = doj;
     }
 
-    public String getProfilePic() {
-        return profilePic;
+    public String getMiddleName() {
+        return middleName;
     }
 
-    public void setProfilePic(String profilePic) {
-        this.profilePic = profilePic;
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
     }
+
 }

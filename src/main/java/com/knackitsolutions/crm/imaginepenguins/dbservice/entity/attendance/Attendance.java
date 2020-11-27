@@ -42,6 +42,12 @@ public class Attendance {
         updateTime = new Date(System.currentTimeMillis());
     }
 
+    public Attendance(Date attendanceDate, AttendanceStatus attendanceStatus) {
+        this();
+        this.attendanceDate = attendanceDate;
+        this.attendanceStatus = attendanceStatus;
+    }
+
     public Attendance(Long id, Date attendanceDate, AttendanceStatus attendanceStatus) {
         this();
         this.id = id;

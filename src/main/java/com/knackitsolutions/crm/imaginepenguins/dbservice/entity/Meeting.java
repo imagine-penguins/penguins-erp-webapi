@@ -1,11 +1,14 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "meetings")
+@NoArgsConstructor
 public class Meeting {
 
     @Id

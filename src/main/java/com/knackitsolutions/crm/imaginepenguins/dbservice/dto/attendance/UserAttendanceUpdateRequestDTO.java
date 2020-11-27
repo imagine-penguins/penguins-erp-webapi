@@ -17,27 +17,16 @@ import java.util.Optional;
         @JsonSubTypes.Type(value = StudentAttendanceUpdateRequestDTO.class, name = "student")
 })
 public class UserAttendanceUpdateRequestDTO {
-    private Long supervisorId;
-
     @JsonFormat(pattern = "dd-MM-yyyy")
     private Date attendanceDate;
     private AttendanceStatus status;
 
     public UserAttendanceUpdateRequestDTO(Long supervisorId, Date attendanceDate, AttendanceStatus status) {
-        this.supervisorId = supervisorId;
         this.attendanceDate = attendanceDate;
         this.status = status;
     }
 
     public UserAttendanceUpdateRequestDTO() {
-    }
-
-    public Long getSupervisorId() {
-        return supervisorId;
-    }
-
-    public void setSupervisorId(Long supervisorId) {
-        this.supervisorId = supervisorId;
     }
 
     public Date getAttendanceDate() {
@@ -59,7 +48,6 @@ public class UserAttendanceUpdateRequestDTO {
     @Override
     public String toString() {
         return "UserAttendanceUpdateRequestDTO{" +
-                "supervisorId=" + supervisorId +
                 ", attendanceDate=" + attendanceDate +
                 ", status=" + status +
                 '}';

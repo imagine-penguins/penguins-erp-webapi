@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.common.sort.Sortable;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class UserListDTO extends RepresentationModel<UserListDTO> {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UserDTO extends RepresentationModel<UserDTO> {
+    public static class UserDTO extends RepresentationModel<UserDTO> implements Sortable {
         String profilePic;
         String firstName;
         String lastName;
@@ -30,6 +31,21 @@ public class UserListDTO extends RepresentationModel<UserListDTO> {
         ContactDTO contact;
         UserType userType;
         Boolean active;
+
+        @Override
+        public String getPhone() {
+            return contact.getPhone();
+        }
+
+        @Override
+        public String getEmail() {
+            return contact.getEmail();
+        }
+
+        @Override
+        public String getUserType() {
+            return userType.getUserType();
+        }
 
     }
 }

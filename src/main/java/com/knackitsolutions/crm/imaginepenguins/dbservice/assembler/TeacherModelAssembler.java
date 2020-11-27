@@ -13,7 +13,6 @@ public class TeacherModelAssembler implements RepresentationModelAssembler<Teach
     @Override
     public EntityModel<TeacherLoginResponseDTO> toModel(TeacherLoginResponseDTO dto) {
         return EntityModel.of(dto,
-                linkTo(methodOn(TeacherController.class).one(dto.getUserId())).withSelfRel(),
                 linkTo(methodOn(TeacherController.class).all()).withRel("/teachers"));
     }
 }

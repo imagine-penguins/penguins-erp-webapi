@@ -37,6 +37,9 @@ public class Employee extends User{
     @OneToMany(mappedBy = "employee")
     private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
 
+    @Column(name = "employee_org_id")
+    private String employeeOrgId;
+
     public Employee() {
     }
 
@@ -150,6 +153,14 @@ public class Employee extends User{
         this.employeeAttendances.add(employeeAttendance);
         employeeAttendance.setEmployee(this);
 
+    }
+
+    public String getEmployeeOrgId() {
+        return employeeOrgId;
+    }
+
+    public void setEmployeeOrgId(String employeeOrgId) {
+        this.employeeOrgId = employeeOrgId;
     }
 
     @Override

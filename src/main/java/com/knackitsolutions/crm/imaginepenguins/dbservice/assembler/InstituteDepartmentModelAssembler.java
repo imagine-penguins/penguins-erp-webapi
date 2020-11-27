@@ -15,8 +15,7 @@ public class InstituteDepartmentModelAssembler implements RepresentationModelAss
     @Override
     public EntityModel<InstituteDepartmentDTO> toModel(InstituteDepartmentDTO entity) {
         return EntityModel.of(entity,
-                linkTo(methodOn(InstituteDepartmentController.class).one(entity.getId())).withSelfRel(),
-                linkTo(methodOn(InstituteDepartmentController.class).all()).withRel("/institutes/departments")
+                linkTo(methodOn(InstituteDepartmentController.class).one(entity.getId())).withSelfRel()
         );
     }
 }

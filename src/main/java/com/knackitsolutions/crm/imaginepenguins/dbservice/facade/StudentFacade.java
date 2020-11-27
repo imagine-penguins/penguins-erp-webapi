@@ -2,14 +2,11 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.StudentLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.StudentLoginResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class StudentFacade {

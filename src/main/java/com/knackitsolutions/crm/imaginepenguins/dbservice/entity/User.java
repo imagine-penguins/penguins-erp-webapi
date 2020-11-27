@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -65,6 +66,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "approvedBy")
     private List<LeaveRequest> leaveRequestsApprovedBy = new ArrayList<>();
 
+
+    @OneToMany(mappedBy = "user")
+    List<UserDocumentStore> userDocumentStores = new ArrayList<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return getUserPrivileges()
@@ -73,7 +78,7 @@ public class User implements UserDetails {
                         .getDepartmentPrivilege()
                         .getPrivilege()
                         .getPrivilegeCode()
-                        .toString())
+                        .getPrivilegeCode())
                 ).collect(Collectors.toList());
     }
 
@@ -295,5 +300,18 @@ public class User implements UserDetails {
         this.leaveRequestsApprovedBy.add(leaveRequestApprovedBy);
         leaveRequestApprovedBy.setApprovedBy(this);
 
+    }
+
+    public List<UserDocumentStore> getUserDocumentStores() {
+        return userDocumentStores;
+    }
+
+    public void setUserDocumentStores(List<UserDocumentStore> userDocumentStores) {
+        userDocumentStores.forEach(this::setUserDocumentStores);
+    }
+
+    public void setUserDocumentStores(UserDocumentStore userDocumentStore) {
+        this.userDocumentStores.add(userDocumentStore);
+        userDocumentStore.setUser(this);
     }
 }

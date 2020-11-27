@@ -10,4 +10,5 @@ public interface DepartmentRepository extends JpaRepository<InstituteDepartment,
     List<InstituteDepartment> findByInstitute(Institute institute);
     List<InstituteDepartment> findByInstituteId(Long instituteId);
 
+    InstituteDepartment findByDepartmentName(String departmentName);
 }

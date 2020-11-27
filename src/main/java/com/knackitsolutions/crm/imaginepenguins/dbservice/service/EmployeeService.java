@@ -44,34 +44,6 @@ public class EmployeeService {
                 .orElseThrow(() -> new EmployeeNotFoundException(id)));
     }
 
-    public List<EmployeeAttendance> getEmployeeAttendancesByEmployeeId(Long employeeId, Optional<Date> startDate, Optional<Date> endDate) {
-        if (startDate.isPresent() && endDate.isPresent()) {
-            return attendanceRepository.findByEmployeeAttendanceKeyEmployeeIdAndAttendanceAttendanceDateBetween(employeeId, startDate.get(), endDate.get());
-        }
-        return attendanceRepository.findByEmployeeAttendanceKeyEmployeeId(employeeId);
-    }
-
-    public EmployeeAttendance getEmployeeAttendanceById(EmployeeAttendanceKey key) {
-        return attendanceRepository
-                .findById(key)
-                .orElseThrow(() -> new RuntimeException("Employee Attendance Found."));
-    }
-
-    public Optional<EmployeeAttendance> saveAttendance(EmployeeAttendance employeeAttendance) {
-        return Optional.ofNullable(attendanceRepository.save(employeeAttendance));
-
-    }
-
-    public List<EmployeeAttendance> saveAttendance(List<EmployeeAttendance> employeeAttendances) {
-        return attendanceRepository.saveAll(employeeAttendances);
-
-    }
-
-    public List<EmployeeAttendance> getEmployeeAttendancesByDepartmentId(Long departmentId
-            , Optional<Date> startDate, Optional<Date> endDate) {
-        return attendanceRepository.findByEmployeeUserDepartmentsInstituteDepartmentId(departmentId);
-    }
-
     public List<Employee> getEmployeeByDepartmentId(Long departmentId) {
         return employeeRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
     }
@@ -105,4 +77,5 @@ public class EmployeeService {
                         , instituteId
                 );
     }
+
 }

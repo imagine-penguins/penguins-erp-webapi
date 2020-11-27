@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.assembler;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.DashboardController;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.InstituteController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.UserControllerImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserLoginResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
@@ -20,11 +21,10 @@ public class UserLoginModelAssembler implements RepresentationModelAssembler<Use
     @Override
     public EntityModel<UserLoginResponseDTO> toModel(UserLoginResponseDTO dto) {
         return EntityModel.of(dto,
-                    linkTo(methodOn(UserControllerImpl.class).one(dto.getUserId())).withSelfRel(),
-                    linkTo(methodOn(UserControllerImpl.class).all(0, 10, null, null, null, null, null)).withRel("users"),
+                    linkTo(methodOn(UserControllerImpl.class).all(0, 10, null, null)).withRel("users"),
                     linkTo(methodOn(DashboardController.class).appDashboardDTO( null)).withRel("app-dashboard"),
                     linkTo(methodOn(DashboardController.class).webDashboardDTO( null)).withRel("web-dashboard"),
-                    linkTo(methodOn(UserControllerImpl.class).institute(dto.getUserId())).withRel("institute")
+                    linkTo(methodOn(UserControllerImpl.class).myInstitute()).withRel("institute")
                 );
     }
 }

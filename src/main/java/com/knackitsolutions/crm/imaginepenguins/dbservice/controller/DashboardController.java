@@ -6,6 +6,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.WebDashboardDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.AppDashboardFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,17 +29,17 @@ public class DashboardController {
 
     @GetMapping("/web/department/{departmentId}")
     public EntityModel<WebDashboardDTO> webDashboardDTO(@PathVariable("departmentId") Long departmentId){
-        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         return null;
     }
 
     @GetMapping("/app/department/{departmentId}")
     public EntityModel<AppDashboardDTO> appDashboardDTO(@PathVariable("departmentId") Long departmentId){
-        User user = (User) authenticationFacade.getAuthentication().getPrincipal();
+        UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 
         AppDashboardDTO dto = new AppDashboardDTO();
         List<PrivilegeDTO> privilegeDTOS = appDashboardFacade
-                .getPrivileges(user.getId(), departmentId);
+                .getPrivileges(userContext.getUserId(), departmentId);
         dto.setPrivileges(privilegeDTOS);
 
         //To Do add links for module functions

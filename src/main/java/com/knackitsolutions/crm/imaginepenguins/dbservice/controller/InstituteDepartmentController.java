@@ -20,15 +20,9 @@ public class InstituteDepartmentController {
     @Autowired
     InstituteDepartmentModelAssembler assembler;
 
-    @GetMapping("institutes/departments")
-    public CollectionModel<EntityModel<InstituteDepartment>> all(){
-        return null;
-    }
-
     @GetMapping("institutes/departments/{id}")
     public EntityModel<InstituteDepartmentDTO> one(@PathVariable("id") Long id){
         return assembler.toModel(facade.findById(id));
     }
-
 
 }

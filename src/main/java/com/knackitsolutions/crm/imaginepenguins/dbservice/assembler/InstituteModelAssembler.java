@@ -2,7 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.assembler;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.InstituteControllerImpl;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.InstituteController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -15,8 +15,8 @@ public class InstituteModelAssembler implements RepresentationModelAssembler<Ins
     @Override
     public EntityModel<Institute> toModel(Institute institute) {
         return EntityModel.of(institute,
-                 linkTo(methodOn(InstituteControllerImpl.class).one(institute.getId())).withSelfRel(),
-                 linkTo(methodOn(InstituteControllerImpl.class).all()).withRel("institutes")
+                 linkTo(methodOn(InstituteController.class).one(institute.getId())).withSelfRel(),
+                 linkTo(methodOn(InstituteController.class).all()).withRel("institutes")
         );
     }
 

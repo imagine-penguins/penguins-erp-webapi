@@ -2,25 +2,24 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.google.common.collect.ImmutableList;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceHistoryDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.AttendanceRequestDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.StudentAttendanceResponseDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceRequestDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.AppDashboardFacade;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.StudentFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.TeacherFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.AttendanceService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.TeacherService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
@@ -681,10 +680,10 @@ class DbServiceApplicationTests {
 			, @Autowired AttendanceResponseMapper mapper) {
 		List<InstituteClassSection> instituteClassSections = instituteClassSectionRepository.findAll();
 		log.debug("class id: {}", instituteClassSections.get(0).getId());
-		List<StudentAttendanceResponseDTO> studentsInfo = repository
+		List<UserAttendanceResponseDTO> studentsInfo = repository
 				.findByClassSectionId(instituteClassSections.get(0).getId())
 				.stream()
-				.map(mapper::mapStudentAttendanceToStudent)
+				.map(mapper::mapUserAttendanceToStudent)
 				.collect(Collectors.toList());
 
 		assertThat(studentsInfo).isNotNull();
@@ -703,11 +702,11 @@ class DbServiceApplicationTests {
 		Student student = studentRepository.findAll().get(0);
 		Teacher teacher = teacherRepository.findAll().get(0);
 
-		AttendanceRequestDTO.UserAttendanceRequestDTO dto = new AttendanceRequestDTO.UserAttendanceRequestDTO(student.getId()
+		UserAttendanceRequestDTO dto = new UserAttendanceRequestDTO(student.getId()
 				, AttendanceStatus.PRESENT);
 
-		AttendanceRequestDTO attendanceRequestDTO =
-				new AttendanceRequestDTO();
+		UserAttendanceRequestDTO attendanceRequestDTO =
+				new UserAttendanceRequestDTO();
 		Long subjectId = teacher
 				.getInstituteClassSectionSubjects()
 				.stream()
@@ -717,46 +716,6 @@ class DbServiceApplicationTests {
 
 		Long teacherId = teacher.getId();
 		Date date = new Date(System.currentTimeMillis());
-		attendanceRequestDTO.setAttendanceData(ImmutableList.of(dto));
-		attendanceRequestDTO.setAttendanceDate(date);
-		attendanceRequestDTO.setSupervisorId(teacherId);
-		List<StudentAttendance> entities =
-				mapper.dtoToEntity(attendanceRequestDTO, Optional.empty(), Optional.ofNullable(subjectId));
-
-		assertThat(entities).isNotNull();
-		assertThat(entities).isNotEmpty();
-		assertThat(entities.get(0)).isNotNull();
-		assertThat(entities.get(0).getAttendance()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getSupervisor()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getAttendanceDate()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getAttendanceStatus()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getId()).isNotNull();
-
-		assertThat(entities.get(0).getStudent()).isNotNull();
-
-		if (entities.get(0).getClassSection() == null)
-			assertThat(entities.get(0).getInstituteClassSectionSubject()).isNotNull();
-		if (entities.get(0).getInstituteClassSectionSubject() == null)
-			assertThat(entities.get(0).getClassSection()).isNotNull();
-
-		entities = studentService.saveAttendance(entities);
-
-		assertThat(entities).isNotNull();
-		assertThat(entities).isNotEmpty();
-		assertThat(entities.get(0)).isNotNull();
-		assertThat(entities.get(0).getAttendance()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getSupervisor()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getAttendanceDate()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getAttendanceStatus()).isNotNull();
-		assertThat(entities.get(0).getAttendance().getId()).isNotNull();
-
-		assertThat(entities.get(0).getStudent()).isNotNull();
-
-		if (entities.get(0).getClassSection() == null)
-			assertThat(entities.get(0).getInstituteClassSectionSubject()).isNotNull();
-		if (entities.get(0).getInstituteClassSectionSubject() == null)
-			assertThat(entities.get(0).getClassSection()).isNotNull();
-
 	}
 
 	@Test
@@ -811,8 +770,8 @@ class DbServiceApplicationTests {
 	@Test
 	void attendancehistoryStudentList_notEmpty() {
 		AttendanceHistoryDTO historyDTO = new AttendanceHistoryDTO();
-		StudentAttendanceResponseDTO student = new StudentAttendanceResponseDTO();
-		List<StudentAttendanceResponseDTO> students = new ArrayList<>();
+		UserAttendanceResponseDTO student = new UserAttendanceResponseDTO();
+		List<UserAttendanceResponseDTO> students = new ArrayList<>();
 		student.setFirstName("Mayank");
 		student.setRollNumber("3");
 		student.setStatus(Optional.of(AttendanceStatus.PRESENT));
@@ -824,13 +783,13 @@ class DbServiceApplicationTests {
 
 		students.add(student);
 
-		historyDTO.setStudents(students);
+		historyDTO.setUsers(students);
 
 		assertThat(historyDTO).isNotNull();
-		assertThat(historyDTO.getStudents()).isNotNull();
-		assertThat(historyDTO.getStudents()).isNotEmpty();
-		assertThat(historyDTO.getStudents().get(0)).isNotNull();
-		assertThat(historyDTO.getStudents().get(0).getAttendanceId()).isNotNull();
+		assertThat(historyDTO.getUsers()).isNotNull();
+		assertThat(historyDTO.getUsers()).isNotEmpty();
+		assertThat(historyDTO.getUsers().get(0)).isNotNull();
+		assertThat(historyDTO.getUsers().get(0).getAttendanceId()).isNotNull();
 
 	}
 
@@ -851,6 +810,7 @@ class DbServiceApplicationTests {
 
 	@Test
 	void studentAttendanceList_notEmpty_when_recordsArePresentInDB(@Autowired StudentService studentService
+			, @Autowired AttendanceService attendanceService
 			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
 		Student student = studentService.all().get(0);
 		Attendance attendance = new Attendance(1l, new Date(System.currentTimeMillis()), AttendanceStatus.PRESENT);
@@ -871,10 +831,10 @@ class DbServiceApplicationTests {
 		student.setStudentAttendances(studentAttendance);
 		attendance.setStudentAttendance(studentAttendance);
 
-		studentService.saveAttendance(studentAttendance);
+		attendanceService.saveAttendance(studentAttendance);
 
 		List<StudentAttendance> studentAttendances
-				= studentService.getStudentAttendancesByClassId(student.getInstituteClassSection().getId());
+				= attendanceService.getStudentAttendancesByClassId(student.getInstituteClassSection().getId());
 
 		assertThat(studentAttendances).isNotNull();
 		assertThat(studentAttendances).isNotEmpty();
@@ -888,8 +848,9 @@ class DbServiceApplicationTests {
 	}
 
 	@Test
-	void studentAttendance_notNull_when_recordsPresent(@Autowired StudentService studentService
-			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
+	void studentAttendance_notNull_when_recordsPresent(@Autowired AttendanceService attendanceService
+			, @Autowired StudentService studentService
+			, @Autowired TeacherRepository teacherRepository) {
 		Student student = studentService.all().get(0);
 		Attendance attendance = new Attendance(1l, new Date(System.currentTimeMillis()), AttendanceStatus.PRESENT);
 		attendance.setSupervisor(
@@ -897,7 +858,7 @@ class DbServiceApplicationTests {
 						.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
 						.get(0)
 		);
-		attendance = attendanceRepository.save(attendance);
+		attendance = attendanceService.saveAttendance(attendance);
 
 		StudentAttendanceKey studentAttendanceKey = new StudentAttendanceKey();
 		studentAttendanceKey.setStudentId(student.getId());
@@ -909,9 +870,9 @@ class DbServiceApplicationTests {
 		student.setStudentAttendances(studentAttendance);
 		attendance.setStudentAttendance(studentAttendance);
 
-		studentService.saveAttendance(studentAttendance);
+		attendanceService.saveAttendance(studentAttendance);
 
-		List<StudentAttendance> studentAttendances = studentService.getStudentAttendancesByStudentId(student.getId());
+		List<StudentAttendance> studentAttendances = attendanceService.getStudentAttendancesByStudentId(student.getId());
 		assertThat(studentAttendances).isNotNull();
 		assertThat(studentAttendances).isNotEmpty();
 		assertThat(studentAttendances.get(0)).isNotNull();
@@ -934,17 +895,17 @@ class DbServiceApplicationTests {
 	}
 
 	private StudentAttendance createAndSaveStudentAttendance(StudentAttendanceKey key, Student student
-			, Attendance attendance, StudentService studentService) {
+			, Attendance attendance, AttendanceService attendanceService) {
 		StudentAttendance studentAttendance = new StudentAttendance();
 		studentAttendance.setStudentAttendanceKey(key);
 		student.getInstituteClassSection().setStudentAttendances(studentAttendance);
 		student.setStudentAttendances(studentAttendance);
 		attendance.setStudentAttendance(studentAttendance);
-		studentAttendance = studentService.saveAttendance(studentAttendance).get();
+		studentAttendance = attendanceService.saveAttendance(studentAttendance).get();
 		return studentAttendance;
 	}
 
-	private void createStudentAttendances(StudentService studentService, AttendanceRepository attendanceRepository
+	private void createStudentAttendances(AttendanceService attendanceService, AttendanceRepository attendanceRepository
 			,Student student, Teacher teacher) throws ParseException {
 		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
 		Attendance attendance1 = createAndSaveAttendance(format.parse("26-09-2020")
@@ -961,23 +922,24 @@ class DbServiceApplicationTests {
 		StudentAttendanceKey studentAttendanceKey3 = getStudentAttendanceKey(student.getId(), attendance3.getId());
 		StudentAttendanceKey studentAttendanceKey4 = getStudentAttendanceKey(student.getId(), attendance4.getId());
 
-		createAndSaveStudentAttendance(studentAttendanceKey1, student, attendance1, studentService);
-		createAndSaveStudentAttendance(studentAttendanceKey2, student, attendance2, studentService);
-		createAndSaveStudentAttendance(studentAttendanceKey3, student, attendance3, studentService);
-		createAndSaveStudentAttendance(studentAttendanceKey4, student, attendance4, studentService);
+		createAndSaveStudentAttendance(studentAttendanceKey1, student, attendance1, attendanceService);
+		createAndSaveStudentAttendance(studentAttendanceKey2, student, attendance2, attendanceService);
+		createAndSaveStudentAttendance(studentAttendanceKey3, student, attendance3, attendanceService);
+		createAndSaveStudentAttendance(studentAttendanceKey4, student, attendance4, attendanceService);
 	}
 
 	@Test
 	void studentAttendanceBetweenDates_notNull_when_recordsPresent(@Autowired StudentService studentService
+			, @Autowired AttendanceService attendanceService
 			, @Autowired AttendanceRepository attendanceRepository
 			, @Autowired TeacherRepository teacherRepository) throws ParseException{
 		Student student = studentService.all().get(0);
 		Teacher teacher = teacherRepository
 				.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
 				.get(0);
-		createStudentAttendances(studentService, attendanceRepository, student, teacher);
+		createStudentAttendances(attendanceService, attendanceRepository, student, teacher);
 		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
-		List<StudentAttendance> studentAttendances = studentService.getStudentAttendancesByStudentId(
+		List<StudentAttendance> studentAttendances = attendanceService.getStudentAttendancesByStudentId(
 				student.getId()
 				, Optional.of(format.parse("21-09-2020"))
 				, Optional.of(format.parse("21-09-2020"))
@@ -1004,15 +966,16 @@ class DbServiceApplicationTests {
 	@Test
 	void studentAttendance_isNotNull_when_studentKeyIsPresent(@Autowired StudentService studentService
 			, @Autowired AttendanceRepository attendanceRepository
+			, @Autowired AttendanceService attendanceService
 			, @Autowired TeacherRepository teacherRepository) throws ParseException{
 		Student student = studentService.all().get(0);
 		Teacher teacher = teacherRepository
 				.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
 				.get(0);
 
-		createStudentAttendances(studentService, attendanceRepository, student, teacher);
+		createStudentAttendances(attendanceService, attendanceRepository, student, teacher);
 
-		StudentAttendance studentAttendance = studentService
+		StudentAttendance studentAttendance = attendanceService
 				.getStudentAttendanceById(
 						student.getStudentAttendances().get(0).getStudentAttendanceKey());
 

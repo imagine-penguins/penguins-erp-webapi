@@ -28,22 +28,37 @@ public class InstituteMapper {
         dto.setCloseTime(entity.getCloseTime());
         dto.setOpenTime(entity.getOpenTime());
         dto.setInstituteType(entity.getInstituteType());
-        dto.setLogoImg(entity.getLogoImg());
-
     }
 
     public InstituteDTO entityToDTO(Institute entity){
         if (entity == null)
             return null;
         InstituteDTO dto = new InstituteDTO();
-        dto.setId(entity.getId());
-        dto.setAddress(addressMapper.addressToAddressDTO(entity.getAddress()));
-        dto.setContact(contactMapper.contactToContactDTO(entity.getContact()));
-        dto.setCloseTime(entity.getCloseTime());
-        dto.setOpenTime(entity.getOpenTime());
-        dto.setInstituteType(entity.getInstituteType());
-        dto.setLogoImg(entity.getLogoImg());
+        entityToDTO(dto, entity);
         return dto;
+    }
+
+    public void dtoToEntity(Institute entity, InstituteDTO dto) {
+        if (entity == null || dto == null) {
+            return;
+        }
+        entity.setName(dto.getName());
+        entity.setInstituteType(dto.getInstituteType());
+        entity.setAddress(addressMapper.addressDTOToAddress(dto.getAddress()));
+        entity.setContact(contactMapper.contactDTOtoContact(dto.getContact()));
+        entity.setCloseTime(dto.getCloseTime());
+        entity.setOpenTime(dto.getOpenTime());
+        entity.setRecognitionNumber(dto.getRecognitionNumber());
+
+    }
+
+    public Institute dtoToEntity(InstituteDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        Institute entity = new Institute();
+        dtoToEntity(entity, dto);
+        return entity;
     }
 
     public void entityToDTO(InstituteDepartment entity, InstituteDepartmentDTO dto) {

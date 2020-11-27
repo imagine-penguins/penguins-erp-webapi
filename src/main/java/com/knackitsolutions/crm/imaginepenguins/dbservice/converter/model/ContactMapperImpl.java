@@ -35,7 +35,6 @@ public class ContactMapperImpl /*implements ContactMapper*/ {
         }
 
         Contact contact = new Contact();
-
         contact.setAlternateEmail( contactDTO.getAlternateEmail() );
         contact.setAlternatePhone( contactDTO.getAlternatePhone() );
         contact.setEmail( contactDTO.getEmail() );
