@@ -32,7 +32,9 @@ public class JwtTokenFactory {
 
         Claims claims = Jwts.claims().setSubject(userContext.getUsername()).setId(userContext.getUserId().toString());
         claims.put("scopes", userContext.getAuthorities().stream().map(s -> s.toString()).collect(Collectors.toList()));
-
+        claims.put("usertype", userContext.getUserType().getUserType());
+        claims.put("institute", userContext.getInstituteId());
+        claims.put("instituteClassSection", userContext.getInstituteClassSectionId());
         LocalDateTime currentTime = LocalDateTime.now();
 
         String token = Jwts.builder()

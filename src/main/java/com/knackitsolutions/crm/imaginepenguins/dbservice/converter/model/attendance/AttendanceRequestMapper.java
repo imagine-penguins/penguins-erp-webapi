@@ -31,31 +31,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AttendanceRequestMapper {
 
-    public Optional<Date> periodStartDateValue(Period period, Optional<String> value) {
-        Date date = null;
-        String v = value.orElseThrow(() -> new IllegalArgumentException("value of the period is not found"));
-        try {
-                date = period.startDate(v);
-                log.debug("start date: {}", date);
-        } catch (ParseException parseException) {
-            throw new IllegalArgumentException("value of the period is invalid." +
-                    " Expected format dd-MM-yyyy ex. 01-01-2020 translates to 1 Jan 2020");
-        }
-        return Optional.ofNullable(date);
-    }
-    public Optional<Date> periodEndDateValue(Period period, Optional<String> value) {
-        Date date = null;
-        String v = value.orElseThrow(() -> new IllegalArgumentException("value of the period is not found"));
-        try {
-                date = period.endDate(v);
-                log.debug("end date: {}", date);
-        } catch (ParseException parseException) {
-            throw new IllegalArgumentException("value of the period is invalid." +
-                    " Expected format dd-MM-yyyy ex. 01-01-2020 translates to 1 Jan 2020");
-        }
-        return Optional.ofNullable(date);
-    }
-
     public StudentAttendance dtoToEntity(Attendance attendance, Student attendant) {
         if (attendance == null || attendant == null) {
             return null;

@@ -1,10 +1,12 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
@@ -75,6 +77,32 @@ public class AttendanceResponseMapper {
         return dto;
     }
 
+    public UserAttendanceResponseDTO mapUserAttendanceToStudent(Student student) {
+        if (student == null) {
+            return null;
+        }
+
+        UserAttendanceResponseDTO dto = new UserAttendanceResponseDTO();
+        dto.setUserId(student.getId());
+        dto.setRollNumber(student.getRollNumber());
+        dto.setFirstName(student.getUserProfile().getFirstName());
+        dto.setLastName(student.getUserProfile().getLastName());
+        return dto;
+    }
+
+    public UserAttendanceResponseDTO mapUserAttendanceToEmployee(Employee employee) {
+        if (employee == null) {
+            return null;
+        }
+
+        UserAttendanceResponseDTO dto = new UserAttendanceResponseDTO();
+        dto.setUserId(employee.getId());
+        dto.setRollNumber(employee.getEmployeeOrgId());
+        dto.setFirstName(employee.getUserProfile().getFirstName());
+        dto.setLastName(employee.getUserProfile().getLastName());
+        return dto;
+    }
+
     public UserAttendanceResponseDTO mapUserAttendanceToEmployee(EmployeeAttendance entity) {
 
         UserAttendanceResponseDTO dto = new UserAttendanceResponseDTO();
@@ -86,6 +114,14 @@ public class AttendanceResponseMapper {
         dto.setAttendanceDate(entity.getAttendance().getAttendanceDate());
         dto.setEmployeeId(entity.getEmployee().getEmployeeOrgId());
         return dto;
+    }
+
+    public List<UserAttendanceResponseDTO> mapUserAttendanceToStudent(List<StudentAttendance> studentAttendances) {
+        return studentAttendances.stream().map(this::mapUserAttendanceToStudent).collect(Collectors.toList());
+    }
+
+    public List<UserAttendanceResponseDTO> mapUserAttendanceToEmployee(List<EmployeeAttendance> entities) {
+        return entities.stream().map(this::mapUserAttendanceToEmployee).collect(Collectors.toList());
     }
 
 }

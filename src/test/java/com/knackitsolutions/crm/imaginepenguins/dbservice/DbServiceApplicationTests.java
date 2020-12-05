@@ -298,7 +298,7 @@ class DbServiceApplicationTests {
 				, "Attendance", "Attendance Module");
 		Privilege privilege2 = new Privilege(1, PrivilegeCode.CALENDAR
 				, "Calendar", "Calendar Module");
-		Privilege privilege3 = new Privilege(1, PrivilegeCode.VIEW_SELF_ATTENDANCE
+		Privilege privilege3 = new Privilege(1, PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY
 				, "View Self Attendance", "View Self Attendance");
 		Privilege privilege4 = new Privilege(1, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
 				, "Mark Employee Attendance", "Mark Employee Attendance");

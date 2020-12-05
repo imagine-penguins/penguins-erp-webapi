@@ -348,14 +348,14 @@ public class LoadDatabase {
         privilege1 = privilegeRepository.save(privilege1);
         privilege2 = privilegeRepository.save(privilege2);
 
-        Privilege privilege3 = new Privilege(null, PrivilegeCode.VIEW_SELF_ATTENDANCE
+        Privilege privilege3 = new Privilege(null, PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY
                 , "View Self Attendance", "View Self Attendance");
         Privilege privilege4 = new Privilege(null, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
                 , "Mark Employee Attendance", "Mark Employee Attendance");
         Privilege privilege5 = new Privilege(null, PrivilegeCode.MARK_STUDENT_ATTENDANCE
                 , "Mark Student Attendance", "Mark Student Attendance");
-        Privilege privilege6 = new Privilege(null, PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY
-                , "View Students Attendance History", "View Students Attendance History");
+//        Privilege privilege6 = new Privilege(null, PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY
+//                , "View Students Attendance History", "View Students Attendance History");
 
         Privilege privilege7 = new Privilege(1, PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY
                 , "Edit Students Attendance History", "Edit Students Attendance History");
@@ -372,12 +372,12 @@ public class LoadDatabase {
                 , "Manage Users", "Manage Users");
         privilegeRepository.save(privilege11);
 
-        Stream.of(privilege3, privilege4, privilege5, privilege6, privilege7
+        Stream.of(privilege3, privilege4, privilege5, privilege7
                 , privilege8, privilege9, privilege10)
                 .forEach(privilege1::setPrivileges);
 
         privileges.addAll(Stream.of(
-                privilege3, privilege4, privilege5, privilege6, privilege7, privilege8, privilege9, privilege10
+                privilege3, privilege4, privilege5, privilege7, privilege8, privilege9, privilege10
         ).map(privilegeRepository::save).collect(Collectors.toList()));
 
     }

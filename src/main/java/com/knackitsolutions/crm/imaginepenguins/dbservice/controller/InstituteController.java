@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.assembler.InstituteModelAssembler;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteDocumentType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance.AttendanceController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.InstituteDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.InstituteDepartmentDTO;
@@ -90,7 +91,7 @@ public class InstituteController {
 				.map(EntityModel::of)
 				.map(em -> em.add(
 						linkTo(methodOn(AttendanceController.class)
-								.loadUsers()).withRel("load-employees")
+								.loadUsers(null, null, 0, 10)).withRel("load-employees")
 				))
 				.collect(Collectors.toList());
 

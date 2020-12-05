@@ -5,6 +5,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassS
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Teacher;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.TeacherNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.TeacherRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.TeacherSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -47,24 +48,12 @@ public class TeacherServiceImpl implements TeacherService{
     }
 
     public List<Teacher> listTeachersWith(Long instituteId, Optional<Boolean> active, Pageable pageable) {
-        Specification<Teacher> specification = teachersByInstituteId(instituteId);
+        Specification<Teacher> specification = TeacherSpecification.teachersByInstituteId(instituteId);
         specification = active
-                .map(TeacherServiceImpl::teachersByActive)
+                .map(TeacherSpecification::teachersByActive)
                 .map(specification::and)
                 .orElse(specification);
         return teacherRepository.findAll(specification, pageable).toList();
     }
 
-    public static Specification<Teacher> teachersByActive(Boolean active) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("active"), active);
-    }
-
-    public static Specification<Teacher> teachersByInstituteId(Long instituteId) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder
-                .equal(root
-                                .join("institute", JoinType.LEFT)
-                                .get("id")
-                        , instituteId
-                );
-    }
 }

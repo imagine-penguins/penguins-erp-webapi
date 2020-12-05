@@ -1,4 +1,4 @@
-package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
+package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.LeaveRequestMapper;

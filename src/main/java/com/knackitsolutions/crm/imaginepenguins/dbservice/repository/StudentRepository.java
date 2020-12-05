@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.repository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -25,4 +26,8 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 
     @Override
     Page<Student> findAll(Specification<Student> specification, Pageable pageable);
+
+    @Override
+    List<Student> findAll(Specification<Student> spec, Sort sort);
+
 }

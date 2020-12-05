@@ -2,11 +2,9 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.common.sort.GroupBySorter;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.common.filter.DataFilter;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.common.sort.DataSort;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
@@ -109,11 +107,6 @@ public class UserControllerImpl {
             , @RequestParam(defaultValue = "10") @Min(1) int size
             , DataFilter dataFilter
             , @RequestParam(defaultValue = "id,desc") String[] sort){
-//            , @RequestParam(name = "userType") Optional<UserType> userType
-//            , @RequestParam(name = "userRole") Optional<PrivilegeCode> privilegeCode
-//            , @RequestParam(name = "active") Optional<Boolean> active
-//            , @RequestParam(name = "sort", defaultValue = "name") SortField sortField
-//            , @RequestParam(name = "order", defaultValue = "asc") SortOrder sortOrder) {
 
         UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
         User user = userService.findById(userContext.getUserId()).orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
@@ -127,27 +120,6 @@ public class UserControllerImpl {
                 , dataFilter.getActive(), dataFilter.getUserTypes());
 
         List<UserListDTO.UserDTO> userDTOS = new ArrayList<>();
-//        users
-//                .stream()
-//                .map(userMapper::userToUserDTO)
-//                .sorted(
-//                        dataSort
-//                                .getSortOrder()
-//                                .order(
-//                                        new GroupBySorter(
-//                                                dataSort
-//                                                        .getSortFields()
-//                                                        .stream()
-//                                                        .map(
-//                                                                sortField -> sortField.comparator()
-//                                                        )
-//                                                        .collect(Collectors.toList())
-//                                        )
-//                                )
-//                )
-//                .skip(page * size)
-//                .limit(size)
-//                .forEach(userDTOS::add);
 
         UserListDTO userListDTO = userFacade.newUserListDTO(userDTOS, page, size, users.size());
 

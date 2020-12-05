@@ -1,12 +1,10 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.facade;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.AttendanceController;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.StudentController;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance.AttendanceController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ClassSectionSubjectMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.TeacherLoginResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.ClassSectionSubjectDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.TeacherLoginResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassSection;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassSectionSubject;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.TeacherService;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

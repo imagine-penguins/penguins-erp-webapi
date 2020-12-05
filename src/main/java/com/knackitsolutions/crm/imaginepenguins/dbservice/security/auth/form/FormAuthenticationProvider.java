@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.security.auth.form;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
@@ -56,8 +58,16 @@ public class FormAuthenticationProvider implements AuthenticationProvider {
                         )
                 )
                 .collect(Collectors.toList());
-
-        UserContext userContext = UserContext.create(user.getId(), user.getUsername(), authorities);
+        Integer instituteId = 0;
+        Long instituteClassSectionId = 0l;
+        if (user instanceof Employee) {
+            instituteId = ((Employee) user).getInstitute().getId();
+        }
+        if (user instanceof Student) {
+            instituteClassSectionId = ((Student) user).getInstituteClassSection().getId();
+        }
+        UserContext userContext = UserContext.create(user.getId(), user.getUsername(), user.getUserType()
+                , instituteId, instituteClassSectionId, authorities);
 
         return new UsernamePasswordAuthenticationToken(userContext, null, userContext.getAuthorities());
     }

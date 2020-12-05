@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.security.endpoint;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.auth.jwt.extractor.TokenExtractor;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.auth.jwt.verifier.TokenVerifier;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,8 +40,10 @@ public class RefreshTokenEndpoint {
     @Autowired private JwtSettings jwtSettings;
     @Autowired private UserService userService;
     @Autowired private TokenVerifier tokenVerifier;
+
     @Autowired
-    @Qualifier("jwtHeaderTokenExtractor") private TokenExtractor tokenExtractor;
+    @Qualifier("jwtHeaderTokenExtractor")
+    private TokenExtractor tokenExtractor;
 
     @RequestMapping(value="/auth/token", method= RequestMethod.GET, produces={ MediaType.APPLICATION_JSON_VALUE })
     public @ResponseBody JwtToken refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -66,7 +71,15 @@ public class RefreshTokenEndpoint {
                         )
                 )
                 .collect(Collectors.toList());
-        UserContext userContext = UserContext.create(user.getId(), user.getUsername(), authorities);
+        Integer instituteId = 0;
+        Long instituteClassSectionId = 0l;
+        if (user instanceof Employee) {
+            instituteId = ((Employee) user).getInstitute().getId();
+        } else if (user instanceof Student) {
+            instituteClassSectionId = ((Student) user).getInstituteClassSection().getId();
+        }
+        UserContext userContext = UserContext.create(user.getId(), user.getUsername(), user.getUserType()
+                , instituteId, instituteClassSectionId, authorities);
         return tokenFactory.createAccessJwtToken(userContext);
     }
 }
