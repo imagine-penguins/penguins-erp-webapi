@@ -118,7 +118,7 @@ public enum PrivilegeCode {
             return Arrays.asList(
                     linkTo(methodOn(LeaveRequestController.class).saveLeaveRequest(null))
                             .withRel(this.getPrivilegeCode()),
-                    linkTo(methodOn(LeaveRequestController.class).all(null, null, 0, 10))
+                    linkTo(methodOn(LeaveRequestController.class).all(null, null, 0, 10, null, null))
                             .withRel("view-leave-requests"),
                     linkTo(methodOn(LeaveRequestController.class).updateLeaveRequest(null, null))
                             .withRel("update-leave-request")
