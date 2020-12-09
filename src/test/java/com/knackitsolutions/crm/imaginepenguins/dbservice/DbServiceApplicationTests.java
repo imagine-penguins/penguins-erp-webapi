@@ -294,15 +294,15 @@ class DbServiceApplicationTests {
 	}
 
 	public static void setupPrivileges(PrivilegeRepository privilegeRepository) {
-		Privilege privilege1 = new Privilege(1, PrivilegeCode.ATTENDANCE
+		Privilege privilege1 = new Privilege(PrivilegeCode.ATTENDANCE
 				, "Attendance", "Attendance Module");
-		Privilege privilege2 = new Privilege(1, PrivilegeCode.CALENDAR
+		Privilege privilege2 = new Privilege(PrivilegeCode.CALENDAR
 				, "Calendar", "Calendar Module");
-		Privilege privilege3 = new Privilege(1, PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY
+		Privilege privilege3 = new Privilege(PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY
 				, "View Self Attendance", "View Self Attendance");
-		Privilege privilege4 = new Privilege(1, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
+		Privilege privilege4 = new Privilege(PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
 				, "Mark Employee Attendance", "Mark Employee Attendance");
-		Privilege privilege5 = new Privilege(1, PrivilegeCode.MARK_STUDENT_ATTENDANCE
+		Privilege privilege5 = new Privilege(PrivilegeCode.MARK_STUDENT_ATTENDANCE
 				, "Mark Student Attendance", "Mark Student Attendance");
 
 		privileges.addAll(Stream.of(

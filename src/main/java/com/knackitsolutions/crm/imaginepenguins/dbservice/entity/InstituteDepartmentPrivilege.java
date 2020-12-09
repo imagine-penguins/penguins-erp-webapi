@@ -1,5 +1,9 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import net.minidev.json.annotate.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,17 +13,20 @@ import java.util.List;
 public class InstituteDepartmentPrivilege {
     @Id
     @Column(name = "institute_department_privilege_id")
-            @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
 
     @ManyToOne
     @JoinColumn(name = "institute_department_id")
+    @JsonBackReference
     InstituteDepartment instituteDepartment;
 
     @ManyToOne
     @JoinColumn(name = "privilege_id")
+    @JsonManagedReference
     Privilege privilege;
 
+    @JsonBackReference
     @OneToMany(mappedBy = "departmentPrivilege")
     private List<UserPrivilege> userPrivileges = new ArrayList<>();
 

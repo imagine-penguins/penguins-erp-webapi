@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 
 import javax.persistence.*;
@@ -26,37 +28,29 @@ public class Privilege {
     String logo;
 
     @OneToMany(mappedBy = "privilege")
+            @JsonBackReference
     Set<InstituteDepartmentPrivilege> instituteDepartmentPrivileges = new HashSet<>();
 
 //    @OneToMany(mappedBy = "privilege")
 //    List<UserPrivilege> userPrivileges = new ArrayList<>();
 
     @OneToMany(mappedBy = "privilege", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+            @JsonBackReference
     Set<Dashboard> dashboards = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "parent_privilege_id")
+            @JsonManagedReference
     Privilege parentPrivilege;
 
     @OneToMany(mappedBy = "parentPrivilege", fetch = FetchType.EAGER)
+            @JsonBackReference
     Set<Privilege> privileges = new HashSet<>();
 
     public Privilege() {
     }
 
-    public Privilege(String privilegeName, String privilegeDesc) {
-        this.privilegeName = privilegeName;
-        this.privilegeDesc = privilegeDesc;
-    }
-
-    public Privilege(Integer id, String privilegeCode, String privilegeName) {
-        this.id = id;
-        this.privilegeName = privilegeCode;
-        this.privilegeDesc = privilegeName;
-    }
-
-    public Privilege(Integer id, PrivilegeCode privilegeCode, String privilegeName, String privilegeDesc) {
-        this.id = id;
+    public Privilege(PrivilegeCode privilegeCode, String privilegeName, String privilegeDesc) {
         this.privilegeName = privilegeName;
         this.privilegeCode = privilegeCode;
         this.privilegeDesc = privilegeDesc;
@@ -117,11 +111,12 @@ public class Privilege {
     }
 
     public void setInstituteDepartmentPrivileges(Set<InstituteDepartmentPrivilege> instituteDepartmentPrivileges) {
-        this.instituteDepartmentPrivileges.addAll(instituteDepartmentPrivileges);
+        instituteDepartmentPrivileges.forEach(this::addInstituteDepartmentPrivilege);
     }
 
     public void addInstituteDepartmentPrivilege(InstituteDepartmentPrivilege instituteDepartmentPrivilege){
         this.instituteDepartmentPrivileges.add(instituteDepartmentPrivilege);
+        instituteDepartmentPrivilege.setPrivilege(this);
     }
 
 /*    public List<UserPrivilege> getUserPrivileges() {

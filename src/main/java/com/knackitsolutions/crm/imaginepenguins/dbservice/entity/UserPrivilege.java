@@ -1,5 +1,8 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 
 @Entity
@@ -13,14 +16,12 @@ public class UserPrivilege {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonManagedReference
     User user;
-
-//    @ManyToOne
-//    @JoinColumn(name = "privilege_id")
-//    Privilege privilege;
 
     @ManyToOne
     @JoinColumn(name = "department_privilege_id")
+    @JsonManagedReference
     private InstituteDepartmentPrivilege departmentPrivilege;
 
     public UserPrivilege() {

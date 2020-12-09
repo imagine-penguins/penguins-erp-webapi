@@ -118,14 +118,14 @@ public enum PrivilegeCode {
             return Arrays.asList(
                     linkTo(methodOn(LeaveRequestController.class).saveLeaveRequest(null))
                             .withRel(this.getPrivilegeCode()),
-                    linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory())
+                    linkTo(methodOn(LeaveRequestController.class).all(null, null, 0, 10))
                             .withRel("view-leave-requests"),
                     linkTo(methodOn(LeaveRequestController.class).updateLeaveRequest(null, null))
                             .withRel("update-leave-request")
             );
         }
     },
-    VIEW_LEAVE_REQUEST(""){
+    VIEW_LEAVE_REQUEST("view-leave-request"){
         @Override
         public List<Link> getLinks() {
             return null;
@@ -149,7 +149,7 @@ public enum PrivilegeCode {
             return Arrays.asList(
                     linkTo(methodOn(LeaveRequestController.class).updateLeaveRequestStatus(null, null, null))
                             .withRel("update-leave-request-status"),
-                    linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(null, null, null))
+                    linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(null, null, 0, 10, null, null))
                             .withRel("view-leave-request-history")
             );
         }

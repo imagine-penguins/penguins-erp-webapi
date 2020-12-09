@@ -10,6 +10,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.EmployeeSpecification;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.StudentSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
@@ -94,7 +95,7 @@ public class AttendanceHistoryController {
                 .map(PrivilegeCode::of)
                 .collect(Collectors.toList());
 
-        Map<String, List<String>> searchMap = FilterService.createSearchMap(search);
+        Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
         List<UserAttendanceResponseDTO> users = new ArrayList<>();
         Specification<Student> studentSpecification = FilterService.filterStudents(searchMap, startDate, endDate);
         boolean viewStudent = false;
@@ -162,7 +163,7 @@ public class AttendanceHistoryController {
         Optional<Date> endDate = period
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
-        Map<String, List<String>> searchMap = FilterService.createSearchMap(search);
+        Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
         Specification<Student> studentSpecification = FilterService.filterStudents(searchMap, startDate, endDate);
         boolean viewStudent = false;
         if (userContext.getAuthorities().contains(

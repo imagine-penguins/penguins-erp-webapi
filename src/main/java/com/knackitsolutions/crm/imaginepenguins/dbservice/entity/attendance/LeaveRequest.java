@@ -43,7 +43,7 @@ public class LeaveRequest {
 
     @JoinColumn(name = "approver_user_id")
     @ManyToOne(optional = false)
-    private User approver;
+    private User approves;
 
     @Column(name = "request_status")
     private LeaveRequestStatus leaveRequestStatus;
@@ -115,12 +115,12 @@ public class LeaveRequest {
         this.leaveReason = leaveReason;
     }
 
-    public User getApprover() {
-        return approver;
+    public User getApproves() {
+        return approves;
     }
 
-    public void setApprover(User approver) {
-        this.approver = approver;
+    public void setApproves(User approves) {
+        this.approves = approves;
     }
 
     public LeaveRequestStatus getLeaveRequestStatus() {

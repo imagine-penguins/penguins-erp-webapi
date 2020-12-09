@@ -1,6 +1,8 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.LeaveRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveHistoryDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveRequestDTO;
@@ -13,20 +15,23 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Leav
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.LeaveRequestService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import javax.validation.constraints.Min;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -42,7 +47,6 @@ public class LeaveRequestController {
     private final UserService userService;
     private final IAuthenticationFacade authenticationFacade;
     private final LeaveRequestRepository leaveRequestRepository;
-    private final StudentService studentService;
     private final LeaveRequestService leaveRequestService;
 
     @PostMapping
@@ -57,7 +61,7 @@ public class LeaveRequestController {
             if (user instanceof Employee) {
                 leaveRequestDTO.setApprovesId(((Employee) user).getManager().getId());
             } else if (user instanceof Student) {
-                leaveRequestDTO.setApprovesId(((Student)user).getInstituteClassSection().getTeacher().getId());
+                leaveRequestDTO.setApprovesId(((Student) user).getInstituteClassSection().getTeacher().getId());
             }
         }
         LeaveRequest newLeaveRequest = leaveRequestMapper.dtoToEntity(leaveRequestDTO);
@@ -77,26 +81,60 @@ public class LeaveRequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Leave Request saved.");
     }
 
-    @GetMapping("/history")
-    public LeaveHistoryDTO leaveRequestHistory() {
-        LeaveHistoryDTO dto = new LeaveHistoryDTO();
+    @GetMapping
+    public CollectionModel<LeaveResponseDTO> all(
+            @RequestParam(required = false) String[] search
+            , @RequestParam(defaultValue = "id") String[] sort
+            , @RequestParam(defaultValue = "0") @Min(0) int page
+            , @RequestParam(defaultValue = "10") @Min(1) int size
+            , @RequestParam Optional<Period> period
+            , @RequestParam Optional<String> value
+    ) {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
-        List<LeaveResponseDTO> response = leaveRequestRepository.findByUserId(userContext.getUserId())
-                .stream()
+        Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
+        final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
+        Optional<Date> startDate = period
+                .map(p -> FilterService.periodStartDateValue(p, value))
+                .orElse(Optional.empty());
+        Optional<Date> endDate = period
+                .map(p -> FilterService.periodEndDateValue(p, value))
+                .orElse(Optional.empty());
+        List<LeaveResponseDTO> responseDTOS = new ArrayList<>();
+        Specification<LeaveRequest> leaveRequestSpecification = Specification.where(null);
+        if (userContext.getAuthorities().contains(
+                new SimpleGrantedAuthority(PrivilegeCode.VIEW_APPLIED_LEAVE_REQUEST.getPrivilegeCode())
+        )) {
+            log.debug("view received leaves");
+            leaveRequestSpecification = leaveRequestSpecification
+                    .and(LeaveRequestSpecification.leaveRequestByUserId(userContext.getUserId()));
+        }
+        List<SearchCriteria> searchCriteria = searchMap.get("requestStatus");
+        if (
+                searchMap.containsKey("requestStatus") &&
+                        searchCriteria.get(0).getValue().toString().equalsIgnoreCase("P")
+        ) {
+            if (searchCriteria.get(0).getOperation() == SearchOperation.NOT_EQUAL) {
+                leaveRequestSpecification = leaveRequestSpecification
+                        .and(LeaveRequestSpecification.leaveRequestByApprovedBy(userContext.getUserId()));
+            } else {
+                leaveRequestSpecification = leaveRequestSpecification
+                        .and(new GenericSpecification<>(
+                                new SearchCriteria("leaveRequestStatus", LeaveRequestStatus.PENDING, SearchOperation.EQUAL)
+                        ));
+            }
+        }
+        Page<LeaveRequest> leaveRequestPage = leaveRequestService.findAllBySpecification(leaveRequestSpecification, pageable);
+        leaveRequestPage
+                .get()
                 .map(leaveRequestMapper::entityToDTO)
-                .collect(Collectors.toList());
-        dto.setLeaveResponseDTO(response);
-        List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
-                .getMonthlyLeaveCount(leaveRequestMapper.getUserLeavesDates(
-                        userService
-                                .findById(userContext.getUserId())
-                                .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()))
-                    )
-                )
-                .entrySet().stream().map(leaveRequestMapper::getGraphDataFromMapEntry).collect(Collectors.toList());
-
-        dto.setGraphData(graphData);
-        return dto;
+                .map(leaveResponseDTO -> leaveResponseDTO.add(
+                        linkTo(methodOn(LeaveRequestController.class)
+                                .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
+                                .withRel(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode())))
+                .forEach(responseDTOS::add);
+        return CollectionModel.of(responseDTOS, linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(
+                null, null, 0, 10, null, null
+        )).withSelfRel());
     }
 
     @PutMapping("/{leaveRequestId}")
@@ -135,47 +173,82 @@ public class LeaveRequestController {
 
     }
 
-    @GetMapping
-    public LeaveHistoryDTO leaveRequestHistory(@RequestParam(name = "class") Optional<Long> classId
-            , @RequestParam(name = "department") Optional<Long> departmentId
-            , @RequestParam(name = "user") Optional<Long> userId) {
+    @GetMapping("/history")
+    public CollectionModel<LeaveResponseDTO> leaveRequestHistory(
+            @RequestParam(required = false) String[] search
+            , @RequestParam(defaultValue = "id") String[] sort
+            , @RequestParam(defaultValue = "0") @Min(0) int page
+            , @RequestParam(defaultValue = "10") @Min(1) int size
+            , @RequestParam(name = "period") Optional<Period> period
+            , @RequestParam(name = "value") Optional<String> value
+    ) {
 
-        log.info("Leave Request History");
-        log.info("class: {}, department: {}, user: {}", classId, departmentId, userId);
-        LeaveHistoryDTO historyDTO = new LeaveHistoryDTO();
-
-        List<Student> students = classId
-                .map(id -> studentService.loadStudentWithClassSectionId(id)).orElse(new ArrayList<>());
-
-        List<User> users = departmentId
-                .map(id -> userService.findByDepartmentId(id)).orElse(new ArrayList<>());
-
-        User user = userId
-                .map(aLong -> userService
-                        .findById(aLong)
-                        .orElseThrow(() -> new UserNotFoundException(aLong))
-                ).orElse(null);
-
-        log.info("UserDTO: {}", user);
-        if (!students.isEmpty()) {
-            users = students.stream().map(student -> (User) student).collect(Collectors.toList());
+        log.trace("leave history started...");
+        UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
+        Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
+        final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
+        Optional<Date> startDate = period
+                .map(p -> FilterService.periodStartDateValue(p, value))
+                .orElse(Optional.empty());
+        Optional<Date> endDate = period
+                .map(p -> FilterService.periodEndDateValue(p, value))
+                .orElse(Optional.empty());
+        List<LeaveResponseDTO> responseDTOS = new ArrayList<>();
+        Specification<LeaveRequest> leaveRequestSpecification = Specification.where(null);
+        if (userContext.getAuthorities().contains(
+                new SimpleGrantedAuthority(PrivilegeCode.VIEW_RECEIVED_LEAVE_REQUEST.getPrivilegeCode())
+        )) {
+            log.debug("view received leaves");
+            leaveRequestSpecification = leaveRequestSpecification
+                    .and(LeaveRequestSpecification.leaveRequestByApprovesId(userContext.getUserId()));
         }
-        userId
-                .flatMap(userService::findById)
-                .ifPresent(users::add);
-        List<LeaveResponseDTO> responseDTOS = leaveRequestMapper
-                .leaveResponseDTOFromUser(users);
-        responseDTOS.forEach(leaveResponseDTO -> leaveResponseDTO.add(
-                linkTo(methodOn(LeaveRequestController.class)
-                        .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
-                        .withRel("update-leave-request-status")));
-        historyDTO.setLeaveResponseDTO(responseDTOS);
+        List<SearchCriteria> searchCriteria = searchMap.get("requestStatus");
+        if (
+                searchMap.containsKey("requestStatus") &&
+                        searchCriteria.get(0).getValue().toString().equalsIgnoreCase("P")
+        ) {
+            if (searchCriteria.get(0).getOperation() == SearchOperation.NOT_EQUAL) {
+                leaveRequestSpecification = leaveRequestSpecification
+                        .and(LeaveRequestSpecification.leaveRequestByApprovedBy(userContext.getUserId()));
+            } else {
+                leaveRequestSpecification = leaveRequestSpecification
+                        .and(new GenericSpecification<>(
+                                new SearchCriteria("leaveRequestStatus", LeaveRequestStatus.PENDING, SearchOperation.EQUAL)
+                        ));
+            }
+        }
 
+        Page<LeaveRequest> leaveRequestPage = leaveRequestService.findAllBySpecification(leaveRequestSpecification, pageable);
+        leaveRequestPage
+                .get()
+                .map(leaveRequestMapper::entityToDTO)
+                .map(leaveResponseDTO -> leaveResponseDTO.add(
+                        linkTo(methodOn(LeaveRequestController.class)
+                                .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
+                                .withRel(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode())))
+                .forEach(responseDTOS::add);
+        return CollectionModel.of(responseDTOS, linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(
+                null, null, 0, 10, null, null
+        )).withSelfRel());
+    }
+
+    @GetMapping("/history/graph")
+    public CollectionModel<LeaveHistoryDTO.GraphData> graph(@RequestParam(required = false) String[] search) {
+        Map<String, Integer> graph = new HashMap<>();
+        UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
+
+        Specification<LeaveRequest> specification = LeaveRequestSpecification
+                .leaveRequestByApprovesId(userContext.getUserId());
+        Map<String, List<SearchCriteria>> searchCriteriaMap = FilterService.createSearchMap(search);
+
+        if (searchCriteriaMap.containsKey("user")) {
+            //single user id
+            Long userId = Long.parseLong(searchCriteriaMap.get("user").get(0).getValue().toString());
+            specification = specification.and(LeaveRequestSpecification.leaveRequestByUserId(userId));
+        }
+        List<LeaveRequest> leaveRequests = leaveRequestService.findAllBySpecification(specification);
         List<Date> allLeavesDates = new ArrayList<>();
-        users
-                .stream()
-                .map(leaveRequestMapper::getUserLeavesDates)
-                .forEach(allLeavesDates::addAll);
+        leaveRequests.stream().map(leaveRequestMapper::getLeavesDates).forEach(allLeavesDates::addAll);
 
         List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
                 .getMonthlyLeaveCount(allLeavesDates)
@@ -183,7 +256,27 @@ public class LeaveRequestController {
                 .stream()
                 .map(leaveRequestMapper::getGraphDataFromMapEntry)
                 .collect(Collectors.toList());
-        historyDTO.setGraphData(graphData);
-        return historyDTO;
+
+        return CollectionModel.of(graphData);
     }
+
+    @GetMapping("/graph")
+    public CollectionModel<LeaveHistoryDTO.GraphData> graph() {
+        Map<String, Integer> graph = new HashMap<>();
+        UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
+        Specification<LeaveRequest> specification = LeaveRequestSpecification.leaveRequestByUserId(userContext.getUserId());
+        List<LeaveRequest> leaveRequests = leaveRequestService.findAllBySpecification(specification);
+
+        List<Date> allLeavesDates = new ArrayList<>();
+        leaveRequests.stream().map(leaveRequestMapper::getLeavesDates).forEach(allLeavesDates::addAll);
+
+        List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
+                .getMonthlyLeaveCount(allLeavesDates)
+                .entrySet()
+                .stream()
+                .map(leaveRequestMapper::getGraphDataFromMapEntry)
+                .collect(Collectors.toList());
+        return CollectionModel.of(graphData);
+    }
+
 }

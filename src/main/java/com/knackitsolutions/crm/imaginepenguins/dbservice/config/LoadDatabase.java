@@ -16,12 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Configuration
+@Profile("test")
 public class LoadDatabase {
 
     private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
@@ -33,8 +35,6 @@ public class LoadDatabase {
     private static List<InstituteClassSection> instituteClassSections = new ArrayList<>();
 
     private static List<InstituteDepartment> departments = new ArrayList<>();
-
-    private static List<Privilege> privileges = new ArrayList<>();
 
     private static List<Employee> employees = new ArrayList<>(10);
 
@@ -341,54 +341,80 @@ public class LoadDatabase {
     }
 
     private static void setupPrivileges(PrivilegeRepository privilegeRepository) {
-        Privilege privilege1 = new Privilege(null, PrivilegeCode.ATTENDANCE
+        Privilege privilege1 = new Privilege(PrivilegeCode.ATTENDANCE
                 , "Attendance", "Attendance Module");
-        Privilege privilege2 = new Privilege(null, PrivilegeCode.CALENDAR
+        Privilege privilege2 = new Privilege(PrivilegeCode.CALENDAR
                 , "Calendar", "Calendar Module");
+
         privilege1 = privilegeRepository.save(privilege1);
         privilege2 = privilegeRepository.save(privilege2);
 
-        Privilege privilege3 = new Privilege(null, PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY
+        Privilege privilege3 = new Privilege(PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY
                 , "View Self Attendance", "View Self Attendance");
-        Privilege privilege4 = new Privilege(null, PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
+        Privilege privilege4 = new Privilege(PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE
                 , "Mark Employee Attendance", "Mark Employee Attendance");
-        Privilege privilege5 = new Privilege(null, PrivilegeCode.MARK_STUDENT_ATTENDANCE
+        Privilege privilege5 = new Privilege(PrivilegeCode.MARK_STUDENT_ATTENDANCE
                 , "Mark Student Attendance", "Mark Student Attendance");
 //        Privilege privilege6 = new Privilege(null, PrivilegeCode.VIEW_STUDENTS_ATTENDANCE_HISTORY
 //                , "View Students Attendance History", "View Students Attendance History");
 
-        Privilege privilege7 = new Privilege(1, PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY
+        Privilege privilege7 = new Privilege(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY
                 , "Edit Students Attendance History", "Edit Students Attendance History");
-        Privilege privilege8 = new Privilege(1, PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY
+
+        Privilege privilege8 = new Privilege(PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY
                 , "Edit Employee Attendance History", "Edit Employee Attendance History");
 
-        Privilege privilege9 = new Privilege(1, PrivilegeCode.APPLY_LEAVE_REQUEST
+        Privilege privilege9 = new Privilege(PrivilegeCode.APPLY_LEAVE_REQUEST
                 , "Apply for leave request", "Apply for leave request.");
 
-        Privilege privilege10 = new Privilege(1, PrivilegeCode.UPDATE_LEAVE_REQUEST
+        Privilege privilege10 = new Privilege(PrivilegeCode.UPDATE_LEAVE_REQUEST
                 , "Approve/Reject UserDTO Leave Request", "Approve/Reject UserDTO Leave Request");
 
-        Privilege privilege11 = new Privilege(1, PrivilegeCode.MANAGE_USERS
+        Privilege privilege11 = new Privilege(PrivilegeCode.MANAGE_USERS
                 , "Manage Users", "Manage Users");
-        privilegeRepository.save(privilege11);
+
+        Privilege privilege12 = new Privilege(PrivilegeCode.VIEW_LEAVE_REQUEST
+                , PrivilegeCode.VIEW_LEAVE_REQUEST.getPrivilegeCode()
+                , PrivilegeCode.VIEW_LEAVE_REQUEST.getPrivilegeCode());
+
+        Privilege privilege13 = new Privilege(PrivilegeCode.VIEW_APPLIED_LEAVE_REQUEST
+                , PrivilegeCode.VIEW_APPLIED_LEAVE_REQUEST.getPrivilegeCode()
+                , PrivilegeCode.VIEW_APPLIED_LEAVE_REQUEST.getPrivilegeCode());
+
+        Privilege privilege14 = new Privilege(PrivilegeCode.VIEW_RECEIVED_LEAVE_REQUEST
+                , PrivilegeCode.VIEW_RECEIVED_LEAVE_REQUEST.getPrivilegeCode()
+                , PrivilegeCode.VIEW_RECEIVED_LEAVE_REQUEST.getPrivilegeCode());
+
+        Privilege privilege15 = new Privilege(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS
+                , PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode()
+                , PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode());
+
+        Privilege privilege16 = new Privilege(PrivilegeCode.EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY
+                , "Edit Class Students Attendance History", "Edit Class Students Attendance History");
+
+        Privilege privilege17 = new Privilege(PrivilegeCode.MARK_SUBORDINATES_EMPLOYEE_ATTENDANCE
+                , PrivilegeCode.MARK_SUBORDINATES_EMPLOYEE_ATTENDANCE.getPrivilegeCode()
+                , PrivilegeCode.MARK_SUBORDINATES_EMPLOYEE_ATTENDANCE.getPrivilegeCode());
 
         Stream.of(privilege3, privilege4, privilege5, privilege7
                 , privilege8, privilege9, privilege10)
                 .forEach(privilege1::setPrivileges);
 
-        privileges.addAll(Stream.of(
-                privilege3, privilege4, privilege5, privilege7, privilege8, privilege9, privilege10
-        ).map(privilegeRepository::save).collect(Collectors.toList()));
+        Stream.of(
+                privilege3, privilege4, privilege5, privilege7, privilege8, privilege9, privilege10, privilege11
+                , privilege12, privilege13, privilege14, privilege15, privilege16, privilege17
+        ).map(privilegeRepository::save).collect(Collectors.toList());
 
     }
 
-    private static void setupInstituteDepartmentPrivileges(InstituteDepartmentPrivilegeRepository repository) {
+    private static void setupInstituteDepartmentPrivileges(InstituteDepartmentPrivilegeRepository repository
+            , PrivilegeRepository privilegeRepository) {
         InstituteDepartment adminDepartment = departments.get(0);
         InstituteDepartment teacherDepartment = departments.get(2);
         InstituteDepartment studentDepartment = departments.get(1);
         //admin department privilege
         instituteDepartmentPrivileges.addAll(
-                privileges
+                privilegeRepository.findAll()
                         .stream()
                         .map(privilege -> new InstituteDepartmentPrivilege(adminDepartment, privilege))
                         .map(repository::save)
@@ -397,9 +423,10 @@ public class LoadDatabase {
 
         //student department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege1 =
-                new InstituteDepartmentPrivilege(studentDepartment, privileges.get(6));
+                new InstituteDepartmentPrivilege();
         studentDepartment.setPrivileges(instituteDepartmentPrivilege1);
-        privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege1);
 
 //        InstituteDepartmentPrivilege instituteDepartmentPrivilege11 =
 //                new InstituteDepartmentPrivilege(departments.get(1), privileges.get(6));
@@ -408,29 +435,46 @@ public class LoadDatabase {
 
         //teacher department privilege
         InstituteDepartmentPrivilege instituteDepartmentPrivilege2 =
-                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(2));
+                new InstituteDepartmentPrivilege();
         teacherDepartment.setPrivileges(instituteDepartmentPrivilege2);
-        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege2);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege3 =
-                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(3));
+                new InstituteDepartmentPrivilege();
         teacherDepartment.setPrivileges(instituteDepartmentPrivilege3);
-        privileges.get(3).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.VIEW_SELF_ATTENDANCE_HISTORY)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
+
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege10 =
+                new InstituteDepartmentPrivilege();
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege10);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.MARK_STUDENT_ATTENDANCE)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege10);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege4 =
-                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(4));
+                new InstituteDepartmentPrivilege();
         teacherDepartment.setPrivileges(instituteDepartmentPrivilege4);
-        privileges.get(4).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege5 =
-                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(6));
-        teacherDepartment.setPrivileges(instituteDepartmentPrivilege4);
-        privileges.get(6).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
+                new InstituteDepartmentPrivilege();
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege5);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.VIEW_APPLIED_LEAVE_REQUEST)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege5);
 
         InstituteDepartmentPrivilege instituteDepartmentPrivilege6 =
-                new InstituteDepartmentPrivilege(teacherDepartment, privileges.get(7));
-        teacherDepartment.setPrivileges(instituteDepartmentPrivilege4);
-        privileges.get(7).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege4);
+                new InstituteDepartmentPrivilege();
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege6);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.UPDATE_LEAVE_REQUEST)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege6);
+
+        InstituteDepartmentPrivilege instituteDepartmentPrivilege7 =
+                new InstituteDepartmentPrivilege();
+        teacherDepartment.setPrivileges(instituteDepartmentPrivilege7);
+        privilegeRepository.findByPrivilegeCode(PrivilegeCode.VIEW_RECEIVED_LEAVE_REQUEST)
+                .addInstituteDepartmentPrivilege(instituteDepartmentPrivilege7);
 
 //        parent department privilege
 //        InstituteDepartmentPrivilege instituteDepartmentPrivilege5 =
@@ -439,54 +483,48 @@ public class LoadDatabase {
 //        departments.get(3).setPrivileges(instituteDepartmentPrivilege3);
 //        privileges.get(2).addInstituteDepartmentPrivilege(instituteDepartmentPrivilege3);
 
-
-        instituteDepartmentPrivileges.addAll(
-                departments
-                        .stream().map(department -> {
-            InstituteDepartmentPrivilege privilege = new InstituteDepartmentPrivilege(department, privileges.get(0));
-            department.setPrivileges(privilege);
-            privileges.get(0).addInstituteDepartmentPrivilege(privilege);
-            return repository.save(privilege);
-        }).collect(Collectors.toList()));
-
-        instituteDepartmentPrivileges.addAll(Stream.of(
+        Stream.of(
                 instituteDepartmentPrivilege1
                 , instituteDepartmentPrivilege2
                 , instituteDepartmentPrivilege3
                 , instituteDepartmentPrivilege4
                 , instituteDepartmentPrivilege5
-                , instituteDepartmentPrivilege6)
+                , instituteDepartmentPrivilege6
+                , instituteDepartmentPrivilege7
+                , instituteDepartmentPrivilege10)
                 .map(repository::save)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
     }
 
-    private static void setupUserDepartment(UserDepartmentRepository userDepartmentRepository, DepartmentRepository departmentRepository) {
+    private static void setupUserDepartment(UserDepartmentRepository userDepartmentRepository
+            , DepartmentRepository departmentRepository) {
         InstituteDepartment admin = departmentRepository.findByDepartmentName("ADMIN");
         InstituteDepartment teacher = departmentRepository.findByDepartmentName("TEACHER");
         InstituteDepartment student = departmentRepository.findByDepartmentName("STUDENT");
+
         UserDepartment userDepartment1 =
                 new UserDepartment(employees.get(0), admin);
         employees.get(0).setUserDepartment(userDepartment1);
-        departments.get(0).addUserDepartment(userDepartment1);
+        admin.addUserDepartment(userDepartment1);
 
         UserDepartment userDepartment2 = new UserDepartment(employees.get(1), admin);
         employees.get(1).setUserDepartment(userDepartment2);
-        departments.get(0).addUserDepartment(userDepartment2);
+        admin.addUserDepartment(userDepartment2);
 
         //teacher department
         UserDepartment userDepartment3 = new UserDepartment(teachers.get(0), teacher);
         teachers.get(0).setUserDepartment(userDepartment3);
-        departments.get(2).addUserDepartment(userDepartment3);
+        teacher.addUserDepartment(userDepartment3);
 
         //admin department
         UserDepartment userDepartment4 = new UserDepartment(teachers.get(0), admin);
         teachers.get(0).setUserDepartment(userDepartment4);
-        departments.get(0).addUserDepartment(userDepartment4);
+        admin.addUserDepartment(userDepartment4);
 
         //teacher department
         UserDepartment userDepartment5 = new UserDepartment(teachers.get(1), teacher);
         teachers.get(1).setUserDepartment(userDepartment5);
-        departments.get(2).addUserDepartment(userDepartment5);
+        teacher.addUserDepartment(userDepartment5);
 
         userDepartments.addAll(Stream.of(userDepartment1, userDepartment2, userDepartment3
                 , userDepartment4, userDepartment5)
@@ -496,12 +534,13 @@ public class LoadDatabase {
         userDepartments.addAll(students.stream().map(studentT -> {
             UserDepartment department = new UserDepartment(studentT, student);
             studentT.setUserDepartment(department);
-            departments.get(1).addUserDepartment(department);
+            student.addUserDepartment(department);
             return userDepartmentRepository.save(department);
         }).collect(Collectors.toList()));
     }
 
-    private static void setupUserPrivileges(UserPrivilegeRepository repository, UserRepository userRepository
+    private static void setupUserPrivileges(UserPrivilegeRepository repository
+            , UserRepository userRepository
             , InstituteDepartmentPrivilegeRepository instituteDepartmentPrivilegeRepository) {
         List<User> users = userRepository.findAll();
 //		users.forEach(user -> log.info("user: {}", user));
@@ -564,24 +603,21 @@ public class LoadDatabase {
 
         return args -> {
             log.info("Loading Database");
-//            instituteRepository.deleteAll();
-//            setupInstitutes(instituteRepository);
-////            classRepository.deleteAll();
-////            instituteClassRepository.deleteAll();
-//            setupClasses(classRepository, instituteClassRepository);
-////            sectionRepository.deleteAll();
-//            setupSections(sectionRepository, instituteClassSectionRepository);
-//            setupEmployees(employeeService);
-//            setupTeachers(teacherServiceImpl);
-//            setupStudents(studentServiceImpl);
-//            setupClassTeacher(teacherRepository, instituteClassSectionRepository);
-//            setupSubjects(subjectRepository);
-//            setupTeacherClassesAndSubjects(classSectionSubjectRepository, subjectRepository, teacherRepository);
-//            setupDepartment(departmentRepository);
-//            setupPrivileges(privilegeRepository);
-//            setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository);
-//            setupUserDepartment(userDepartmentRepository, departmentRepository);
-//            setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
+            instituteRepository.deleteAll();
+            setupInstitutes(instituteRepository);
+            setupClasses(classRepository, instituteClassRepository);
+            setupSections(sectionRepository, instituteClassSectionRepository);
+            setupEmployees(employeeService);
+            setupTeachers(teacherServiceImpl);
+            setupStudents(studentServiceImpl);
+            setupClassTeacher(teacherRepository, instituteClassSectionRepository);
+            setupSubjects(subjectRepository);
+            setupTeacherClassesAndSubjects(classSectionSubjectRepository, subjectRepository, teacherRepository);
+            setupDepartment(departmentRepository);
+            setupPrivileges(privilegeRepository);
+            setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository, privilegeRepository);
+            setupUserDepartment(userDepartmentRepository, departmentRepository);
+            setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
             log.info("Finished Loading Database");
         };
 

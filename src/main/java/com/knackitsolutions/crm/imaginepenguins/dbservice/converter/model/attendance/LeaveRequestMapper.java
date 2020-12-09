@@ -6,10 +6,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveRe
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveRequestDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Month;
@@ -51,7 +48,7 @@ public class LeaveRequestMapper {
         if (entity.getApprovedBy() != null)
             dto.setApprovedByUserId(entity.getApprovedBy().getId());
 
-        dto.setApprovesId(entity.getApprover().getId());
+        dto.setApprovesId(entity.getApproves().getId());
         dto.setEndDate(entity.getEndDate());
         dto.setStartDate(entity.getStartDate());
         dto.setLeaveReason(entity.getLeaveReason());

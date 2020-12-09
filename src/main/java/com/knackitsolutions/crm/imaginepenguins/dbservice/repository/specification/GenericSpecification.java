@@ -50,7 +50,7 @@ public class GenericSpecification<T> implements Specification<T> {
         } else if (criteria.getOperation().equals(SearchOperation.IN)){
             CriteriaBuilder.In<UserType> userTypeIn = builder.in(root.get(criteria.getKey()));
             List<UserType> userTypes = (List<UserType>) criteria.getValue();
-            userTypes.stream().forEach(userTypeIn::value);
+            userTypes.forEach(userTypeIn::value);
             return userTypeIn;
         }
 

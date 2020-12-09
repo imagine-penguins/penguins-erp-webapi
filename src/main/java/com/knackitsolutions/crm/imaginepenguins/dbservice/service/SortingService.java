@@ -18,13 +18,21 @@ public class SortingService {
 
     public static Sort sort(String[] sort) {
         List<Sort.Order> orders = new ArrayList<>();
-        if (sort[0].contains(",")) {
-            for (String sortOrder : sort) {
-                String[] _sort = sortOrder.split(",");
-                orders.add(new Sort.Order(getSortOrder(_sort[1]), _sort[0]));
+        if(sort != null){
+            if (sort[0].contains(",")) {
+                for (String sortOrder : sort) {
+                    String[] _sort = sortOrder.split(",");
+                    Sort.Direction direction = Sort.Direction.ASC;
+                    if (_sort.length > 1)
+                        direction = getSortOrder(_sort[1]);
+                    orders.add(new Sort.Order(direction, _sort[0]));
+                }
+            } else {
+                Sort.Direction direction = Sort.Direction.ASC;
+                if (sort.length > 1)
+                    direction = getSortOrder(sort[1]);
+                orders.add(new Sort.Order(direction, sort[0]));
             }
-        } else {
-            orders.add(new Sort.Order(getSortOrder(sort[1]), sort[0]));
         }
         return Sort.by(orders);
     }

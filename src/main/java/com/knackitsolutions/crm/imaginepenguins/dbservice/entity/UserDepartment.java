@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,14 +21,17 @@ public class UserDepartment {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonManagedReference
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "institute_department_id")
+    @JsonManagedReference
     private InstituteDepartment instituteDepartment;
 
     @OneToOne
     @JoinColumn(name = "department_position_id")
+    @JsonManagedReference
     private DepartmentPosition departmentPosition;
 
     public UserDepartment(User user, InstituteDepartment instituteDepartment) {

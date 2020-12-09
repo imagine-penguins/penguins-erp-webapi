@@ -12,6 +12,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFound
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.AttendanceRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.EmployeeSpecification;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.StudentSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
@@ -209,7 +210,7 @@ public class AttendanceController {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
 
-        final Map<String, List<String>> searchMap = FilterService.createSearchMap(search);
+        final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
         List<UserAttendanceResponseDTO> userAttendanceResponseDTOS = new ArrayList<>();
         Specification<Student> studentSpecification = FilterService.filterStudents(searchMap, Optional.empty(), Optional.empty());
         boolean markStudent = false;

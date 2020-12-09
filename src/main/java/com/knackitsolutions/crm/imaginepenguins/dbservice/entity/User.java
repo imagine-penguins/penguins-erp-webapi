@@ -1,5 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
@@ -43,31 +45,39 @@ public class User implements UserDetails {
     private Boolean verified;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference
     private UserProfile userProfile;
 
     @OneToMany(mappedBy = "user")
+    @JsonBackReference
     private Set<UserDepartment> userDepartments = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = {
             CascadeType.MERGE,
             CascadeType.PERSIST
     }, fetch = FetchType.EAGER)
+    @JsonBackReference
     private List<UserPrivilege> userPrivileges;
 
     @OneToMany(mappedBy = "supervisor")
+    @JsonBackReference
     private List<Attendance> attendances = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @JsonBackReference
     private List<LeaveRequest> leaveRequests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "approver")
+    @OneToMany(mappedBy = "approves")
+    @JsonBackReference
     private List<LeaveRequest> leaveRequestsApprover = new ArrayList<>();
 
     @OneToMany(mappedBy = "approvedBy")
+    @JsonBackReference
     private List<LeaveRequest> leaveRequestsApprovedBy = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "user")
+    @JsonBackReference
     List<UserDocumentStore> userDocumentStores = new ArrayList<>();
 
     @Override
@@ -285,7 +295,7 @@ public class User implements UserDetails {
 
     public void setLeaveRequestsApprover(LeaveRequest leaveRequestApprover) {
         this.leaveRequestsApprover.add(leaveRequestApprover);
-        leaveRequestApprover.setApprover(this);
+        leaveRequestApprover.setApproves(this);
     }
 
     public List<LeaveRequest> getLeaveRequestsApprovedBy() {
