@@ -27,7 +27,7 @@ public class EmployeeSpecification {
     public static Specification<Employee> employeesByDepartmentId(Integer departmentId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder
                 .equal(root
-                                .joinList("userDepartments", JoinType.INNER)
+                                .joinSet("userDepartments", JoinType.INNER)
                                 .join("instituteDepartment", JoinType.INNER)
                                 .get("id")
                         , departmentId
@@ -38,7 +38,7 @@ public class EmployeeSpecification {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inDepartment = criteriaBuilder
                     .in(root
-                            .joinList("userDepartments", JoinType.INNER)
+                            .joinSet("userDepartments", JoinType.INNER)
                             .join("instituteDepartment", JoinType.INNER)
                             .get("id")
                     );
@@ -62,7 +62,7 @@ public class EmployeeSpecification {
     public static Specification<Employee> employeeByAttendanceStatusIn(List<AttendanceStatus> statuses) {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<AttendanceStatus> attendanceStatusIn = criteriaBuilder.in(root
-                    .joinList("employeeAttendances", JoinType.LEFT)
+                    .joinSet("employeeAttendances", JoinType.LEFT)
                     .join("attendance", JoinType.LEFT).get("attendanceStatus"));
             statuses.forEach(attendanceStatusIn::value);
             return attendanceStatusIn;
@@ -73,7 +73,7 @@ public class EmployeeSpecification {
         return (root, query, criteriaBuilder) ->
             criteriaBuilder.equal(
                     root
-                            .joinList("employeeAttendances", JoinType.INNER)
+                            .joinSet("employeeAttendances", JoinType.INNER)
                             .join("attendance", JoinType.LEFT).get("attendanceStatus")
                     , status
             );
@@ -93,7 +93,7 @@ public class EmployeeSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder
                 .between(
                         root
-                                .joinList("employeeAttendances", JoinType.INNER)
+                                .joinSet("employeeAttendances", JoinType.INNER)
                                 .join("attendance", JoinType.LEFT)
                                 .get("attendanceDate")
                         , startDate

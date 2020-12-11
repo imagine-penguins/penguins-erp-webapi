@@ -55,6 +55,7 @@ public class LeaveRequestMapper {
         dto.setLeaveType(entity.getLeaveType());
         dto.setRejectedReason(entity.getRejectedReason());
         dto.setStatus(entity.getLeaveRequestStatus());
+        dto.setAppliedOn(entity.getUpdateDateTime());
         return dto;
     }
 

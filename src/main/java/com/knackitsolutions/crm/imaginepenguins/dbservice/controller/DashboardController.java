@@ -7,7 +7,9 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.AppDashboardFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,13 +21,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/dashboard")
+@RequiredArgsConstructor
 public class DashboardController {
 
-    @Autowired
-    AppDashboardFacade appDashboardFacade;
+    private final AppDashboardFacade appDashboardFacade;
 
-    @Autowired
-    IAuthenticationFacade authenticationFacade;
+    private final IAuthenticationFacade authenticationFacade;
 
     @GetMapping("/web/department/{departmentId}")
     public EntityModel<WebDashboardDTO> webDashboardDTO(@PathVariable("departmentId") Long departmentId){
@@ -34,17 +35,14 @@ public class DashboardController {
     }
 
     @GetMapping("/app/department/{departmentId}")
-    public EntityModel<AppDashboardDTO> appDashboardDTO(@PathVariable("departmentId") Long departmentId){
+    public CollectionModel<PrivilegeDTO> appDashboardDTO(@PathVariable("departmentId") Long departmentId){
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
-
         AppDashboardDTO dto = new AppDashboardDTO();
         List<PrivilegeDTO> privilegeDTOS = appDashboardFacade
                 .getPrivileges(userContext.getUserId(), departmentId);
-        dto.setPrivileges(privilegeDTOS);
+        //TODO add links for module functions
 
-        //To Do add links for module functions
-
-        return EntityModel.of(dto);
+        return CollectionModel.of(privilegeDTOS);
     }
 
 }

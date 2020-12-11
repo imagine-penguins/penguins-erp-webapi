@@ -52,9 +52,13 @@ public class UserControllerImpl {
     UserMapperImpl userMapper;
 
     @GetMapping("/{id}")
-    public EntityModel<UserLoginResponseDTO> one(@PathVariable("id") Long id){
+    public EntityModel<Map<String, String>> one(@PathVariable("id") Long id){
+        User user = userService.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         UserLoginResponseDTO dto = userFacade.findById(id);
-        return EntityModel.of(dto); //userLoginModelAssembler.toModel(userFacade.findById(id));
+        Map<String, String> map = new HashMap<>();
+        map.put("firstName", user.getUserProfile().getFirstName());
+        map.put("lastName", user.getUserProfile().getLastName());
+        return EntityModel.of(map); //userLoginModelAssembler.toModel(userFacade.findById(id));
     }
 /*
     @Override

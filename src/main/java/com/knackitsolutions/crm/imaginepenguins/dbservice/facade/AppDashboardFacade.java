@@ -5,6 +5,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.PrivilegeDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserPrivilege;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserPrivilegeRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,18 +15,16 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class AppDashboardFacade {
 
-    @Autowired
-    private PrivilegeMapper privilegeMapper;
+    private final PrivilegeMapper privilegeMapper;
+
+    private final UserPrivilegeRepository userPrivilegeRepository;
 
     //Get the department from UserDepartment
     // . Find all the privileges in instituteDepartment for that department
     // . Convert that to PrivilegeDTO. Make a list
-
-    @Autowired
-    private UserPrivilegeRepository userPrivilegeRepository;
-
 
     public List<PrivilegeDTO> getPrivileges(Long userId, Long departmentId){
         log.info("Preparing DTO list");

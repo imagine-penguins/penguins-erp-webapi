@@ -24,6 +24,7 @@ public class LeaveResponseDTO extends RepresentationModel<LeaveResponseDTO> {
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
     private Date endDate;
 
+    private Date appliedOn;
     private LeaveType leaveType;
 
     private String leaveReason;

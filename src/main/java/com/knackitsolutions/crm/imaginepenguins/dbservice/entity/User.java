@@ -57,7 +57,7 @@ public class User implements UserDetails {
             CascadeType.PERSIST
     }, fetch = FetchType.EAGER)
     @JsonBackReference
-    private List<UserPrivilege> userPrivileges;
+    private List<UserPrivilege> userPrivileges = new ArrayList<>();
 
     @OneToMany(mappedBy = "supervisor")
     @JsonBackReference

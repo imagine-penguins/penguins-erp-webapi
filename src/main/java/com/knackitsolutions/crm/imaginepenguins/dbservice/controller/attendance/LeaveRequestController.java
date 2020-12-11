@@ -100,7 +100,7 @@ public class LeaveRequestController {
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         List<LeaveResponseDTO> responseDTOS = new ArrayList<>();
-        Specification<LeaveRequest> leaveRequestSpecification = Specification.where(null);
+        Specification<LeaveRequest> leaveRequestSpecification = LeaveRequestSpecification.filterLeaveRequests(searchMap);
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.VIEW_APPLIED_LEAVE_REQUEST.getPrivilegeCode())
         )) {
@@ -194,7 +194,7 @@ public class LeaveRequestController {
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         List<LeaveResponseDTO> responseDTOS = new ArrayList<>();
-        Specification<LeaveRequest> leaveRequestSpecification = Specification.where(null);
+        Specification<LeaveRequest> leaveRequestSpecification = LeaveRequestSpecification.filterLeaveRequests(searchMap);
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.VIEW_RECEIVED_LEAVE_REQUEST.getPrivilegeCode())
         )) {
@@ -278,5 +278,4 @@ public class LeaveRequestController {
                 .collect(Collectors.toList());
         return CollectionModel.of(graphData);
     }
-
 }

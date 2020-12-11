@@ -48,10 +48,10 @@ public class GenericSpecification<T> implements Specification<T> {
                     builder.lower(root.get(criteria.getKey())),
                     criteria.getValue().toString().toLowerCase() + "%");
         } else if (criteria.getOperation().equals(SearchOperation.IN)){
-            CriteriaBuilder.In<UserType> userTypeIn = builder.in(root.get(criteria.getKey()));
-            List<UserType> userTypes = (List<UserType>) criteria.getValue();
-            userTypes.forEach(userTypeIn::value);
-            return userTypeIn;
+            CriteriaBuilder.In<Object> in = builder.in(root.get(criteria.getKey()));
+            List<Object> objects = (List<Object>) criteria.getValue();
+            objects.forEach(in::value);
+            return in;
         }
 
         return null;
