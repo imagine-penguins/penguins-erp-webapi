@@ -5,18 +5,15 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Generated;
-
 
 @Component
-public class UserProfileMapperImpl implements UserProfileMapper {
+public class UserProfileMapperImpl {
 
     @Autowired
     private AddressMapperImpl addressMapper;
     @Autowired
     private ContactMapperImpl contactMapper;
 
-    @Override
     public UserProfileDTO userProfileToDTO(UserProfile entity) {
         if ( entity == null ) {
             return null;
@@ -27,12 +24,11 @@ public class UserProfileMapperImpl implements UserProfileMapper {
         userProfileDTO.setFirstName( entity.getFirstName() );
         userProfileDTO.setLastName( entity.getLastName() );
         userProfileDTO.setContact( contactMapper.contactToContactDTO( entity.getContact() ) );
-        userProfileDTO.setAddress( addressMapper.addressToAddressDTO( entity.getAddress() ) );
+        userProfileDTO.setAddress( addressMapper.addressToAddressDTO( entity.getPersonalAddress() ) );
 
         return userProfileDTO;
     }
 
-    @Override
     public UserProfile dtoToUserProfile(UserProfileDTO dto) {
         if ( dto == null ) {
             return null;
@@ -42,7 +38,7 @@ public class UserProfileMapperImpl implements UserProfileMapper {
 
         userProfile.setFirstName( dto.getFirstName() );
         userProfile.setLastName( dto.getLastName() );
-        userProfile.setAddress( addressMapper.addressDTOToAddress( dto.getAddress() ) );
+        userProfile.setPersonalAddress( addressMapper.addressDTOToAddress( dto.getAddress() ) );
         userProfile.setContact( contactMapper.contactDTOtoContact( dto.getContact() ) );
 
         return userProfile;

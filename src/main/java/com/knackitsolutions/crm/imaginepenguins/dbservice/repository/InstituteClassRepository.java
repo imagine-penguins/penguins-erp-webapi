@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface InstituteClassRepository extends JpaRepository<InstituteClass, Long> {
+
     Optional<InstituteClass> findByInstituteIdAndClasssId(Long instituteId, Long classId);
 
     List<InstituteClass> findByInstituteNameAndClasssClassName(String instituteName, String className);

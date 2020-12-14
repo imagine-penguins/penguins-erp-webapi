@@ -10,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +40,36 @@ public class UserService{
 
     public List<User> findByDepartmentId(Long departmentId) {
         return userRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
+    }
+
+    public String generateRandomPassword(String email) {
+        String temp = email.substring(1, email.indexOf('@'));
+        return "" + Character.toUpperCase(email.charAt(0))
+                + shuffle(temp.substring(0, (int)(Math.random() * temp.length()))).toLowerCase(Locale.ROOT)
+                + randomChar()
+                + (int)Math.random() * 1000;
+    }
+
+    private Character randomChar() {
+        List<Character> characters = Arrays.asList('_', '#', '!', '@');
+        return characters.get((int) (Math.random() * characters.size()));
+    }
+
+    private String shuffle(String input){
+        List<Character> characters = new ArrayList<>();
+        for(char c:input.toCharArray()){
+            characters.add(c);
+        }
+        StringBuilder output = new StringBuilder(input.length());
+        while(characters.size()!=0){
+            int randPicker = (int)(Math.random() * characters.size());
+            output.append(characters.remove(randPicker));
+        }
+        return output.toString();
+    }
+
+    public String generateUsername(String email, Long userId) {
+        return email.substring(0, 5) + "_" + userId;
     }
 
 }

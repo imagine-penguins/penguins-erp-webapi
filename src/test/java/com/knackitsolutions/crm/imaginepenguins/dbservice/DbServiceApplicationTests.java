@@ -46,7 +46,7 @@ class DbServiceApplicationTests {
 	}
 
 	@Autowired
-	UserProfileMapper userProfileMapper;
+	UserProfileMapperImpl userProfileMapper;
 
 	@Autowired
 	AddressMapperImpl addressMapperImpl;
@@ -79,8 +79,8 @@ class DbServiceApplicationTests {
 		Contact contact = new Contact("982", "mj@g.co");
 		UserProfile userProfile = new UserProfile("mayank", "kumar", address, contact);
 		UserProfileDTO userProfileDTO = userProfileMapper.userProfileToDTO(userProfile);
-		assertThat(userProfile.getAddress().getAddressLine1().equals(userProfileDTO.getAddress().getLine1()));
-		assertThat(userProfile.getAddress().getAddressLine2().equals(userProfileDTO.getAddress().getLine2()));
+		assertThat(userProfile.getPersonalAddress().getAddressLine1().equals(userProfileDTO.getAddress().getLine1()));
+		assertThat(userProfile.getPersonalAddress().getAddressLine2().equals(userProfileDTO.getAddress().getLine2()));
 		assertThat(address.getCountry().equals(userProfileDTO.getAddress().getCountry()));
 		assertThat(userProfile.getFirstName().equals(userProfileDTO.getFirstName()));
 		assertThat(userProfile.getLastName().equals(userProfileDTO.getLastName()));

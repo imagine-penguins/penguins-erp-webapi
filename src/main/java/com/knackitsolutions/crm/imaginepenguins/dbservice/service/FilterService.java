@@ -60,11 +60,11 @@ public class FilterService {
 //                        .employeesByActiveStatus(entry.getValue().get(0).equalsIgnoreCase("Y")));
             }
             if (key.equalsIgnoreCase("department")) {
-                List<Integer> departments = entry
+                Stream<Integer> departments = entry
                         .getValue()
                         .stream()
-                        .map(sc -> Integer.parseInt(sc.getValue().toString()))
-                        .collect(Collectors.toList());
+                        .map(sc -> Integer.parseInt(sc.getValue().toString()));
+
 //                employeeSpecifications.add((Specification<Employee>) UserSpecification
 //                        .userByDepartmentIdIn(departments));
                 result = result.and((Specification<Student>) UserSpecification
@@ -142,8 +142,7 @@ public class FilterService {
                         .employeesByActiveStatus(stream.findFirst().get().equalsIgnoreCase("Y")));
             }
             if (key.equalsIgnoreCase("department")) {
-                List<Integer> departments = stream
-                        .map(Integer::parseInt).collect(Collectors.toList());
+                Stream<Integer> departments = stream.map(Integer::parseInt);
                 result = result.and((Specification<Employee>) UserSpecification
                         .userByDepartmentIdIn(departments));
             }

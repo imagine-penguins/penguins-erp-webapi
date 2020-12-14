@@ -17,6 +17,8 @@ public class LeaveResponseDTO extends RepresentationModel<LeaveResponseDTO> {
 
     private Long id;
     private Long userId;
+    private String firstName;
+    private String lastName;
     private Long approvesId;
 
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
@@ -24,14 +26,11 @@ public class LeaveResponseDTO extends RepresentationModel<LeaveResponseDTO> {
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
     private Date endDate;
 
+    @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
     private Date appliedOn;
     private LeaveType leaveType;
-
     private String leaveReason;
-
     private LeaveRequestStatus status;
-
     private String rejectedReason;
-
     private Long approvedByUserId;
 }

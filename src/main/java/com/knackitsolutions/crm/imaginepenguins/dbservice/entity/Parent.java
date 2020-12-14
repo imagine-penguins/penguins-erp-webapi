@@ -15,6 +15,8 @@ public class Parent extends User{
     @OneToMany(mappedBy = "parent")
     private List<Student> students;
 
+    private String relation;
+
     public String getQR() {
         return QR;
     }
@@ -32,5 +34,13 @@ public class Parent extends User{
     }
 
     public Parent() {
+    }
+
+    public String getRelation() {
+        return relation;
+    }
+
+    public void setRelation(String relation) {
+        this.relation = relation;
     }
 }

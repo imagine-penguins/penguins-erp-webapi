@@ -24,13 +24,14 @@ public class UserListDTO extends RepresentationModel<UserListDTO> {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserDTO extends RepresentationModel<UserDTO> implements Sortable {
-        String profilePic;
-        String firstName;
-        String lastName;
-        Long id;
-        ContactDTO contact;
-        UserType userType;
-        Boolean active;
+        private String profilePic;
+        private String passportPic;
+        private String firstName;
+        private String lastName;
+        private Long id;
+        private ContactDTO contact;
+        private UserType userType;
+        private Boolean active;
 
         @Override
         public String getPhone() {

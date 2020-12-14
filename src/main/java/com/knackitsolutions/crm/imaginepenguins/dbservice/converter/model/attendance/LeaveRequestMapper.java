@@ -56,6 +56,9 @@ public class LeaveRequestMapper {
         dto.setRejectedReason(entity.getRejectedReason());
         dto.setStatus(entity.getLeaveRequestStatus());
         dto.setAppliedOn(entity.getUpdateDateTime());
+        User user = entity.getUser();
+        dto.setFirstName(user.getUserProfile().getFirstName());
+        dto.setLastName(user.getUserProfile().getLastName());
         return dto;
     }
 
@@ -70,41 +73,6 @@ public class LeaveRequestMapper {
 
     }
 
-    public List<LeaveResponseDTO> leaveResponseDTOFromUser(List<User> users) {
-
-        List<LeaveResponseDTO> dtos = new ArrayList<>();
-        users
-                .stream()
-                .flatMap(user -> user.getLeaveRequests()
-                        .stream()
-                        .map(this::entityToDTO))
-                .forEach(dtos::add);
-
-        return dtos;
-
-    }
-
-    public void updateGraphDataList(List<LeaveHistoryDTO.GraphData> graphDataList
-            , List<LeaveHistoryDTO.GraphData> graphData) {
-        log.info("Creating list of graph data");
-        for (LeaveHistoryDTO.GraphData graphData1 : graphDataList) {
-            log.debug("Graph Data 1: {}", graphData1);
-            LeaveHistoryDTO.GraphData graphData2 = null;
-            if (!graphData.contains(graphData1)) {
-                graphData2 = new LeaveHistoryDTO.GraphData();
-            }else{
-                graphData2 = graphData
-                        .stream()
-                        .filter(g -> graphData1.equals(g))
-                        .findFirst().orElseThrow(() -> new RuntimeException("Month name is invalid: {}" + graphData1.getMonth()));
-            }
-            graphData2.setMonth(graphData1.getMonth());
-            graphData2.setLeaveCount(graphData1.getLeaveCount());
-            log.debug("Graph Data 2: {}", graphData2);
-            graphData.add(graphData2);
-        }
-    }
-
     public LeaveHistoryDTO.GraphData getGraphDataFromMapEntry(Map.Entry<Month, Integer> monthlyCount) {
         log.info("Starting getGraphDataFromMapEntry method.");
         LeaveHistoryDTO.GraphData gData = new LeaveHistoryDTO.GraphData();
@@ -112,17 +80,6 @@ public class LeaveRequestMapper {
         gData.setLeaveCount(monthlyCount.getValue());
         log.info("Graph Data: {}", gData);
         return gData;
-    }
-
-    public List<Date> getUserLeavesDates(User user){
-        log.info("Starting getMonthlyLeaveCountForUser method.");
-        List<LeaveRequest> leaveRequests = user.getLeaveRequests();
-        List<Date> dates = new ArrayList<>();
-        leaveRequests
-                .stream()
-                .map(this::getLeavesDates)
-                .forEach(dates::addAll);
-        return dates;
     }
 
     public Map<Month, Integer> getMonthlyLeaveCount(List<Date> dates) {
@@ -157,13 +114,4 @@ public class LeaveRequestMapper {
         return dates;
     }
 
-//    public List<LeaveHistoryDTO.GraphData> graphData(List<LeaveResponseDTO> leaveResponseDTOS) {
-//
-//    }
-
-//    public List<Integer> getMonthsLeaveCount(List<LeaveResponseDTO> leaveResponseDTOS){
-//        leaveResponseDTOS
-//                .stream()
-//                .map(leaveResponseDTO -> )
-//    }
 }

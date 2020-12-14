@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -200,7 +201,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/users")
-    public CollectionModel<UserAttendanceResponseDTO> loadUsers(
+    public PagedModel<UserAttendanceResponseDTO> loadUsers(
             @RequestParam(required = false) String[] search
             , @RequestParam(defaultValue = "id,desc") String[] sort
             , @RequestParam(defaultValue = "0") @Min(0) int page
@@ -251,8 +252,9 @@ public class AttendanceController {
                     EmployeeSpecification.employeeByManagerId(Arrays.asList(userContext.getUserId()))
             );
         }
+        Page<Student> studentPage = null;
         if (markStudent) {
-            Page<Student> studentPage = studentService.findAll(studentSpecification, pageable);
+            studentPage = studentService.findAll(studentSpecification, pageable);
             studentPage
                     .get()
                     .map(attendanceResponseMapper::mapUserAttendanceToStudent)
@@ -265,8 +267,9 @@ public class AttendanceController {
                     })
                     .forEach(userAttendanceResponseDTOS::add);
         }
+        Page<Employee> employeePage = null;
         if (markEmployee) {
-            Page<Employee> employeePage = employeeService.findAll(employeeSpecification, pageable);
+            employeePage = employeeService.findAll(employeeSpecification, pageable);
             employeePage
                     .get()
                     .map(attendanceResponseMapper::mapUserAttendanceToEmployee)
@@ -280,7 +283,14 @@ public class AttendanceController {
                     .forEach(userAttendanceResponseDTOS::add);
         }
         log.trace("loadUsers Request Completed.");
-        return CollectionModel.of(userAttendanceResponseDTOS
+        int totalPages = 0;
+        if (studentPage != null)
+            totalPages = studentPage.getTotalPages();
+        if (employeePage != null)
+            totalPages = totalPages + employeePage.getTotalPages();
+
+        return PagedModel.of(userAttendanceResponseDTOS
+                , new PagedModel.PageMetadata(size, page, userAttendanceResponseDTOS.size(), totalPages)
                 , linkTo(
                         methodOn(AttendanceController.class)
                                 .userAttendance(null)

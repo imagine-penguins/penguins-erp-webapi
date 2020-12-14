@@ -31,5 +31,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
 
     List<Employee> findByUserDepartmentsInstituteDepartmentId(Long departmentId);
 
+    @Query(value = "SELECT e.institute FROM Employee e WHERE e.id= :employeeId")
+    Institute findInstituteById(@Param("employeeId") Long employeeId);
 
 }

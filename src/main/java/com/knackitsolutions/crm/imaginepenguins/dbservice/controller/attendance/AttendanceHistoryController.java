@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.validation.annotation.Validated;
@@ -73,7 +74,7 @@ public class AttendanceHistoryController {
     }
 
     @GetMapping("/history")
-    public CollectionModel<UserAttendanceResponseDTO> userAttendanceHistory(
+    public PagedModel<UserAttendanceResponseDTO> userAttendanceHistory(
             @RequestParam(required = false) String[] search
             , @RequestParam(defaultValue = "id,desc") String[] sort
             , @RequestParam(name = "period") Optional<Period> period
@@ -117,10 +118,10 @@ public class AttendanceHistoryController {
                     .stream().map(i -> i.getId()).collect(Collectors.toList());
             studentSpecification = studentSpecification.and(StudentSpecification.studentByClassIn(instituteClassSectionIds));
         }
+        Page<Student> studentPage = null;
         if (viewStudent) {
-            Page<Student> studentPage = studentService.findAll(studentSpecification, pageable);
+            studentPage = studentService.findAll(studentSpecification, pageable);
             studentPage
-                    .get()
                     .flatMap(student -> student.getStudentAttendances().stream())
                     .map(attendanceResponseMapper::mapUserAttendanceToStudent)
                     .map(userAttendanceResponseDTO -> this.addLinks(userAttendanceResponseDTO, sort, period, value, page, size, privilegeCodes))
@@ -136,16 +137,22 @@ public class AttendanceHistoryController {
                     EmployeeSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
         }
+        Page<Employee> employeePage = null;
         if (viewEmployee) {
-            Page<Employee> employeePage = employeeService.findAll(employeeSpecification, pageable);
+            employeePage = employeeService.findAll(employeeSpecification, pageable);
             employeePage
-                    .get()
                     .flatMap(employee -> employee.getEmployeeAttendances().stream())
                     .map(attendanceResponseMapper::mapUserAttendanceToEmployee)
                     .map(userAttendanceResponseDTO -> this.addLinks(userAttendanceResponseDTO, sort, period, value, page, size, privilegeCodes))
                     .forEach(users::add);
         }
-        return CollectionModel.of(users, linkTo(methodOn(AttendanceHistoryController.class)
+        int totalPages = 0;
+        if (studentPage != null)
+            totalPages = totalPages + studentPage.getTotalPages();
+        if (employeePage != null)
+            totalPages = totalPages + employeePage.getTotalPages();
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, users.size(), totalPages);
+        return PagedModel.of(users, pageMetadata, linkTo(methodOn(AttendanceHistoryController.class)
                 .userAttendanceHistory(search, sort, period, value, page, size))
                 .withRel("view-attendance-history"));
     }
@@ -212,7 +219,7 @@ public class AttendanceHistoryController {
         Long employeeAbsentCount = 0l;
         Long employeeLeaveCount = 0l;
         if (viewEmployee) {
-             employeePresentCount = employeeService.count(
+            employeePresentCount = employeeService.count(
                     employeeSpecification.and(EmployeeSpecification.employeeByAttendanceStatus(AttendanceStatus.PRESENT))
             );
 

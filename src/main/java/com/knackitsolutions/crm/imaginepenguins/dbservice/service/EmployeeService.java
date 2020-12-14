@@ -1,6 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendanceKey;
@@ -69,4 +70,9 @@ public class EmployeeService {
     public Page<Employee> findAll(Specification<Employee> spec, Pageable pageable) {
         return employeeRepository.findAll(spec, pageable);
     }
+
+    public Institute findInstituteById(Long employeeId) {
+        return employeeRepository.findInstituteById(employeeId);
+    }
+
 }

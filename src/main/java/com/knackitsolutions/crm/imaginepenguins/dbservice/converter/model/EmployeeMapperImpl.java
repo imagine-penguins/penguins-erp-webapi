@@ -16,11 +16,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class EmployeeMapperImpl extends UserMapperImpl{
+@RequiredArgsConstructor
+public class EmployeeMapperImpl {
 
-    public EmployeeMapperImpl(UserProfileMapperImpl userProfileMapper, ContactMapperImpl contactMapper) {
-        super(userProfileMapper, contactMapper);
-    }
+    private final UserProfileMapperImpl userProfileMapper;
+    private final ContactMapperImpl contactMapper;
+    private final UserMapperImpl userMapper;
 
     public EmployeeCreationDTO toDTO(Employee employee) {
         if ( employee == null ) {
@@ -29,7 +30,7 @@ public class EmployeeMapperImpl extends UserMapperImpl{
 
         EmployeeCreationDTO employeeCreationDTO = new EmployeeCreationDTO();
 
-        userToUserCreationDTO(employeeCreationDTO, employee);
+        userMapper.userToUserCreationDTO(employeeCreationDTO, employee);
 
 //        employeeCreationDTO.setPrivileges( userPrivilegesToPrivileges( employee.getUserPrivileges() ) );
 //        employeeCreationDTO.setProfile( userProfileMapper.userProfileToDTO( employee.getUserProfile() ) );
@@ -55,7 +56,7 @@ public class EmployeeMapperImpl extends UserMapperImpl{
 
         Employee employee = new Employee();
 
-        userCreationDTOToUser(employee, employeeCreationDTO);
+        userMapper.userCreationDTOToUser(employee, employeeCreationDTO);
 //        employee.setManager( fromId( employeeCreationDTO.getManagerId() ) );
         employee.setSubordinates( longSetToEmployeeSet( employeeCreationDTO.getSubordinates() ) );
 //        employee.setUserProfile( userProfileMapper.dtoToUserProfile( employeeCreationDTO.getProfile() ) );

@@ -2,31 +2,53 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteDocumentType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.common.filter.DataFilter;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.InstituteNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.UserSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.FilterService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.SortingService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.document.AmazonDocumentStorageClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -39,48 +61,86 @@ public class UserControllerImpl {
     private IAuthenticationFacade authenticationFacade;
 
     @Autowired
-    UserFacade userFacade;
+    private UserFacade userFacade;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @Autowired
-    EmployeeService employeeService;
+    private EmployeeService employeeService;
+
+    @Autowired
+    private AmazonDocumentStorageClient storageClient;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     @Qualifier("userMapperImpl")
     UserMapperImpl userMapper;
 
     @GetMapping("/{id}")
-    public EntityModel<Map<String, String>> one(@PathVariable("id") Long id){
+    public EntityModel<Map<String, Object>> one(@PathVariable("id") Long id){
         User user = userService.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         UserLoginResponseDTO dto = userFacade.findById(id);
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("firstName", user.getUserProfile().getFirstName());
         map.put("lastName", user.getUserProfile().getLastName());
-        return EntityModel.of(map); //userLoginModelAssembler.toModel(userFacade.findById(id));
+        map.put("userId", user.getId());
+        return EntityModel.of(map);
     }
-/*
-    @Override
-    public ResponseEntity<?> newUser(UserDTO user) {
-        user.getUserProfile().setUser(user);
-        log.info("UserDTO: {}", user);
-        log.info("UserDTO Employee: {}", user.getEmployee());
-        log.info("UserDTO Type: {}", user.getUserType());
-        if (user.getUserType() == UserType.EMPLOYEE) {
-            log.info("Setting UserDTO in Employee");
-            log.info("Employee: {}", user.getEmployee());
-            log.info("Employee's user: {}", user.getEmployee().getUser());
-            log.info("UserDTO: {}", user);
-            user.getEmployee().setUser(user);
-        }
-        EntityModel<UserDTO> entityModel = userModelAssembler
-                .toModel(userRepository.save(user));
 
-        return ResponseEntity.created(
-                entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()
-        ).body(entityModel);
+    @PutMapping("/{userId}/upload")
+    public ResponseEntity<String> uploadDoc(@RequestParam("file") MultipartFile multipartFile
+            , @PathVariable Long userId, @RequestParam("doc-type") UserDocumentType userDocumentType) throws URISyntaxException {
+        String fileName = storageClient.storeFile(multipartFile
+                , userService
+                        .findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException(userId))
+                , userDocumentType);
+        return ResponseEntity.created(new URI(fileName)).body("success!!");
     }
+
+    @GetMapping("/{userId}/download")
+    public ResponseEntity<Resource> downloadDoc(@PathVariable Long userId
+            , @RequestParam("doc-type") UserDocumentType userDocumentType
+            , HttpServletRequest request) {
+        String fileName = storageClient.getDocumentName(userId, userDocumentType);
+        Resource resource = null;
+        if (fileName == null || fileName.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            resource = storageClient.loadFileAsResource(fileName);
+        } catch (Exception exception) {
+            log.error(exception.getMessage(), exception);
+
+        }
+        String contentType = null;
+        try {
+            contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+        } catch (IOException ioException) {
+            log.error("Could not determine the file type.");
+            log.error("IGNORE. " + ioException.getMessage(), ioException);
+        }
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filepath=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+
+//    @PostMapping("/{userType}")
+//    public ResponseEntity<Map<String, Object>> newUser(@PathVariable("userType") UserType userType, @RequestBody ProfileDTO dto) {
+//
+//
+//    }
+
+    /*
 
     @Override
     public ResponseEntity<?> replaceUser(UserDTO newUser, Long id) {
@@ -103,42 +163,64 @@ public class UserControllerImpl {
                 userRepository.findById(id)
                         .orElseThrow(() -> new UserNotFoundException(id)));
         return ResponseEntity.noContent().build();
-    }*/
-
+    }
+*/
 
     @GetMapping
-    public UserListDTO all(@RequestParam(defaultValue = "0") @Min(0) int page
+    public EntityModel<ProfileDTO> myProfile() {
+        UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
+        User user = userService
+                .findById(userContext.getUserId()).orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
+        ProfileDTO profileDTO = userMapper.entityToDTO(user);
+        return EntityModel.of(profileDTO);
+    }
+
+    @GetMapping("/{userId}")
+    public EntityModel<ProfileDTO> myProfile(@PathVariable Long userId) {
+        UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
+        User user = userService
+                .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        ProfileDTO profileDTO = userMapper.entityToDTO(user);
+        return EntityModel.of(profileDTO);
+    }
+
+    @GetMapping("/dir")
+    public PagedModel<UserListDTO.UserDTO> all(@RequestParam(defaultValue = "0") @Min(0) int page
             , @RequestParam(defaultValue = "10") @Min(1) int size
-            , DataFilter dataFilter
+            , @RequestParam(required = false) String[] search
             , @RequestParam(defaultValue = "id,desc") String[] sort){
 
         UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
-        User user = userService.findById(userContext.getUserId()).orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
-
-        if ( !(user instanceof Employee) )
+        if ( !(userContext.getUserType() == UserType.EMPLOYEE) )
             throw new RuntimeException("User is not employee hence not permitted here.");
 
-        Employee employee = (Employee) user;
+        Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
+        Specification<User> userSpecification = UserSpecification.filter(FilterService.createSearchMap(search));
 
-        List<User> users = userFacade.getUsers(employee, employee.getInstitute().getId()
-                , dataFilter.getActive(), dataFilter.getUserTypes());
+        Page<User> all = userRepository.findAll(userSpecification, pageable);
+        List<UserListDTO.UserDTO> collect = all.stream().map(userMapper::userToUserDTO).collect(Collectors.toList());
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, all.getTotalElements(), all.getTotalPages());
+        PagedModel<UserListDTO.UserDTO> userDTOS = PagedModel.of(collect, pageMetadata);
 
-        List<UserListDTO.UserDTO> userDTOS = new ArrayList<>();
+//        UserListDTO users = new UserListDTO();
+//
+//        users.setUserDTOS(collect);
+//        users.setTotalPages(all.getTotalPages());
+//        users.setPageNumber(page);
+//        users.setPageSize(size);
+//
+//        users.add(linkTo(methodOn(UserControllerImpl.class)
+//                .all(page, size, search, sort)).withSelfRel());
+//
+//        users.add(linkTo(methodOn(UserControllerImpl.class)
+//                .all(page + 1, size, search, sort)).withRel("next-page"));
+//
+//        if (page > 0)
+//            users.add(linkTo(methodOn(UserControllerImpl.class)
+//                    .all(page - 1, size, search, sort))
+//                    .withRel("previous-page"));
 
-        UserListDTO userListDTO = userFacade.newUserListDTO(userDTOS, page, size, users.size());
-
-        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
-                .all(page, size, dataFilter, sort)).withSelfRel());
-
-        userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
-                .all(page + 1, size, dataFilter, sort)).withRel("next-page"));
-
-        if (page > 0)
-            userListDTO.add(linkTo(methodOn(UserControllerImpl.class)
-                    .all(page - 1, size, dataFilter, sort))
-                    .withRel("previous-page"));
-
-        return userListDTO;
+        return userDTOS;
     }
 
     @PutMapping(value = "/{userId}")
@@ -194,7 +276,7 @@ public class UserControllerImpl {
         return ResponseEntity.ok(manager);
     }
 
-    @GetMapping("/institute")
+    @GetMapping("/institutes")
     public CollectionModel<EntityModel<InstituteDTO>> myInstitute() {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication();
         List<InstituteDTO> instituteDTOS = userFacade.getInstitutes(userContext.getUserId());

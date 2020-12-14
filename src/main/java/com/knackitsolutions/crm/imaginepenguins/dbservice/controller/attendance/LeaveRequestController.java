@@ -25,6 +25,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -82,7 +84,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping
-    public CollectionModel<LeaveResponseDTO> all(
+    public PagedModel<LeaveResponseDTO> all(
             @RequestParam(required = false) String[] search
             , @RequestParam(defaultValue = "id") String[] sort
             , @RequestParam(defaultValue = "0") @Min(0) int page
@@ -132,8 +134,9 @@ public class LeaveRequestController {
                                 .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
                                 .withRel(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode())))
                 .forEach(responseDTOS::add);
-        return CollectionModel.of(responseDTOS, linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(
-                null, null, 0, 10, null, null
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, responseDTOS.size(), leaveRequestPage.getTotalPages());
+        return PagedModel.of(responseDTOS, pageMetadata, linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(
+                search, sort, page, size, period, value
         )).withSelfRel());
     }
 
@@ -174,7 +177,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/history")
-    public CollectionModel<LeaveResponseDTO> leaveRequestHistory(
+    public PagedModel<LeaveResponseDTO> leaveRequestHistory(
             @RequestParam(required = false) String[] search
             , @RequestParam(defaultValue = "id") String[] sort
             , @RequestParam(defaultValue = "0") @Min(0) int page
@@ -182,7 +185,7 @@ public class LeaveRequestController {
             , @RequestParam(name = "period") Optional<Period> period
             , @RequestParam(name = "value") Optional<String> value
     ) {
-
+        Map<String, Object> objectMap = new HashMap<>();
         log.trace("leave history started...");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
@@ -227,9 +230,10 @@ public class LeaveRequestController {
                                 .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
                                 .withRel(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode())))
                 .forEach(responseDTOS::add);
-        return CollectionModel.of(responseDTOS, linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(
-                null, null, 0, 10, null, null
-        )).withSelfRel());
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page
+                , leaveRequestPage.getTotalElements(), leaveRequestPage.getTotalPages());
+        return PagedModel.of(responseDTOS, pageMetadata, linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(
+                search, sort, page, size, period, value)).withSelfRel());
     }
 
     @GetMapping("/history/graph")
