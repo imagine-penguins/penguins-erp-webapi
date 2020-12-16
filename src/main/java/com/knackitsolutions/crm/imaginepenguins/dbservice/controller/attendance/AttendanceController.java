@@ -277,7 +277,7 @@ public class AttendanceController {
                         if (leaveRequestService.isOnLeave(userAttendanceResponseDTO.getUserId(), new Date(System.currentTimeMillis()))) {
                             userAttendanceResponseDTO.setStatus(Optional.ofNullable(AttendanceStatus.LEAVE));
                         }else
-                            userAttendanceResponseDTO.setStatus(Optional.ofNullable(AttendanceStatus.ABSENT));
+                            userAttendanceResponseDTO.setStatus(Optional.ofNullable(AttendanceStatus.PRESENT));
                         return userAttendanceResponseDTO;
                     })
                     .forEach(userAttendanceResponseDTOS::add);

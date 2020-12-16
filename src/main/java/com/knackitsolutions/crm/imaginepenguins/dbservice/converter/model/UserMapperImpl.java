@@ -103,14 +103,6 @@ public class UserMapperImpl {
 
         dto.setUserType(entity.getUserType());
 
-        dto.add(
-                linkTo(methodOn(UserControllerImpl.class)
-                        .updateActiveStatus(dto.getId(), !dto.getActive()))
-                        .withRel("update-active-status"));
-        dto.add(
-                linkTo(methodOn(UserControllerImpl.class)
-                        .one(dto.getId()))
-                        .withRel("profile"));
         return dto;
     }
 

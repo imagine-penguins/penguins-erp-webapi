@@ -198,27 +198,20 @@ public class UserControllerImpl {
         Specification<User> userSpecification = UserSpecification.filter(FilterService.createSearchMap(search));
 
         Page<User> all = userRepository.findAll(userSpecification, pageable);
-        List<UserListDTO.UserDTO> collect = all.stream().map(userMapper::userToUserDTO).collect(Collectors.toList());
+        List<UserListDTO.UserDTO> collect = all
+                .stream()
+                .map(userMapper::userToUserDTO)
+                .map(dto -> dto.add(
+                        linkTo(methodOn(UserControllerImpl.class)
+                                .updateActiveStatus(dto.getId(), !dto.getActive()))
+                                .withRel("update-active-status")))
+                .map(dto -> dto.add(
+                        linkTo(methodOn(UserControllerImpl.class)
+                                .one(dto.getId()))
+                                .withRel("profile")))
+                .collect(Collectors.toList());
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, all.getTotalElements(), all.getTotalPages());
         PagedModel<UserListDTO.UserDTO> userDTOS = PagedModel.of(collect, pageMetadata);
-
-//        UserListDTO users = new UserListDTO();
-//
-//        users.setUserDTOS(collect);
-//        users.setTotalPages(all.getTotalPages());
-//        users.setPageNumber(page);
-//        users.setPageSize(size);
-//
-//        users.add(linkTo(methodOn(UserControllerImpl.class)
-//                .all(page, size, search, sort)).withSelfRel());
-//
-//        users.add(linkTo(methodOn(UserControllerImpl.class)
-//                .all(page + 1, size, search, sort)).withRel("next-page"));
-//
-//        if (page > 0)
-//            users.add(linkTo(methodOn(UserControllerImpl.class)
-//                    .all(page - 1, size, search, sort))
-//                    .withRel("previous-page"));
 
         return userDTOS;
     }

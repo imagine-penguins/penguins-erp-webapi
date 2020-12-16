@@ -36,15 +36,9 @@ public class PrivilegeMapper {
         return dto;
     }
 
-//    public List<PrivilegeDTO> entityToDTO(List<Privilege> userPrivileges) {
-//        log.info("Creating DTO list from privileges");
-//        List<PrivilegeDTO> dtos = userPrivileges
-//                .stream()
-//                .map(privilege -> entityToDTO(privilege))
-//                .collect(Collectors.toList());
-//        return dtos;
+//    public List<PrivilegeDTO> entityToDTORecus(List<Privilege> userPrivileges) {
+//
 //    }
-
     public List<PrivilegeDTO> entityToDTO(List<Privilege> userPrivileges) {
         log.info("Creating DTO list from privileges");
         //User will only have sub privileges not the parent
