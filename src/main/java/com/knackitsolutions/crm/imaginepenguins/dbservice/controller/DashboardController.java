@@ -35,14 +35,13 @@ public class DashboardController {
     }
 
     @GetMapping("/app/department/{departmentId}")
-    public CollectionModel<PrivilegeDTO> appDashboardDTO(@PathVariable("departmentId") Long departmentId){
+    public EntityModel<AppDashboardDTO> appDashboardDTO(@PathVariable("departmentId") Long departmentId){
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
-        AppDashboardDTO dto = new AppDashboardDTO();
         List<PrivilegeDTO> privilegeDTOS = appDashboardFacade
                 .getPrivileges(userContext.getUserId(), departmentId);
         //TODO add links for module functions
-
-        return CollectionModel.of(privilegeDTOS);
+        AppDashboardDTO dto = new AppDashboardDTO(privilegeDTOS);
+        return EntityModel.of(dto);
     }
 
 }
