@@ -53,20 +53,6 @@ public class EmployeeService {
         return employeeRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
     }
 
-    public List<Employee> listEmployeesWith(Integer instituteId, Optional<Boolean> active, Pageable pageable) {
-        Specification<Employee> specification = EmployeeSpecification.employeesByInstituteId(instituteId);
-        return employeeRepository.findAll(specification, pageable).toList();
-    }
-
-    public List<Employee> listEmployeesWith(Integer instituteId, Optional<Boolean> active) {
-        Specification<Employee> specification = EmployeeSpecification.employeesByInstituteId(instituteId);
-        specification = active
-                .map(EmployeeSpecification::employeesByActiveStatus)
-                .map(specification::and)
-                .orElse(specification);
-        return employeeRepository.findAll(specification);
-    }
-
     public Page<Employee> findAll(Specification<Employee> spec, Pageable pageable) {
         return employeeRepository.findAll(spec, pageable);
     }

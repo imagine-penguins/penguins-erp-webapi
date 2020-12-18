@@ -95,12 +95,7 @@ public class LeaveRequestController {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
         final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
-        Optional<Date> startDate = period
-                .map(p -> FilterService.periodStartDateValue(p, value))
-                .orElse(Optional.empty());
-        Optional<Date> endDate = period
-                .map(p -> FilterService.periodEndDateValue(p, value))
-                .orElse(Optional.empty());
+
         List<LeaveResponseDTO> responseDTOS = new ArrayList<>();
         Specification<LeaveRequest> leaveRequestSpecification = LeaveRequestSpecification.filterLeaveRequests(searchMap);
         if (userContext.getAuthorities().contains(

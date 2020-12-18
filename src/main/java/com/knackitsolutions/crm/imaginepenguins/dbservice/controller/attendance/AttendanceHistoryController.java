@@ -3,15 +3,19 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.EmployeeController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.EmployeeSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.StudentSpecification;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.UserSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +36,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.Min;
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -98,60 +104,57 @@ public class AttendanceHistoryController {
 
         Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
         List<UserAttendanceResponseDTO> users = new ArrayList<>();
-        Specification<Student> studentSpecification = FilterService.filterStudents(searchMap, startDate, endDate);
-        boolean viewStudent = false;
+        Specification<User> userSpecification = null;
+        try {
+            userSpecification = UserSpecification.filterUsers(searchMap);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to parse date from search parameters.");
+        }
+        Specification<User> specByPrivileges = Specification.where(null);
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
-            viewStudent = true;
-            studentSpecification = studentSpecification.and(StudentSpecification.studentsByInstituteId(userContext.getInstituteId()));
+            specByPrivileges = specByPrivileges.or(UserSpecification.studentsByInstituteId(userContext.getInstituteId()));
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
-            viewStudent = true;
             User user = userService
                     .findById(userContext.getUserId())
                     .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
             Set<InstituteClassSection> instituteClassSections = ((Teacher) user).getInstituteClassSections();
             List<Long> instituteClassSectionIds = instituteClassSections
                     .stream().map(i -> i.getId()).collect(Collectors.toList());
-            studentSpecification = studentSpecification.and(StudentSpecification.studentByClassIn(instituteClassSectionIds));
+            specByPrivileges = specByPrivileges.or(UserSpecification.studentByClassIn(instituteClassSectionIds));
         }
-        Page<Student> studentPage = null;
-        if (viewStudent) {
-            studentPage = studentService.findAll(studentSpecification, pageable);
-            studentPage
-                    .flatMap(student -> student.getStudentAttendances().stream())
-                    .map(attendanceResponseMapper::mapUserAttendanceToStudent)
-                    .map(userAttendanceResponseDTO -> this.addLinks(userAttendanceResponseDTO, sort, period, value, page, size, privilegeCodes))
-                    .forEach(users::add);
-        }
-        Specification<Employee> employeeSpecification = FilterService.filterEmployees(searchMap, startDate, endDate);
-        boolean viewEmployee = false;
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
-            viewEmployee = true;
-            employeeSpecification = employeeSpecification.and(
-                    EmployeeSpecification.employeesByInstituteId(userContext.getInstituteId())
+            specByPrivileges = specByPrivileges.or(
+                    UserSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
         }
-        Page<Employee> employeePage = null;
-        if (viewEmployee) {
-            employeePage = employeeService.findAll(employeeSpecification, pageable);
-            employeePage
-                    .flatMap(employee -> employee.getEmployeeAttendances().stream())
-                    .map(attendanceResponseMapper::mapUserAttendanceToEmployee)
-                    .map(userAttendanceResponseDTO -> this.addLinks(userAttendanceResponseDTO, sort, period, value, page, size, privilegeCodes))
-                    .forEach(users::add);
-        }
-        int totalPages = 0;
-        if (studentPage != null)
-            totalPages = totalPages + studentPage.getTotalPages();
-        if (employeePage != null)
-            totalPages = totalPages + employeePage.getTotalPages();
-        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, users.size(), totalPages);
+        userSpecification = userSpecification.and(specByPrivileges);
+        Page<User> all = userService.findAll(userSpecification, pageable);
+        all.flatMap(user -> {
+            if (user.getUserType() == UserType.STUDENT) {
+                return ((Student) user).getStudentAttendances().stream();
+            }
+            else if(user.getUserType() == UserType.EMPLOYEE) {
+                return ((Employee) user).getEmployeeAttendances().stream();
+            }
+            return Stream.empty();
+        }).map(o -> {
+            if (o instanceof EmployeeAttendance) {
+                return attendanceResponseMapper.mapUserAttendanceToEmployee((EmployeeAttendance) o);
+            }
+            else if(o instanceof StudentAttendance) {
+                return attendanceResponseMapper.mapUserAttendanceToStudent((StudentAttendance) o);
+            }
+            return Optional.empty();
+        }).map(o -> this.addLinks((UserAttendanceResponseDTO) o, sort, period, value, page, size, privilegeCodes));
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, users.size(), all.getTotalPages());
         return PagedModel.of(users, pageMetadata, linkTo(methodOn(AttendanceHistoryController.class)
                 .userAttendanceHistory(search, sort, period, value, page, size))
                 .withRel("view-attendance-history"));
@@ -171,70 +174,55 @@ public class AttendanceHistoryController {
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
-        Specification<Student> studentSpecification = FilterService.filterStudents(searchMap, startDate, endDate);
-        boolean viewStudent = false;
+        Specification<User> userSpecification = null;
+        try {
+            userSpecification = UserSpecification.filterUsers(searchMap);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to parse date from search parameters.");
+        }
+        Specification<User> specByPrivileges = Specification.where(null);
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
-            viewStudent = true;
-            studentSpecification = studentSpecification.and(StudentSpecification.studentsByInstituteId(userContext.getInstituteId()));
+            specByPrivileges = specByPrivileges.or(UserSpecification.studentsByInstituteId(userContext.getInstituteId()));
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
-            viewStudent = true;
             User user = userService
                     .findById(userContext.getUserId())
                     .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
             Set<InstituteClassSection> instituteClassSections = ((Teacher) user).getInstituteClassSections();
             List<Long> instituteClassSectionIds = instituteClassSections
                     .stream().map(i -> i.getId()).collect(Collectors.toList());
-            studentSpecification = studentSpecification.and(StudentSpecification.studentByClassIn(instituteClassSectionIds));
+            specByPrivileges = specByPrivileges.or(UserSpecification.studentByClassIn(instituteClassSectionIds));
         }
-        Long studentPresentCount = 0l;
-        Long studentAbsentCount = 0l;
-        Long studentLeaveCount = 0l;
-        if (viewStudent) {
-            studentPresentCount = studentService.count(
-                    studentSpecification.and(StudentSpecification.studentsByAttendanceStatus(AttendanceStatus.PRESENT))
-            );
-            studentAbsentCount = studentService.count(
-                    studentSpecification.and(StudentSpecification.studentsByAttendanceStatus(AttendanceStatus.ABSENT))
-            );
-            studentLeaveCount = studentService.count(
-                    studentSpecification.and(StudentSpecification.studentsByAttendanceStatus(AttendanceStatus.LEAVE))
-            );
-        }
-        Specification<Employee> employeeSpecification = FilterService.filterEmployees(searchMap, startDate, endDate);
-        boolean viewEmployee = false;
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
-            viewEmployee = true;
-            employeeSpecification = employeeSpecification.and(
-                    EmployeeSpecification.employeesByInstituteId(userContext.getInstituteId())
+            specByPrivileges = specByPrivileges.or(
+                    UserSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
         }
-        Long employeePresentCount = 0l;
-        Long employeeAbsentCount = 0l;
-        Long employeeLeaveCount = 0l;
-        if (viewEmployee) {
-            employeePresentCount = employeeService.count(
-                    employeeSpecification.and(EmployeeSpecification.employeeByAttendanceStatus(AttendanceStatus.PRESENT))
-            );
+        userSpecification = userSpecification.and(specByPrivileges);
 
-            employeeAbsentCount = employeeService.count(
-                    employeeSpecification.and(EmployeeSpecification.employeeByAttendanceStatus(AttendanceStatus.ABSENT))
-            );
+        Long presentCount = 0l;
+        Long absentCount = 0l;
+        Long leaveCount = 0l;
+        presentCount = userService.count(
+                userSpecification.and(UserSpecification.studentsByAttendanceStatus(AttendanceStatus.PRESENT))
+        );
+        absentCount = userService.count(
+                userSpecification.and(UserSpecification.studentsByAttendanceStatus(AttendanceStatus.ABSENT))
+        );
+        leaveCount = userService.count(
+                userSpecification.and(UserSpecification.studentsByAttendanceStatus(AttendanceStatus.LEAVE))
+        );
 
-            employeeLeaveCount = employeeService.count(
-                    employeeSpecification.and(EmployeeSpecification.employeeByAttendanceStatus(AttendanceStatus.LEAVE))
-            );
-        }
-
-        graphData.put("present", studentPresentCount + employeePresentCount);
-        graphData.put("absent", studentAbsentCount + employeeAbsentCount);
-        graphData.put("leave", studentLeaveCount + employeeLeaveCount);
+        graphData.put("present", presentCount + presentCount);
+        graphData.put("absent", absentCount + absentCount);
+        graphData.put("leave", leaveCount + leaveCount);
 
         EntityModel<Map<String, Long>> entityModel = EntityModel.of(graphData);
         return entityModel;

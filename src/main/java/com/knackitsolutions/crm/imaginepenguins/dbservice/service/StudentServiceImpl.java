@@ -56,24 +56,6 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.findAll(specification, pageable);
     }
 
-    public List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active, Pageable pageable) {
-        Specification<Student> specification = StudentSpecification.studentsByInstituteId(instituteId);
-        active
-                .map(StudentSpecification::studentsByActiveStatus)
-                .ifPresent(specification::and);
-        return studentRepository.findAll(specification, pageable).toList();
-    }
-
-    public List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active) {
-        log.debug("listStudentsWith: {}, {}", instituteId, active);
-        Specification<Student> specification = StudentSpecification.studentsByInstituteId(instituteId);
-        specification = active
-                .map(StudentSpecification::studentsByActiveStatus)
-                .map(specification::and)
-                .orElse(specification);
-        return studentRepository.findAll(specification);
-    }
-
     @Override
     public List<Student> findAll(Specification<Student> specification, Sort sort) {
         return studentRepository.findAll(specification, sort);

@@ -14,6 +14,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.AttendanceR
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.EmployeeSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.StudentSpecification;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.UserSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 
@@ -38,6 +39,7 @@ import javax.validation.constraints.Min;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Filter;
 import java.util.stream.Collectors;
@@ -200,6 +202,7 @@ public class AttendanceController {
                 , linkTo(methodOn(AttendanceController.class).userAttendance(null)).withRel("save-attendance"));
     }
 
+    //What is the exception and its detail where is occurred? //TODO
     @GetMapping("/users")
     public PagedModel<UserAttendanceResponseDTO> loadUsers(
             @RequestParam(required = false) String[] search
@@ -213,81 +216,73 @@ public class AttendanceController {
 
         final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
         List<UserAttendanceResponseDTO> userAttendanceResponseDTOS = new ArrayList<>();
-        Specification<Student> studentSpecification = FilterService.filterStudents(searchMap, Optional.empty(), Optional.empty());
-        boolean markStudent = false;
+
+        Specification<User> userSpecification = null;
+        try {
+            userSpecification = UserSpecification.filterUsers(searchMap);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to parse date from search parameters");
+        }
+
+        Specification<User> specBasedOnPrivilege = Specification.where(null);
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_STUDENT_ATTENDANCE.getPrivilegeCode())
         )) {
-            markStudent = true;
-            studentSpecification = studentSpecification.and(StudentSpecification.studentsByInstituteId(userContext.getInstituteId()));
+            log.debug("mark student privilege - marking attendance of all students in school");
+            specBasedOnPrivilege = specBasedOnPrivilege.or(UserSpecification.studentsByInstituteId(userContext.getInstituteId()));
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_CLASS_STUDENT_ATTENDANCE.getPrivilegeCode())
         )) {
-            markStudent = true;
+            log.debug("mark only their class students");
             User user = userService
                     .findById(userContext.getUserId())
                     .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
             Set<InstituteClassSection> instituteClassSections = ((Teacher) user).getInstituteClassSections();
             List<Long> instituteClassSectionIds = instituteClassSections
                     .stream().map(i -> i.getId()).collect(Collectors.toList());
-            studentSpecification = studentSpecification.and(StudentSpecification.studentByClassIn(instituteClassSectionIds));
+            specBasedOnPrivilege = specBasedOnPrivilege.or(UserSpecification.studentByClassIn(instituteClassSectionIds));
         }
-        Specification<Employee> employeeSpecification = FilterService.filterEmployees(searchMap, Optional.empty(), Optional.empty());
-        boolean markEmployee = false;
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE.getPrivilegeCode())
         )) {
-            markEmployee = true;
-            employeeSpecification = employeeSpecification.and(
-                    EmployeeSpecification.employeesByInstituteId(userContext.getInstituteId())
+            log.debug("marking all employees present in the institute");
+            specBasedOnPrivilege = specBasedOnPrivilege.or(
+                    UserSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_SUBORDINATES_EMPLOYEE_ATTENDANCE.getPrivilegeCode())
         )) {
-            markEmployee = true;
-
-            employeeSpecification = employeeSpecification.and(
-                    EmployeeSpecification.employeeByManagerId(Arrays.asList(userContext.getUserId()))
+            log.debug("marking attendance of his subordinates");
+            specBasedOnPrivilege = specBasedOnPrivilege.or(
+                    UserSpecification.employeeByManagerId(Arrays.asList(userContext.getUserId()))
             );
         }
-        Page<Student> studentPage = null;
-        if (markStudent) {
-            studentPage = studentService.findAll(studentSpecification, pageable);
-            studentPage
-                    .get()
-                    .map(attendanceResponseMapper::mapUserAttendanceToStudent)
-                    .map(userAttendanceResponseDTO -> {
-                        if (leaveRequestService.isOnLeave(userAttendanceResponseDTO.getUserId(), new Date(System.currentTimeMillis()))) {
-                            userAttendanceResponseDTO.setStatus(Optional.ofNullable(AttendanceStatus.LEAVE));
-                        }else
-                            userAttendanceResponseDTO.setStatus(Optional.ofNullable(AttendanceStatus.ABSENT));
-                        return userAttendanceResponseDTO;
-                    })
-                    .forEach(userAttendanceResponseDTOS::add);
-        }
-        Page<Employee> employeePage = null;
-        if (markEmployee) {
-            employeePage = employeeService.findAll(employeeSpecification, pageable);
-            employeePage
-                    .get()
-                    .map(attendanceResponseMapper::mapUserAttendanceToEmployee)
-                    .map(userAttendanceResponseDTO -> {
-                        if (leaveRequestService.isOnLeave(userAttendanceResponseDTO.getUserId(), new Date(System.currentTimeMillis()))) {
-                            userAttendanceResponseDTO.setStatus(Optional.ofNullable(AttendanceStatus.LEAVE));
-                        }else
-                            userAttendanceResponseDTO.setStatus(Optional.ofNullable(AttendanceStatus.PRESENT));
-                        return userAttendanceResponseDTO;
-                    })
-                    .forEach(userAttendanceResponseDTOS::add);
-        }
+        userSpecification = userSpecification.and(specBasedOnPrivilege);
+
+        Page<User> users = userService.findAll(userSpecification, pageable);
+        users
+                .map(user -> {
+                    if (user.getUserType() == UserType.STUDENT)
+                        return attendanceResponseMapper.mapUserAttendanceToStudent((Student) user);
+                    else if (user.getUserType() == UserType.EMPLOYEE) {
+                        return attendanceResponseMapper.mapUserAttendanceToEmployee((Employee) user);
+                    }
+                    return null;
+                })
+                .map(userAttendanceResponseDTO -> {
+                    if (leaveRequestService.isOnLeave(userAttendanceResponseDTO.getUserId(), DatesConfig.now())) {
+                        userAttendanceResponseDTO.setStatus(Optional.of(AttendanceStatus.LEAVE));
+                    } else {
+                        userAttendanceResponseDTO.setStatus(Optional.of(AttendanceStatus.PRESENT));
+                    }
+                    return userAttendanceResponseDTO;
+                })
+                .forEach(userAttendanceResponseDTOS::add);
         log.trace("loadUsers Request Completed.");
-        int totalPages = 0;
-        if (studentPage != null)
-            totalPages = studentPage.getTotalPages();
-        if (employeePage != null)
-            totalPages = totalPages + employeePage.getTotalPages();
+        int totalPages = users.getTotalPages();
 
         return PagedModel.of(userAttendanceResponseDTOS
                 , new PagedModel.PageMetadata(size, page, userAttendanceResponseDTOS.size(), totalPages)

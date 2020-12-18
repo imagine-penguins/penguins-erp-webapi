@@ -16,16 +16,11 @@ public interface StudentService {
 
     Long count(Specification<Student> specification);
 
-
     Student one(Long id);
 
     List<Student> all();
 
     List<Student> loadStudentWithClassSectionId(Long classSectionId);
-
-//    List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active, Pageable pageable);
-
-    List<Student> listStudentsWith(Integer instituteId, Optional<Boolean> active);
 
     Page<Student> findAll(Specification<Student> specification, Pageable pageable);
 

@@ -99,44 +99,6 @@ public class UserFacade {
         ).collect(Collectors.toList());
     }
 
-    public List<User> getUsers(Employee requester, Integer instituteId, Optional<Boolean> active, Set<UserType> userTypes) {
-        List<Student> students = new ArrayList<>();
-        List<Employee> employees = new ArrayList<>();
-        List<Parent> parents = new ArrayList<>();
-
-        for (UserType userType : userTypes) {
-            if (userType == UserType.STUDENT) {
-                students.addAll(studentService.listStudentsWith(instituteId, active));
-            }
-            if (userType == UserType.EMPLOYEE) {
-                employees.addAll(employeeService.listEmployeesWith(instituteId, active));
-            }
-            if (userType == UserType.PARENT) {
-                parents.addAll(parentService.listParentWith(instituteId, active));
-            }
-        }
-
-        if (userTypes == null || userTypes.isEmpty()){
-            students.addAll(studentService.listStudentsWith(instituteId, active));
-            employees.addAll(employeeService.listEmployeesWith(instituteId, active));
-            parents.addAll(parentService.listParentWith(instituteId, active));
-        }
-
-        List<User> users = new ArrayList<>();
-
-        students.stream()
-                .filter(student -> student.getId() != requester.getId())
-                .forEach(users::add);
-        employees.stream()
-                .filter(employee1 -> employee1.getId() != requester.getId())
-                .forEach(users::add);
-        parents.stream()
-                .filter(parent -> parent.getId() != requester.getId())
-                .forEach(users::add);
-
-        return users;
-    }
-
     public UserListDTO newUserListDTO(List<UserListDTO.UserDTO> users, int page, int size, int totalUsers) {
         int totalPages = (int) Math.ceil(totalUsers / size);
         UserListDTO userListDTO = new UserListDTO();

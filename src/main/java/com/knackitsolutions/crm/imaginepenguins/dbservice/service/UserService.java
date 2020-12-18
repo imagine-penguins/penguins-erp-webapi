@@ -8,6 +8,9 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveReques
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -38,6 +41,10 @@ public class UserService{
         return null;
     }
 
+    public Long count(Specification<User> userSpecification) {
+        return userRepository.count(userSpecification);
+    }
+
     public List<User> findByDepartmentId(Long departmentId) {
         return userRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
     }
@@ -48,6 +55,10 @@ public class UserService{
                 + shuffle(temp.substring(0, (int)(Math.random() * temp.length()))).toLowerCase(Locale.ROOT)
                 + randomChar()
                 + (int)Math.random() * 1000;
+    }
+
+    public Page<User> findAll(Specification<User> userSpecification, Pageable pageable) {
+        return userRepository.findAll(userSpecification, pageable);
     }
 
     private Character randomChar() {

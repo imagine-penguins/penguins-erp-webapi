@@ -22,10 +22,7 @@ public class LeaveRequestService {
     }
 
     public Boolean isOnLeave(Long userId, Date date) {
-        if (leaveRequestRepository.isOnLeave(userId, date) != null) {
-            return true;
-        }
-        return false;
+        return leaveRequestRepository.isOnLeave(userId, date) != null && leaveRequestRepository.isOnLeave(userId, date) != 0;
     }
 
     public final Page<LeaveRequest> findAllBySpecification(Specification<LeaveRequest> leaveRequestSpecification, Pageable pageable) {
