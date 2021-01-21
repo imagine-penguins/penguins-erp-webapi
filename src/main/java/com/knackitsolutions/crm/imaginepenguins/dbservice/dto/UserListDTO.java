@@ -23,7 +23,7 @@ public class UserListDTO extends RepresentationModel<UserListDTO> {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UserDTO extends RepresentationModel<UserDTO> implements Sortable {
+    public static class UserDTO extends RepresentationModel<UserDTO> {
         private String profilePic;
         private String passportPic;
         private String firstName;
@@ -32,21 +32,6 @@ public class UserListDTO extends RepresentationModel<UserListDTO> {
         private ContactDTO contact;
         private UserType userType;
         private Boolean active;
-
-        @Override
-        public String getPhone() {
-            return contact.getPhone();
-        }
-
-        @Override
-        public String getEmail() {
-            return contact.getEmail();
-        }
-
-        @Override
-        public String getUserType() {
-            return userType.getUserType();
-        }
 
     }
 }

@@ -1,11 +1,12 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.config;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Class;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendanceKey;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentServiceImpl;
@@ -583,6 +584,45 @@ public class LoadDatabase {
 
     }
 
+    public void setupAttendanceData(AttendanceRepository attendanceRepository
+            , StudentAttendanceRepository studentAttendanceRepository
+            , EmployeeAttendanceRepository employeeAttendanceRepository
+            , UserRepository userRepository) {
+        Attendance attendance = new Attendance(new Date(), AttendanceStatus.PRESENT);
+        userRepository.findByUsername("nishi").get().setAttendances(attendance);
+
+        attendance = attendanceRepository.save(attendance);
+
+        StudentAttendance studentAttendance = new StudentAttendance();
+        attendance.setStudentAttendance(studentAttendance);
+
+        Student student = (Student) userRepository.findByUsername("hiteshi").get();
+        student.setStudentAttendances(studentAttendance);
+
+        StudentAttendanceKey studentAttendanceKey = new StudentAttendanceKey(student.getId(), attendance.getId());
+        studentAttendance.setStudentAttendanceKey(studentAttendanceKey);
+
+        student.getInstituteClassSection().setStudentAttendances(studentAttendance);
+
+        studentAttendanceRepository.save(studentAttendance);
+    }
+
+    public void setLeaveRequests(LeaveRequestRepository leaveRequestRepository
+            , UserRepository userRepository) {
+        LeaveRequest leaveRequest = new LeaveRequest();
+        leaveRequest.setLeaveReason("Sick with Corona.");
+        leaveRequest.setLeaveRequestStatus(LeaveRequestStatus.PENDING);
+        leaveRequest.setLeaveType(LeaveType.SICK_LEAVE);
+        leaveRequest.setStartDate(new Date(System.currentTimeMillis() + (1 * 24 * 60 * 60 * 1000)));
+        leaveRequest.setEndDate(new Date(System.currentTimeMillis() + (5 * 24 * 60 * 60 * 1000)));
+
+        userRepository.findByUsername("nishi").get().setLeaveRequestsApprover(leaveRequest);
+
+        User user = userRepository.findByUsername("hiteshi").get();
+        user.setLeaveRequests(leaveRequest);
+
+        leaveRequestRepository.save(leaveRequest);
+    }
 
     @Bean
     CommandLineRunner initDatabase(@Autowired InstituteRepository instituteRepository
@@ -599,25 +639,31 @@ public class LoadDatabase {
             , @Autowired UserRepository userRepository
             , @Autowired InstituteClassSectionSubjectRepository classSectionSubjectRepository
             , @Autowired SubjectRepository subjectRepository
-            , @Autowired TeacherRepository teacherRepository) {
+            , @Autowired TeacherRepository teacherRepository
+            , @Autowired AttendanceRepository attendanceRepository
+            , @Autowired StudentAttendanceRepository studentAttendanceRepository
+            , @Autowired EmployeeAttendanceRepository employeeAttendanceRepository
+            , @Autowired LeaveRequestRepository leaveRequestRepository
+            , @Autowired StudentRepository studentRepository) {
 
         return args -> {
             log.info("Loading Database");
-            instituteRepository.deleteAll();
-            setupInstitutes(instituteRepository);
-            setupClasses(classRepository, instituteClassRepository);
-            setupSections(sectionRepository, instituteClassSectionRepository);
-            setupEmployees(employeeService);
-            setupTeachers(teacherServiceImpl);
-            setupStudents(studentServiceImpl);
-            setupClassTeacher(teacherRepository, instituteClassSectionRepository);
-            setupSubjects(subjectRepository);
-            setupTeacherClassesAndSubjects(classSectionSubjectRepository, subjectRepository, teacherRepository);
-            setupDepartment(departmentRepository);
-            setupPrivileges(privilegeRepository);
-            setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository, privilegeRepository);
-            setupUserDepartment(userDepartmentRepository, departmentRepository);
-            setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
+//            setupInstitutes(instituteRepository);
+//            setupClasses(classRepository, instituteClassRepository);
+//            setupSections(sectionRepository, instituteClassSectionRepository);
+//            setupEmployees(employeeService);
+//            setupTeachers(teacherServiceImpl);
+//            setupStudents(studentServiceImpl);
+//            setupClassTeacher(teacherRepository, instituteClassSectionRepository);
+//            setupSubjects(subjectRepository);
+//            setupTeacherClassesAndSubjects(classSectionSubjectRepository, subjectRepository, teacherRepository);
+//            setupDepartment(departmentRepository);
+//            setupPrivileges(privilegeRepository);
+//            setupInstituteDepartmentPrivileges(instituteDepartmentPrivilegeRepository, privilegeRepository);
+//            setupUserDepartment(userDepartmentRepository, departmentRepository);
+//            setupUserPrivileges(userPrivilegeRepository, userRepository, instituteDepartmentPrivilegeRepository);
+//            setupAttendanceData(attendanceRepository, studentAttendanceRepository, employeeAttendanceRepository, userRepository);
+//            setLeaveRequests(leaveRequestRepository, userRepository);
             log.info("Finished Loading Database");
         };
 

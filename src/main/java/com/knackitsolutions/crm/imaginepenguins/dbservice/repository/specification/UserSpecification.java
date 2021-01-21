@@ -104,7 +104,7 @@ public class UserSpecification {
     public static Specification<User> studentsByAttendanceStatus(AttendanceStatus status) {
         return (root, query, criteriaBuilder) -> {
             Root<Student> studentRoot = criteriaBuilder.treat(root, Student.class);
-            return criteriaBuilder.equal(root
+            return criteriaBuilder.equal(studentRoot
                     .joinList("studentAttendances", JoinType.INNER)
                     .join("attendance", JoinType.INNER)
                     .get("attendanceStatus"), status);

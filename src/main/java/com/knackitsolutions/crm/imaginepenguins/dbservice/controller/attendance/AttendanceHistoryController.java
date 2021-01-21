@@ -88,7 +88,7 @@ public class AttendanceHistoryController {
             , @RequestParam(defaultValue = "0") @Min(0) int page
             , @RequestParam(defaultValue = "10") @Min(1) int size
     ) {
-
+        log.debug("/history");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
 
@@ -103,7 +103,6 @@ public class AttendanceHistoryController {
                 .collect(Collectors.toList());
 
         Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
-        List<UserAttendanceResponseDTO> users = new ArrayList<>();
         Specification<User> userSpecification = null;
         try {
             userSpecification = UserSpecification.filterUsers(searchMap);
@@ -115,11 +114,13 @@ public class AttendanceHistoryController {
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
+            log.debug("EDIT_STUDENTS_ATTENDANCE_HISTORY: ");
             specByPrivileges = specByPrivileges.or(UserSpecification.studentsByInstituteId(userContext.getInstituteId()));
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
+            log.debug("EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY: ");
             User user = userService
                     .findById(userContext.getUserId())
                     .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
@@ -131,12 +132,19 @@ public class AttendanceHistoryController {
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode())
         )) {
+            log.debug("EDIT_EMPLOYEE_ATTENDANCE_HISTORY: ");
             specByPrivileges = specByPrivileges.or(
                     UserSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
         }
         userSpecification = userSpecification.and(specByPrivileges);
+
+        List<UserAttendanceResponseDTO> users = new ArrayList<>();
+
+        log.debug("Calling database to fetch attendance history");
         Page<User> all = userService.findAll(userSpecification, pageable);
+        log.debug("Fetching completed.");
+
         all.flatMap(user -> {
             if (user.getUserType() == UserType.STUDENT) {
                 return ((Student) user).getStudentAttendances().stream();
@@ -153,7 +161,9 @@ public class AttendanceHistoryController {
                 return attendanceResponseMapper.mapUserAttendanceToStudent((StudentAttendance) o);
             }
             return Optional.empty();
-        }).map(o -> this.addLinks((UserAttendanceResponseDTO) o, sort, period, value, page, size, privilegeCodes));
+        }).map(o -> this.addLinks((UserAttendanceResponseDTO) o, sort, period, value, page, size, privilegeCodes))
+        .forEach(users::add);
+
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, users.size(), all.getTotalPages());
         return PagedModel.of(users, pageMetadata, linkTo(methodOn(AttendanceHistoryController.class)
                 .userAttendanceHistory(search, sort, period, value, page, size))
@@ -165,6 +175,7 @@ public class AttendanceHistoryController {
             @RequestParam(required = false) String[] search
             , @RequestParam(name = "period") Optional<Period> period
             , @RequestParam(name = "value") Optional<String> value) {
+        log.debug("/history/graph");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Map<String, Long> graphData = new HashMap<>();
         Optional<Date> startDate = period
@@ -207,25 +218,22 @@ public class AttendanceHistoryController {
         }
         userSpecification = userSpecification.and(specByPrivileges);
 
-        Long presentCount = 0l;
-        Long absentCount = 0l;
-        Long leaveCount = 0l;
-        presentCount = userService.count(
+        log.debug("Calling db for the data.");
+        Long presentCount = userService.count(
                 userSpecification.and(UserSpecification.studentsByAttendanceStatus(AttendanceStatus.PRESENT))
         );
-        absentCount = userService.count(
+        Long absentCount = userService.count(
                 userSpecification.and(UserSpecification.studentsByAttendanceStatus(AttendanceStatus.ABSENT))
         );
-        leaveCount = userService.count(
+        Long leaveCount = userService.count(
                 userSpecification.and(UserSpecification.studentsByAttendanceStatus(AttendanceStatus.LEAVE))
         );
-
-        graphData.put("present", presentCount + presentCount);
-        graphData.put("absent", absentCount + absentCount);
-        graphData.put("leave", leaveCount + leaveCount);
+        log.debug("db call ended.");
+        graphData.put("present", presentCount);
+        graphData.put("absent", absentCount);
+        graphData.put("leave", leaveCount);
 
         EntityModel<Map<String, Long>> entityModel = EntityModel.of(graphData);
         return entityModel;
-
     }
 }

@@ -30,4 +30,6 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
     @Override
     List<Student> findAll(Specification<Student> spec, Sort sort);
 
+    Student findByUsername(String username);
+
 }

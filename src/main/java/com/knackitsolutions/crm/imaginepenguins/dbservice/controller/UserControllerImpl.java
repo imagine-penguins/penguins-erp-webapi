@@ -216,9 +216,9 @@ public class UserControllerImpl {
         return userDTOS;
     }
 
-    @PutMapping(value = "/{userId}")
+    @PutMapping(value = "/{userId}/{status}")
     public ResponseEntity<EntityModel<String>> updateActiveStatus(@PathVariable(value = "userId") Long userId
-            , @RequestParam(name = "active") Boolean active) {
+            , @PathVariable(value = "status") Boolean active) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         if (active == user.getActive())
             return ResponseEntity.badRequest().body(EntityModel.of("Status is already " +  active));
