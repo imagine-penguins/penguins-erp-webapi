@@ -87,7 +87,7 @@ public enum PrivilegeCode {
         public List<Link> getLinks() {
             return Arrays.asList(
                     linkTo(methodOn(AttendanceHistoryController.class)
-                            .userAttendanceHistory(null, null, null, null, 0, 1))
+                            .userAttendanceHistory(null, null, null, null))
                             .withRel(VIEW_ATTENDANCE_HISTORY.getPrivilegeCode())
             );
         }
@@ -97,7 +97,7 @@ public enum PrivilegeCode {
         public List<Link> getLinks() {
             return Arrays.asList(
                     linkTo(methodOn(AttendanceHistoryController.class)
-                        .userAttendanceHistory(null, null, null, null, 0, 10))
+                        .userAttendanceHistory(null, null, null, null))
                         .withRel("view-attendance-history"),
                     linkTo(methodOn(AttendanceController.class)
                         .updateAttendance(null, null, null))
@@ -108,7 +108,15 @@ public enum PrivilegeCode {
         @Override
         public List<Link> getLinks() {
             return Arrays.asList(linkTo(methodOn(AttendanceHistoryController.class)
-                    .userAttendanceHistory(null, null, null, null, 0, 10))
+                    .userAttendanceHistory(null, null, null, null))
+                    .withRel(VIEW_ATTENDANCE_HISTORY.getPrivilegeCode()));
+        }
+    },
+    EDIT_SUBORDINATES_EMPLOYEE_ATTENDANCE_HISTORY("edit-subordinate-employee-attendance-history") {
+        @Override
+        public List<Link> getLinks() {
+            return Arrays.asList(linkTo(methodOn(AttendanceHistoryController.class)
+                    .userAttendanceHistory(null, null, null, null))
                     .withRel(VIEW_ATTENDANCE_HISTORY.getPrivilegeCode()));
         }
     },

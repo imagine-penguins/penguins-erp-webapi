@@ -2,10 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteClassSectionRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteClassSectionSubjectRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserPrivilegeRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +29,7 @@ public class FilterController {
     private final UserPrivilegeRepository userPrivilegeRepository;
     private final InstituteClassSectionRepository instituteClassSectionRepository;
     private final InstituteClassSectionSubjectRepository instituteClassSectionSubjectRepository;
+    private final PrivilegeRepository privilegeRepository;
 
     @GetMapping
     public EntityModel<Browse> all() {
@@ -45,11 +43,11 @@ public class FilterController {
                 .map(userDepartment -> {
                     return new Object(userDepartment.getId(), userDepartment.getInstituteDepartment().getDepartmentName());
                 }).collect(Collectors.toList());
-        List<Object> roles = userPrivilegeRepository
-                .findByUserId(userContext.getUserId())
+        List<Object> roles = privilegeRepository
+                .findAll()
                 .stream()
-                .map(userPrivilege -> {
-                    return new Object(userPrivilege.getId(), userPrivilege.getDepartmentPrivilege().getPrivilege().getPrivilegeName());
+                .map(privilege -> {
+                    return new Object(privilege.getId().longValue(), privilege.getPrivilegeName());
                 }).collect(Collectors.toList());
 
         List<Object> classes = instituteClassSectionRepository

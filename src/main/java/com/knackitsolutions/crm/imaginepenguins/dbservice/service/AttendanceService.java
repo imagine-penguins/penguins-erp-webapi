@@ -8,6 +8,8 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.StudentAtte
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -79,6 +81,7 @@ public class AttendanceService {
         return studentAttendanceRepository.findByInstituteClassSectionSubjectIdAndAttendanceAttendanceDateBetween(subjectClassId
                 , updateTimeStart, updateTimeEnd);
     }
+
     public List<EmployeeAttendance> getEmployeeAttendancesByEmployeeId(Long employeeId, Optional<Date> startDate, Optional<Date> endDate) {
         if (startDate.isPresent() && endDate.isPresent()) {
             return employeeAttendanceRepository.findByEmployeeAttendanceKeyEmployeeIdAndAttendanceAttendanceDateBetween(employeeId, startDate.get(), endDate.get());
@@ -107,4 +110,7 @@ public class AttendanceService {
         return employeeAttendanceRepository.findByEmployeeUserDepartmentsInstituteDepartmentId(departmentId);
     }
 
+    public List<Attendance> findAll(Specification<Attendance> attendanceSpecification, Sort sort) {
+        return attendanceRepository.findAll(attendanceSpecification, sort);
+    }
 }

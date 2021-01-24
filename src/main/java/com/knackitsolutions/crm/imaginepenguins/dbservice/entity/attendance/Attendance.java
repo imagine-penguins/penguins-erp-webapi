@@ -118,7 +118,18 @@ public class Attendance {
         this.updateTime = updateTime;
     }
 
+    public Set<EmployeeAttendance> getEmployeeAttendances() {
+        return employeeAttendances;
+    }
 
+    public void setEmployeeAttendances(Set<EmployeeAttendance> employeeAttendances) {
+        employeeAttendances.forEach(this::setEmployeeAttendance);
+    }
+
+    public void setEmployeeAttendances(EmployeeAttendance employeeAttendance) {
+        this.employeeAttendances.add(employeeAttendance);
+        employeeAttendance.setAttendance(this);
+    }
 
     @Override
     public String toString() {

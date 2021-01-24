@@ -41,34 +41,10 @@ public class PrivilegeMapper {
 //    }
     public List<PrivilegeDTO> entityToDTO(List<Privilege> userPrivileges) {
         log.info("Creating DTO list from privileges");
-        //User will only have sub privileges not the parent
-        List<PrivilegeDTO> dtos = new ArrayList<>();
-
-        while(!userPrivileges.isEmpty()){
-
-            Privilege parentRoot = null;
-
-            for(Privilege privilege : userPrivileges){
-                boolean contains = false;
-                for( PrivilegeDTO dto : dtos ) {
-                    if (privilege.getId() == dto.getId()) {
-                        contains = true;
-                        break;
-                    }
-                }
-                if ( !contains ) {
-                    parentRoot = getRootParent(userPrivileges.get(0));
-                    break;
-                }
-            }
-            if (parentRoot == null) {
-                break;
-            }
-            PrivilegeDTO dto = new PrivilegeDTO();
-            log.info("Creating DTO");
-            fromPrivilege(parentRoot, dto, userPrivileges);
-            dtos.add(dto);
-        }
+        List<PrivilegeDTO> dtos = userPrivileges
+                .stream()
+                .map(privilege -> entityToDTO(privilege))
+                .collect(Collectors.toList());
         log.info("DTO list is prepared.");
         return dtos;
     }
@@ -109,7 +85,6 @@ public class PrivilegeMapper {
         log.info("Updating DTO");
         entityToDTO(parentPrivilege, dto);
         log.info("DTO updated. DTO: {}", dto);
-        dto.setPrivileges(childDTOs);
         log.info("DTO list.");
     }
 }

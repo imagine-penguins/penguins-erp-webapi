@@ -14,6 +14,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFound
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.UserSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
@@ -43,6 +44,7 @@ import javax.validation.constraints.Min;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -191,11 +193,18 @@ public class UserControllerImpl {
             , @RequestParam(defaultValue = "id,desc") String[] sort){
 
         UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
+        Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
         if ( !(userContext.getUserType() == UserType.EMPLOYEE) )
             throw new RuntimeException("User is not employee hence not permitted here.");
 
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
-        Specification<User> userSpecification = UserSpecification.filter(FilterService.createSearchMap(search));
+        Specification<User> userSpecification = null;
+        try {
+            userSpecification = UserSpecification.filterUsers(searchMap);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to parse date from search parameters.");
+        }
 
         Page<User> all = userRepository.findAll(userSpecification, pageable);
         List<UserListDTO.UserDTO> collect = all

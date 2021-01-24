@@ -206,7 +206,7 @@ public class UserSpecification {
         };
     }
 
-    public static Specification<User> filter(Map<String, List<SearchCriteria>> searchMap) {
+    /*public static Specification<User> filter(Map<String, List<SearchCriteria>> searchMap) {
         Specification<User> userSpecification = Specification.where(null);
         for (Map.Entry<String, List<SearchCriteria>> entry : searchMap.entrySet()) {
             String key = entry.getKey();
@@ -231,7 +231,7 @@ public class UserSpecification {
 
         }
         return userSpecification;
-    }
+    }*/
 
     public static Specification<User> filterUsers(Map<String, List<SearchCriteria>> searchMap) throws ParseException {
         Map<String, List<SearchCriteria>> search = searchMap;

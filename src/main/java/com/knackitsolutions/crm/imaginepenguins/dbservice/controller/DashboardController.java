@@ -39,7 +39,6 @@ public class DashboardController {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         List<PrivilegeDTO> privilegeDTOS = appDashboardFacade
                 .getPrivileges(userContext.getUserId(), departmentId);
-        //TODO add links for module functions
         AppDashboardDTO dto = new AppDashboardDTO(privilegeDTOS);
         return EntityModel.of(dto);
     }
