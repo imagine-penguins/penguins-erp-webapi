@@ -25,4 +25,6 @@ public interface StudentService {
     Page<Student> findAll(Specification<Student> specification, Pageable pageable);
 
     List<Student> findAll(Specification<Student> specification, Sort sort);
+
+    Student save(Student student);
 }

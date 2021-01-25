@@ -5,6 +5,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.AddressMapperImpl;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ContactMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.common.filter.DataFilter;
@@ -13,14 +15,14 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.InstituteNot
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteClassSectionRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserProfileRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.UserSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.FilterService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.SortingService;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.service.UserService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.document.AmazonDocumentStorageClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -78,6 +81,27 @@ public class UserControllerImpl {
     private UserRepository userRepository;
 
     @Autowired
+    private ContactMapperImpl contactMapper;
+
+    @Autowired
+    private AddressMapperImpl addressMapper;
+
+    @Autowired
+    private UserProfileRepository userProfileRepository;
+
+    @Autowired
+    private InstituteClassSectionRepository classSectionRepository;
+
+    @Autowired
+    private UserDepartmentRepository userDepartmentRepository;
+
+    @Autowired
+    private InstituteService instituteService;
+
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
     @Qualifier("userMapperImpl")
     UserMapperImpl userMapper;
 
@@ -116,7 +140,7 @@ public class UserControllerImpl {
             resource = storageClient.loadFileAsResource(fileName);
         } catch (Exception exception) {
             log.error(exception.getMessage(), exception);
-
+            return ResponseEntity.notFound().build();
         }
         String contentType = null;
         try {
@@ -136,11 +160,55 @@ public class UserControllerImpl {
     }
 
 
-//    @PostMapping("/{userType}")
-//    public ResponseEntity<Map<String, Object>> newUser(@PathVariable("userType") UserType userType, @RequestBody ProfileDTO dto) {
-//
-//
-//    }
+    @PostMapping("/{userType}")
+    public ResponseEntity<String> newUser(@PathVariable("userType") UserType userType, @RequestBody ProfileDTO dto){
+        UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
+        User newUser = null;
+        if (userType == UserType.STUDENT) {
+            Optional<InstituteClassSection> classSection = classSectionRepository.findById(
+                    dto.getGeneralInformation().getClassSectionId()
+            );
+            Student newStudent = new Student();
+            newStudent.setRollNumber(dto.getGeneralInformation().getRollNumber());
+            classSection.ifPresent(cs -> cs.setStudent(newStudent));
+            newUser = newStudent;
+        } else if (userType == UserType.EMPLOYEE) {
+            Employee newEmployee = new Employee();
+            newEmployee.setEmployeeOrgId(dto.getGeneralInformation().getEmployeeOrgId());
+            instituteService
+                    .findById(userContext.getInstituteId())
+                    .ifPresent(institute -> institute.setEmployee(newEmployee));
+            Optional<Employee> manager = employeeService.findById(dto.getGeneralInformation().getReportingManagerId());
+            manager.ifPresent(m -> m.setSubordinates(newEmployee));
+            newUser = newEmployee;
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid UserType Selected. Valid values are S -> Student, E -> Employee");
+        }
+
+        UserProfile newUserProfile = userMapper.dtoToEntity(dto);
+
+        newUserProfile = userProfileRepository.save(newUserProfile);
+
+        newUser.setActive(dto.getGeneralInformation().getActiveStatus());
+        newUser.setUsername(userService.generateUsername(newUserProfile.getContact().getEmail(), newUserProfile.getId()));
+        newUser.setPassword(userService.generateRandomPassword(newUserProfile.getContact().getEmail()));
+        newUser.setUserType(userType);
+
+        newUser.setUserProfile(newUserProfile);
+
+
+        List<UserDepartment> userDepartments = userDepartmentRepository.findAllById(dto.getGeneralInformation().getDepartments());
+
+        newUser.setUserDepartments(userDepartments);
+
+        if (userType == UserType.EMPLOYEE) {
+            employeeService.newEmployee((Employee) newUser);
+        } else if (userType == UserType.STUDENT) {
+            studentService.save((Student) newUser);
+        }
+
+        return ResponseEntity.ok("Successfully Created New User.");
+    }
 
     /*
 

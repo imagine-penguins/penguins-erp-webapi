@@ -254,6 +254,10 @@ public class User implements UserDetails {
         userDepartments.forEach(this::setUserDepartment);
     }
 
+    public void setUserDepartments(List<UserDepartment> userDepartments) {
+        userDepartments.forEach(this::setUserDepartment);
+    }
+
     public void setUserDepartment(UserDepartment userDepartment){
         userDepartments.add(userDepartment);
         userDepartment.setUser(this);

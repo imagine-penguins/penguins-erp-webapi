@@ -11,6 +11,6 @@ public interface InstituteDocumentStoreRepository extends JpaRepository<Institut
 
     InstituteDocumentStore findByInstituteIdAndDocumentType(Integer instituteId, InstituteDocumentType documentType);
 
-    @Query("SELECT d.fileName from InstituteDocumentStore d where d.institute.id = :instituteId and d.documentType = :documentType")
+    @Query("SELECT d.storeURL from InstituteDocumentStore d where d.institute.id = :instituteId and d.documentType = :documentType")
     String getUploadDocumentPath(Integer instituteId, InstituteDocumentType documentType);
 }

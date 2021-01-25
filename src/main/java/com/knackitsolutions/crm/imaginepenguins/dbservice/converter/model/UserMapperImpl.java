@@ -89,7 +89,7 @@ public class UserMapperImpl {
                 .filter(userDocumentStore -> userDocumentStore.getDocumentType() == UserDocumentType.DISPLAY_PICTURE)
                 .findFirst()
                 .orElseGet(UserDocumentStore::new)
-                .getFileName()
+                .getStoreURL()
         );
         dto.setPassportPic(
                 entity
@@ -98,7 +98,7 @@ public class UserMapperImpl {
                         .filter(userDocumentStore -> userDocumentStore.getDocumentType() == UserDocumentType.PASSPORT_PICTURE)
                         .findFirst()
                         .orElseGet(UserDocumentStore::new)
-                        .getFileName()
+                        .getStoreURL()
         );
 
         dto.setUserType(entity.getUserType());
@@ -122,7 +122,7 @@ public class UserMapperImpl {
                 .filter(userDocumentStore -> userDocumentStore.getDocumentType() == userDocumentType)
                 .findFirst()
                 .orElseGet(UserDocumentStore::new)
-                .getFileName();
+                .getStoreURL();
     }
 
     public ProfileDTO entityToDTO(User user) {
@@ -141,6 +141,7 @@ public class UserMapperImpl {
             generalInformation.setReportingManagerId(classTeacher.getId());
             generalInformation.setClassName(student.getInstituteClassSection().getInstituteClass().getClasss().getClassName());
             generalInformation.setSectionName(student.getInstituteClassSection().getSection().getSectionName());
+            generalInformation.setRollNumber(student.getRollNumber());
 
         }
         UserProfile userProfile = user.getUserProfile();
@@ -183,4 +184,20 @@ public class UserMapperImpl {
         return user;
     }
 
+    public UserProfile dtoToEntity(ProfileDTO dto) {
+        UserProfile newUserProfile = new UserProfile();
+        newUserProfile.setContact(contactMapper.contactDTOtoContact(dto.getGeneralInformation().getContactDTO()));
+        newUserProfile.setPersonalAddress(addressMapper.addressDTOToAddress(dto.getPersonalInformation().getHomeAddress()));
+        newUserProfile.setCommunicationAddress(addressMapper.addressDTOToAddress(dto.getGeneralInformation().getCommunicationAddress()));
+        newUserProfile.setFirstName(dto.getGeneralInformation().getFirstName());
+        newUserProfile.setLastName(dto.getGeneralInformation().getLastName());
+        newUserProfile.setMiddleName(dto.getGeneralInformation().getMiddleName());
+        newUserProfile.setBloodGroup(dto.getPersonalInformation().getBloodGroup());
+        newUserProfile.setDob(dto.getPersonalInformation().getDob());
+        newUserProfile.setGender(dto.getPersonalInformation().getGender());
+        newUserProfile.setGuardianName(dto.getPersonalInformation().getGuardianName());
+        newUserProfile.setGuardianPhoneNo(dto.getPersonalInformation().getGuardianMobileNo());
+        newUserProfile.setGuardianRelation(dto.getPersonalInformation().getGuardianRelation());
+        return newUserProfile;
+    }
 }

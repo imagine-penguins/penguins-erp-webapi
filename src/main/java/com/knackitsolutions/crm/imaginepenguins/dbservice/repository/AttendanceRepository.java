@@ -7,7 +7,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.Date;
 import java.util.List;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long>, JpaSpecificationExecutor<Attendance> {
@@ -16,4 +18,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long>, J
 
     @Override
     List<Attendance> findAll(Specification<Attendance> spec, Sort sort);
+
+    @Query("SELECT MAX(a.attendanceDate) FROM Attendance a")
+    Date findLastAttendanceDate();
 }

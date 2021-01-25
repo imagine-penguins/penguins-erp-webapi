@@ -7,7 +7,6 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.listner.InstituteListn
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteType;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 @EntityListeners(InstituteListner.class)
 @Entity(name = "institute")
@@ -217,10 +216,10 @@ public class Institute {
 	}
 
 	public void setEmployees(Set<Employee> employees) {
-		employees.forEach(this::addEmployee);
+		employees.forEach(this::setEmployee);
 	}
 
-	public void addEmployee(Employee employee) {
+	public void setEmployee(Employee employee) {
 		employees.add(employee);
 		employee.setInstitute(this);
 	}

@@ -3,9 +3,9 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specificat
 import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class AttendanceSpecification {
 
     public static Specification<Attendance> attendanceBySupervisorId(Long supervisorId) {
@@ -158,6 +159,7 @@ public class AttendanceSpecification {
     }
 
     public static Specification<Attendance> attendanceWithAttendanceDate(Date startDate, SearchOperation searchOperation) {
+        log.debug("where attendanceDate is {} {}", searchOperation.getOperation(), startDate);
         return (root, query, criteriaBuilder) -> {
             Expression expression = root
                     .get("attendanceDate");
@@ -178,9 +180,20 @@ public class AttendanceSpecification {
     public static Specification<Attendance> attendanceByInstituteId(Integer instituteId) {
 
         return (root, query, criteriaBuilder) -> {
-            Join<Attendance, Employee> employeeRoot = criteriaBuilder.treat(root.join("supervisor"), Employee.class);
-            return criteriaBuilder.equal(employeeRoot
-                    .join("institute", JoinType.LEFT).get("id"), instituteId);
+            return criteriaBuilder.and(
+                    criteriaBuilder.equal(
+                            root
+                                    .joinSet("studentAttendances")
+                                    .join("classSection")
+                                    .join("instituteClass")
+                                    .join("institute")
+                                    .get("id"), instituteId),
+                    criteriaBuilder.equal(
+                            root
+                                    .joinSet("employeeAttendances")
+                                    .join("employee")
+                                    .join("institute", JoinType.LEFT).get("id"), instituteId)
+            );
         };
     }
 

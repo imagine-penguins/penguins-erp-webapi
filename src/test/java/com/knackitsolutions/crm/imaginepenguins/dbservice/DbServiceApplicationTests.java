@@ -132,7 +132,7 @@ class DbServiceApplicationTests {
 				, new Contact("10101", "gautam1@gmail.com")), EmployeeType.NON_TEACHER
 				, "None", institute1, null, null);
 
-		institute1.addEmployee(employee1);
+		institute1.setEmployee(employee1);
 
 		Employee employee2 = new Employee(1l, "gaurav1", "gaurav003", UserType.EMPLOYEE
 				, false, false
@@ -140,7 +140,7 @@ class DbServiceApplicationTests {
 				, new Address("D14", "Gali16", "Delhi", "India", "110053")
 				, new Contact("101111", "gaurav1@gmail.com")), EmployeeType.NON_TEACHER
 				, "None", institute1, null, null);
-		institute1.addEmployee(employee2);
+		institute1.setEmployee(employee2);
 
 		employees.addAll(Stream.of(employee1, employee2)
 				.map(employee -> {
@@ -160,8 +160,8 @@ class DbServiceApplicationTests {
 				new UserProfile("t2", "t2",
 						new Address("d", "22", "Delhi", "India", "110043"),
 						new Contact("8881", "nisha11@gmail.com")), EmployeeType.TEACHER, "CI");
-		institute1.addEmployee(teacher1);
-		institute1.addEmployee(teacher2);
+		institute1.setEmployee(teacher1);
+		institute1.setEmployee(teacher2);
 
 		teacher1.getUserProfile().setUser(teacher1);
 		teacher2.getUserProfile().setUser(teacher2);
@@ -240,37 +240,37 @@ class DbServiceApplicationTests {
 				new UserProfile("Naman", "Kumar"
 						, new Address("D74", "Gali-16", "Telangana", "India", "140088")
 						, new Contact("90033211", "naman1@gmail.com")), instituteClassSection1, null);
-		instituteClassSection1.addStudent(student1);
+		instituteClassSection1.setStudent(student1);
 
 		Student student2 = new Student(1l, "manan1", "manan003", UserType.STUDENT, false, false,
 				new UserProfile("Manan", "Kumar"
 						, new Address("D34", "Gali-26", "Telangana", "India", "140088")
 						, new Contact("80033121", "manan1@gmail.com")), instituteClassSection1, null);
-		instituteClassSection1.addStudent(student2);
+		instituteClassSection1.setStudent(student2);
 
 		Student student3 = new Student(1l, "kishor1", "kishor003", UserType.STUDENT, false, false,
 				new UserProfile("Kishor", "Kumar"
 						, new Address("D75", "Gali-16", "Telangana", "India", "140088")
 						, new Contact("90000111", "kishor1@gmail.com")), instituteClassSection2, null);
-		instituteClassSection2.addStudent(student3);
+		instituteClassSection2.setStudent(student3);
 
 		Student student4 = new Student(1l, "hiteshi1", "hiteshi003", UserType.STUDENT, false, false,
 				new UserProfile("Hiteshi", "Kumar"
 						, new Address("D54", "Gali-46", "Telangana", "India", "140088")
 						, new Contact("900001181", "hiteshi1@gmail.com")), instituteClassSection2, null);
-		instituteClassSection2.addStudent(student4);
+		instituteClassSection2.setStudent(student4);
 
 		Student student5 = new Student(1l, "pooja1", "pooja003", UserType.STUDENT, false, false,
 				new UserProfile("Pooja", "Kumar"
 						, new Address("D79", "Gali-86", "Telangana", "India", "140088")
 						, new Contact("90091191", "pooja1@gmail.com")), instituteClassSection3, null);
-		instituteClassSection3.addStudent(student5);
+		instituteClassSection3.setStudent(student5);
 
 		Student student6 = new Student(1l, "neetu1", "neetu003", UserType.STUDENT, false, false,
 				new UserProfile("Neetu", "Kumar"
 						, new Address("D740", "Gali-916", "Telangana", "India", "140088")
 						, new Contact("8810181", "neetu1@gmail.com")), instituteClassSection3, null);
-		instituteClassSection3.addStudent(student6);
+		instituteClassSection3.setStudent(student6);
 
 		students.addAll(Stream.of(student1, student2, student3, student4, student5, student6)
 				.map(student -> {

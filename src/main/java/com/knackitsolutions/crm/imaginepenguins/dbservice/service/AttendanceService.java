@@ -113,4 +113,8 @@ public class AttendanceService {
     public List<Attendance> findAll(Specification<Attendance> attendanceSpecification, Sort sort) {
         return attendanceRepository.findAll(attendanceSpecification, sort);
     }
+
+    public Date lastAttendanceDate() {
+        return attendanceRepository.findLastAttendanceDate();
+    }
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface UserDocumentStoreRepository extends JpaRepository<UserDocumentStore, Long> {
     UserDocumentStore findByUserIdAndDocumentType(Long userId, UserDocumentType documentType);
 
-    @Query("SELECT d.fileName from UserDocumentStore d where d.user.id = :userId and d.documentType = :userDocumentType")
+    @Query("SELECT d.storeURL from UserDocumentStore d where d.user.id = :userId and d.documentType = :userDocumentType")
     String getUploadDocumentPath(Long userId, UserDocumentType userDocumentType);
 
 }

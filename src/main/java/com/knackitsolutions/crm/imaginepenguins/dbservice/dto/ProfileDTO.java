@@ -34,7 +34,8 @@ public class ProfileDTO {
         private Long classSectionId;
         private String className;
         private String sectionName;
-        private Long employeeOrgId;
+        private String employeeOrgId;
+        private String rollNumber;
         private Boolean activeStatus;
         @JsonFormat(pattern = "dd-MM-yyyy")
         private Date dateOfJoining;

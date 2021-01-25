@@ -56,7 +56,7 @@ public class AmazonDocumentStorageClient implements InstituteDocumentStoreServic
     public String storeFile(MultipartFile multipartFile, Institute institute, InstituteDocumentType instituteDocumentType) {
         String originalFileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
         String fileName = "";
-        URL resourceURL = null;
+        String resourceURL = null;
         try {
             final File file = convertMultipartFileToFileObject(multipartFile);
 
@@ -67,7 +67,7 @@ public class AmazonDocumentStorageClient implements InstituteDocumentStoreServic
             fileName = instituteUploadDir + "/" + institute.getId() + "_" + instituteDocumentType.getDocType() + fileExtension;
 
             uploadFileTos3bucket(fileName, file);
-            resourceURL = amazonS3.getUrl(bucketName, fileName);
+            resourceURL = amazonS3.getUrl(bucketName, fileName).toExternalForm();
 
             file.delete();
             InstituteDocumentStore store1 = instituteDocumentStoreRepository
@@ -75,6 +75,7 @@ public class AmazonDocumentStorageClient implements InstituteDocumentStoreServic
             if (store1 != null) {
                 store1.setDocumentFormat(multipartFile.getContentType());
                 store1.setFileName(fileName);
+                store1.setStoreURL(resourceURL);
                 instituteDocumentStoreRepository.save(store1);
             } else {
                 InstituteDocumentStore newStore = new InstituteDocumentStore();
@@ -82,12 +83,13 @@ public class AmazonDocumentStorageClient implements InstituteDocumentStoreServic
                 newStore.setFileName(fileName);
                 newStore.setDocumentFormat(multipartFile.getContentType());
                 newStore.setDocumentType(instituteDocumentType);
+                store1.setStoreURL(resourceURL);
                 instituteDocumentStoreRepository.save(newStore);
             }
         } catch (Exception exception) {
             throw new DataStorageException("Could not store file " + fileName + ". Please try again!.", exception);
         }
-        return resourceURL.toExternalForm();
+        return resourceURL;
     }
 
     private File convertMultipartFileToFileObject(MultipartFile multipartFile) {
@@ -156,12 +158,14 @@ public class AmazonDocumentStorageClient implements InstituteDocumentStoreServic
             if (store.getDocumentId() != null) {
                 store.setDocumentFormat(multipartFile.getContentType());
                 store.setFileName(fileName);
+                store.setStoreURL(resourceURL);
                 userDocumentStoreRepository.save(store);
             } else {
                 user.setUserDocumentStores(store);
                 store.setFileName(fileName);
                 store.setDocumentFormat(multipartFile.getContentType());
                 store.setDocumentType(userDocumentType);
+                store.setStoreURL(resourceURL);
                 userDocumentStoreRepository.save(store);
             }
         } catch (Exception exception) {

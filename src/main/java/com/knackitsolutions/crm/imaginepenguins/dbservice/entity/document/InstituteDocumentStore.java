@@ -32,4 +32,7 @@ public class InstituteDocumentStore {
     @Column(name = "upload_dir")
     private String uploadDir;
 
+    @Column(name = "store_url")
+    private String storeURL;
+
 }

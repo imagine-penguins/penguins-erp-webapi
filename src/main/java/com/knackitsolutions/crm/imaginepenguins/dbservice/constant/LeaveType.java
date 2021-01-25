@@ -12,7 +12,8 @@ public enum LeaveType {
     EARNED_LEAVE("EL"),
     COMP_OFF("CO"),
     PAID_LEAVE("PL"),
-    VACATION("VL");
+    VACATION("VL"),
+    NONE("");
 
     private String type;
 

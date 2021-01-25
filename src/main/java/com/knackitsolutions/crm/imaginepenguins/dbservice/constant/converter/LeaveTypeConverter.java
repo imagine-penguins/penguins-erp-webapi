@@ -13,11 +13,15 @@ public class LeaveTypeConverter implements AttributeConverter<LeaveType, String>
 
     @Override
     public String convertToDatabaseColumn(LeaveType attribute) {
+        if (attribute == null)
+            return null;
         return attribute.getType();
     }
 
     @Override
     public LeaveType convertToEntityAttribute(String dbData) {
+        if (dbData == null)
+            return LeaveType.NONE;
         return LeaveType.of(dbData);
     }
 

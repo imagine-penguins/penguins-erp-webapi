@@ -21,6 +21,7 @@ public class Employee extends User{
     @Column(name = "employee_type")
     private EmployeeType employeeType;
 
+    @Column(name = "designation")
     private String designation;
 
     @ManyToOne(fetch = FetchType.EAGER)

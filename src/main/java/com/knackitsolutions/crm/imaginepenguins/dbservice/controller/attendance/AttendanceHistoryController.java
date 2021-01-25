@@ -136,8 +136,14 @@ public class AttendanceHistoryController {
         attendanceSpecification = attendanceSpecification.and(specByPrivileges);
 
         if (startDate.isPresent() && endDate.isPresent()) {
-            attendanceSpecification.and(AttendanceSpecification.attendanceWithAttendanceDate(startDate.get(), SearchOperation.GREATER_THAN_EQUAL));
-            attendanceSpecification.and(AttendanceSpecification.attendanceWithAttendanceDate(endDate.get(), SearchOperation.LESS_THAN_EQUAL));
+            log.debug("Filtering on dates provided in request param");
+            attendanceSpecification = attendanceSpecification.and(AttendanceSpecification.attendanceWithAttendanceDate(startDate.get(), SearchOperation.GREATER_THAN_EQUAL));
+            attendanceSpecification = attendanceSpecification.and(AttendanceSpecification.attendanceWithAttendanceDate(endDate.get(), SearchOperation.LESS_THAN_EQUAL));
+        }else{
+            //get the last attendance date.
+            log.debug("Getting last day of attendance");
+            Date lastAttendanceDate = attendanceService.lastAttendanceDate();
+            attendanceSpecification =  attendanceSpecification.and(AttendanceSpecification.attendanceWithAttendanceDate(lastAttendanceDate, SearchOperation.EQUAL));
         }
 
         log.debug("Calling database to fetch attendance history");

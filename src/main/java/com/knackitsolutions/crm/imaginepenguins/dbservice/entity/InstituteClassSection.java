@@ -87,7 +87,7 @@ public class InstituteClassSection {
     }
 
     public void setStudents(Set<Student> students) {
-        students.forEach(this::addStudent);
+        students.forEach(this::setStudent);
     }
 
     public Set<InstituteClassSectionSubject> getInstituteClassSectionSubjects() {
@@ -103,7 +103,7 @@ public class InstituteClassSection {
         instituteClassSectionSubject.setInstituteClassSection(this);
     }
 
-    public void addStudent(Student student) {
+    public void setStudent(Student student) {
         this.students.add(student);
         student.setInstituteClassSectionTeacher(this);
     }
