@@ -79,7 +79,7 @@ public class LoadDatabase {
         employee1.setVerified(true);
         employee1.setActive(true);
         employee1.getUserProfile().setUser(employee1);
-        institute1.addEmployee(employee1);
+        institute1.setEmployee(employee1);
 
         Employee employee2 = new Employee(1l, "gaurav", "gaurav003", UserType.EMPLOYEE
                 , false, false
@@ -87,7 +87,7 @@ public class LoadDatabase {
                 , new Address("D14", "Gali16", "Delhi", "India", "110053")
                 , new Contact("10111", "gaurav@gmail.com")), EmployeeType.NON_TEACHER
                 , "None", institute1, null, new HashSet<>());
-        institute1.addEmployee(employee2);
+        institute1.setEmployee(employee2);
 
         employee2.setVerified(true);
         employee2.setActive(true);
@@ -120,8 +120,8 @@ public class LoadDatabase {
         teacher2.setVerified(true);
         teacher2.setActive(true);
 
-        institute1.addEmployee(teacher1);
-        institute1.addEmployee(teacher2);
+        institute1.setEmployee(teacher1);
+        institute1.setEmployee(teacher2);
 
         teacher1.getUserProfile().setUser(teacher1);
         teacher2.getUserProfile().setUser(teacher2);
@@ -205,7 +205,7 @@ public class LoadDatabase {
         student1.setRollNumber("1");
         student1.setVerified(true);
         student1.setActive(true);
-        instituteClassSection1.addStudent(student1);
+        instituteClassSection1.setStudent(student1);
 
         Student student2 = new Student(1l, "manan", "manan003", UserType.STUDENT, false, false,
                 new UserProfile("Manan", "Kumar"
@@ -214,35 +214,35 @@ public class LoadDatabase {
         student2.setRollNumber("2");
         student2.setVerified(true);
         student2.setActive(false);
-        instituteClassSection1.addStudent(student2);
+        instituteClassSection1.setStudent(student2);
 
         Student student3 = new Student(1l, "kishor", "kishor003", UserType.STUDENT, false, false,
                 new UserProfile("Kishor", "Kumar"
                         , new Address("D75", "Gali-16", "Telangana", "India", "140088")
                         , new Contact("9000011", "kishor@gmail.com")), instituteClassSection1, null);
         student3.setRollNumber("3");
-        instituteClassSection1.addStudent(student3);
+        instituteClassSection1.setStudent(student3);
 
         Student student4 = new Student(1l, "hiteshi", "hiteshi003", UserType.STUDENT, false, false,
                 new UserProfile("Hiteshi", "Kumar"
                         , new Address("D54", "Gali-46", "Telangana", "India", "140088")
                         , new Contact("90000118", "hiteshi@gmail.com")), instituteClassSection2, null);
         student4.setRollNumber("4");
-        instituteClassSection2.addStudent(student4);
+        instituteClassSection2.setStudent(student4);
 
         Student student5 = new Student(1l, "pooja", "pooja003", UserType.STUDENT, false, false,
                 new UserProfile("Pooja", "Kumar"
                         , new Address("D79", "Gali-86", "Telangana", "India", "140088")
                         , new Contact("9009119", "pooja@gmail.com")), instituteClassSection2, null);
         student5.setRollNumber("5");
-        instituteClassSection2.addStudent(student5);
+        instituteClassSection2.setStudent(student5);
 
         Student student6 = new Student(1l, "neetu", "neetu003", UserType.STUDENT, false, false,
                 new UserProfile("Neetu", "Kumar"
                         , new Address("D740", "Gali-916", "Telangana", "India", "140088")
                         , new Contact("881018", "neetu@gmail.com")), instituteClassSection2, null);
         student6.setRollNumber("6");
-        instituteClassSection2.addStudent(student6);
+        instituteClassSection2.setStudent(student6);
 
         students.addAll(Stream.of(student1, student2, student3, student4, student5, student6)
                 .map(student -> {
