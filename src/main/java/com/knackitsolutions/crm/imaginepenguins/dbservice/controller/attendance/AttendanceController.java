@@ -11,10 +11,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.AttendanceRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.EmployeeSpecification;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.StudentSpecification;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.UserSpecification;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 
@@ -210,7 +207,7 @@ public class AttendanceController {
             , @RequestParam(defaultValue = "0") @Min(0) int page
             , @RequestParam(defaultValue = "10") @Min(1) int size
     ) {
-        log.trace("loadUsers started...");
+        log.trace("/users >> loadUsers started...");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
 
@@ -251,6 +248,7 @@ public class AttendanceController {
             specBasedOnPrivilege = specBasedOnPrivilege.or(
                     UserSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
+
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_SUBORDINATES_EMPLOYEE_ATTENDANCE.getPrivilegeCode())
@@ -261,8 +259,12 @@ public class AttendanceController {
             );
         }
         userSpecification = userSpecification.and(specBasedOnPrivilege);
-
+        //Not Himself
+        userSpecification = userSpecification
+                .and(new GenericSpecification<User>(new SearchCriteria("id", userContext.getUserId(), SearchOperation.NOT_EQUAL)));
+        log.debug("Calling database to fetch attendance history");
         Page<User> users = userService.findAll(userSpecification, pageable);
+        log.debug("DB call completed.");
         users
                 .map(user -> {
                     if (user.getUserType() == UserType.STUDENT)

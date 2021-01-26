@@ -206,6 +206,10 @@ public class UserSpecification {
         };
     }
 
+    public static Specification<User> userNotById(Long userId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("id"), userId);
+    }
+
     /*public static Specification<User> filter(Map<String, List<SearchCriteria>> searchMap) {
         Specification<User> userSpecification = Specification.where(null);
         for (Map.Entry<String, List<SearchCriteria>> entry : searchMap.entrySet()) {
