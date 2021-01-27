@@ -12,4 +12,7 @@ public interface InstituteDepartmentRepository extends JpaRepository<InstituteDe
     Optional<InstituteDepartment> findById(Long instituteId);
     List<InstituteDepartment> findByInstituteId(Integer instituteId);
 
+    List<InstituteDepartment> findByDepartmentName(String departmentName);
+
+
 }

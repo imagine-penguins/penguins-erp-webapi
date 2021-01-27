@@ -14,6 +14,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
@@ -50,6 +51,7 @@ public class LeaveRequestController {
     private final IAuthenticationFacade authenticationFacade;
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveRequestService leaveRequestService;
+    private final InstituteDepartmentRepository departmentRepository;
 
     @PostMapping
     public ResponseEntity<String> saveLeaveRequest(@RequestBody LeaveRequestDTO leaveRequestDTO) {
@@ -61,9 +63,28 @@ public class LeaveRequestController {
 
         if (leaveRequestDTO.getApprovesId() == null) {
             if (user instanceof Employee) {
-                leaveRequestDTO.setApprovesId(((Employee) user).getManager().getId());
+                if (((Employee) user).getManager() == null) {
+                    leaveRequestDTO.setApprovesId(userService
+                            .findByDepartmentId(
+                                    departmentRepository.findByDepartmentName("ADMIN").get(0).getId()
+                            ).get(0).getId());
+                }
+                else {leaveRequestDTO.setApprovesId(((Employee) user).getManager().getId());}
             } else if (user instanceof Student) {
-                leaveRequestDTO.setApprovesId(((Student) user).getInstituteClassSection().getTeacher().getId());
+                if (((Student) user).getInstituteClassSection() == null
+                        || ((Student) user).getInstituteClassSection().getTeacher() == null) {
+                    leaveRequestDTO.setApprovesId(userService
+                            .findByDepartmentId(
+                                    departmentRepository.findByDepartmentName("ADMIN").get(0).getId()
+                            ).get(0).getId());
+                }else {
+                    leaveRequestDTO.setApprovesId(((Student) user).getInstituteClassSection().getTeacher().getId());
+                }
+            } else {
+                leaveRequestDTO.setApprovesId(userService
+                        .findByDepartmentId(
+                                departmentRepository.findByDepartmentName("ADMIN").get(0).getId()
+                        ).get(0).getId());
             }
         }
         LeaveRequest newLeaveRequest = leaveRequestMapper.dtoToEntity(leaveRequestDTO);
@@ -76,9 +97,10 @@ public class LeaveRequestController {
         approves.setLeaveRequestsApprover(newLeaveRequest);
 
         newLeaveRequest.setLeaveRequestStatus(LeaveRequestStatus.PENDING);
+        log.debug("Saving to database");
         LeaveRequest savedLeaveRequest = leaveRequestService
                 .saveLeaveRequest(newLeaveRequest);
-
+        log.debug("Saved to database.");
         log.trace("Request for new leave application. Finished...");
         return ResponseEntity.status(HttpStatus.CREATED).body("Leave Request saved.");
     }
@@ -135,6 +157,11 @@ public class LeaveRequestController {
         )).withSelfRel());
     }
 
+    /*@GetMapping
+    public LeaveResponseDTO one(Long leaveRequestId) {
+        return null;
+    }
+*/
     @PutMapping("/{leaveRequestId}")
     public ResponseEntity<String> updateLeaveRequest(@PathVariable("leaveRequestId") Long leaveRequestId
             , @RequestBody LeaveRequestUpdateDTO dto) {
@@ -216,7 +243,9 @@ public class LeaveRequestController {
             }
         }
         leaveRequestSpecification = leaveRequestSpecification.and(LeaveRequestSpecification.leaveRequestByNotUserId(userContext.getUserId()));
+        log.debug("Calling Database.");
         Page<LeaveRequest> leaveRequestPage = leaveRequestService.findAllBySpecification(leaveRequestSpecification, pageable);
+        log.debug("Database call finished");
         leaveRequestPage
                 .get()
                 .map(leaveRequestMapper::entityToDTO)
@@ -245,7 +274,10 @@ public class LeaveRequestController {
             Long userId = Long.parseLong(searchCriteriaMap.get("user").get(0).getValue().toString());
             specification = specification.and(LeaveRequestSpecification.leaveRequestByUserId(userId));
         }
+        specification = specification.and(LeaveRequestSpecification.leaveRequestByNotUserId(userContext.getUserId()));
+        log.debug("Calling DB.");
         List<LeaveRequest> leaveRequests = leaveRequestService.findAllBySpecification(specification);
+        log.debug("DB Call finished");
         List<Date> allLeavesDates = new ArrayList<>();
         leaveRequests.stream().map(leaveRequestMapper::getLeavesDates).forEach(allLeavesDates::addAll);
 
