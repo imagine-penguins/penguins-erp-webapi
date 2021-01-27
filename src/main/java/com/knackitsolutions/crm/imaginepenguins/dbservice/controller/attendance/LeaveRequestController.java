@@ -215,7 +215,7 @@ public class LeaveRequestController {
                         ));
             }
         }
-
+        leaveRequestSpecification = leaveRequestSpecification.and(LeaveRequestSpecification.leaveRequestByNotUserId(userContext.getUserId()));
         Page<LeaveRequest> leaveRequestPage = leaveRequestService.findAllBySpecification(leaveRequestSpecification, pageable);
         leaveRequestPage
                 .get()

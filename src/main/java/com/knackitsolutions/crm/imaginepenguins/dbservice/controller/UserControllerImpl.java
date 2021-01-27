@@ -187,27 +187,25 @@ public class UserControllerImpl {
 
         UserProfile newUserProfile = userMapper.dtoToEntity(dto);
 
-        newUserProfile = userProfileRepository.save(newUserProfile);
-
         newUser.setActive(dto.getGeneralInformation().getActiveStatus());
         newUser.setUsername(userService.generateUsername(newUserProfile.getContact().getEmail(), newUserProfile.getId()));
         newUser.setPassword(userService.generateRandomPassword(newUserProfile.getContact().getEmail()));
         newUser.setUserType(userType);
 
-        newUser.setUserProfile(newUserProfile);
-
+//        newUser.setUserProfile(newUserProfile);
+        newUserProfile.setUser(newUser);
+        newUserProfile = userProfileRepository.save(newUserProfile);
 
         List<UserDepartment> userDepartments = userDepartmentRepository.findAllById(dto.getGeneralInformation().getDepartments());
 
         newUser.setUserDepartments(userDepartments);
 
         if (userType == UserType.EMPLOYEE) {
-            employeeService.newEmployee((Employee) newUser);
+            newUser = employeeService.newEmployee((Employee) newUser);
         } else if (userType == UserType.STUDENT) {
-            studentService.save((Student) newUser);
+            newUser = studentService.save((Student) newUser);
         }
-
-        return ResponseEntity.ok("Successfully Created New User.");
+        return ResponseEntity.created(linkTo(methodOn(UserControllerImpl.class).myProfile(newUser.getId())).toUri()).body("Successfully Created New User.");
     }
 
     /*

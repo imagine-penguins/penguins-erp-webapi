@@ -23,6 +23,13 @@ public class LeaveRequestSpecification {
         );
     }
 
+    public static final Specification<LeaveRequest> leaveRequestByNotUserId(Long userId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(
+                root.join("user").get("id")
+                , userId
+        );
+    }
+
     public static final Specification<LeaveRequest> leaveRequestByApprovesId(Long approvesId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(
                 root.join("approves").get("id")

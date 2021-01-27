@@ -190,7 +190,6 @@ public class UserProfile {
 
     public void setUser(User user) {
         this.user = user;
-//        this.id = user.getId();
     }
 
     public Address getPersonalAddress() {
