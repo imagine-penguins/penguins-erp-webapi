@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,7 +40,7 @@ public class PrivilegeMapper {
 //    public List<PrivilegeDTO> entityToDTORecus(List<Privilege> userPrivileges) {
 //
 //    }
-    public List<PrivilegeDTO> entityToDTO(List<Privilege> userPrivileges) {
+    public List<PrivilegeDTO> entityToDTO(Collection<Privilege> userPrivileges) {
         log.info("Creating DTO list from privileges");
         List<PrivilegeDTO> dtos = userPrivileges
                 .stream()

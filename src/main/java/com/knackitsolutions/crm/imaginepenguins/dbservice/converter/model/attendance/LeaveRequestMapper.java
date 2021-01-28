@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveHistoryDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveRequestUpdateDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveResponseDTO;
@@ -9,6 +10,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Leav
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
@@ -73,16 +75,38 @@ public class LeaveRequestMapper {
 
     }
 
-    public LeaveHistoryDTO.GraphData getGraphDataFromMapEntry(Map.Entry<Month, Integer> monthlyCount) {
+    public LeaveHistoryDTO.GraphData getGraphDataFromMapEntry(Map.Entry<String, Integer> leaveCount) {
         log.info("Starting getGraphDataFromMapEntry method.");
         LeaveHistoryDTO.GraphData gData = new LeaveHistoryDTO.GraphData();
-        gData.setMonth(monthlyCount.getKey().toString());
-        gData.setLeaveCount(monthlyCount.getValue());
+        gData.setPeriod(leaveCount.getKey());
+        gData.setLeaveCount(leaveCount.getValue());
         log.info("Graph Data: {}", gData);
         return gData;
     }
 
-    public Map<Month, Integer> getMonthlyLeaveCount(List<Date> dates) {
+    public Map<String, Integer> getLeaveCount(List<Date> dates, Period period) {
+        log.info("Starting getLeaveCount method.");
+
+        Map<String, Integer> leaveCount = new HashMap<>();
+
+        dates.stream().forEach(date -> {
+            String key = null;
+            if (period == Period.MONTH)
+                key = String.valueOf(date.toInstant().atZone(ZoneId.systemDefault()).getMonth().getValue());
+            else if(period == Period.DAY)
+                key = new SimpleDateFormat("dd-MM-yyyy").format(date);
+            Integer count = 0;
+            if (leaveCount.containsKey(key))
+                count = leaveCount.get(key);
+            leaveCount.put(key, count + 1);
+        });
+        leaveCount.entrySet()
+                .stream()
+                .forEach(entry -> log.info("monthly count key: {}, value:{}", entry.getKey(), entry.getValue()));
+        return leaveCount;
+    }
+
+    /*public Map<Month, Integer> getMonthlyLeaveCount(List<Date> dates) {
         log.info("Starting getMonthlyLeaveCount method.");
         Map<Month, Integer> monthlyCount = new HashMap<>();
         dates.stream().forEach(date -> {
@@ -96,7 +120,7 @@ public class LeaveRequestMapper {
                 .stream()
                 .forEach(entry -> log.info("monthly count key: {}, value:{}", entry.getKey(), entry.getValue()));
         return monthlyCount;
-    }
+    }*/
 
     public List<Date> getLeavesDates(LeaveRequest leaveRequest) {
         log.info("Starting getLeavesDates method.");
@@ -109,7 +133,6 @@ public class LeaveRequestMapper {
             calendar.setTime(startDate);
             calendar.add(Calendar.DATE, 1);
             startDate = calendar.getTime();
-
         }
         return dates;
     }

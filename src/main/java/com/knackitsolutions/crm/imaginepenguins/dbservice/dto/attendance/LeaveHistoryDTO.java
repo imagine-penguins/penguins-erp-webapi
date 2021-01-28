@@ -27,15 +27,15 @@ public class LeaveHistoryDTO extends RepresentationModel<LeaveHistoryDTO> {
     }
 
     public static class GraphData {
-        private String month;
+        private String period;
         private Integer leaveCount;
 
-        public String getMonth() {
-            return month;
+        public String getPeriod() {
+            return period;
         }
 
-        public void setMonth(String month) {
-            this.month = month;
+        public void setPeriod(String period) {
+            this.period = period;
         }
 
         public Integer getLeaveCount() {
@@ -51,18 +51,18 @@ public class LeaveHistoryDTO extends RepresentationModel<LeaveHistoryDTO> {
             if (this == o) return true;
             if (!(o instanceof GraphData)) return false;
             GraphData graphData = (GraphData) o;
-            return getMonth().equals(graphData.getMonth());
+            return getPeriod().equals(graphData.getPeriod());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getMonth(), getLeaveCount());
+            return Objects.hash(getPeriod(), getLeaveCount());
         }
 
         @Override
         public String toString() {
             return "GraphData{" +
-                    "month='" + month + '\'' +
+                    "month='" + period + '\'' +
                     ", leaveCount=" + leaveCount +
                     '}';
         }

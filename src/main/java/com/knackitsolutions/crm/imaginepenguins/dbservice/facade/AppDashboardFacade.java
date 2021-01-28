@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -26,13 +27,13 @@ public class AppDashboardFacade {
     // . Find all the privileges in instituteDepartment for that department
     // . Convert that to PrivilegeDTO. Make a list
 
-    public List<PrivilegeDTO> getPrivileges(Long userId, Long departmentId){
+    public List<PrivilegeDTO> getPrivileges(Long userId){
         log.info("Preparing DTO list");
-        List<Privilege> privileges = userPrivilegeRepository
-                .findByUserIdAndDepartmentId(userId, departmentId)
+        Set<Privilege> privileges = userPrivilegeRepository
+                .findByUserId(userId)
                 .stream()
                 .map(userPrivilege -> userPrivilege.getDepartmentPrivilege().getPrivilege())
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         privileges.forEach(privilege -> log.info("Privilege: {}", privilege));
         log.info("DTO list is prepared");
         return privilegeMapper.entityToDTO(privileges);

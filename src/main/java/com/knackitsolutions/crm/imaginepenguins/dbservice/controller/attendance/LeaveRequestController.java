@@ -127,7 +127,7 @@ public class LeaveRequestController {
             leaveRequestSpecification = leaveRequestSpecification
                     .and(LeaveRequestSpecification.leaveRequestByUserId(userContext.getUserId()));
         }
-        List<SearchCriteria> searchCriteria = searchMap.get("requestStatus");
+        /*List<SearchCriteria> searchCriteria = searchMap.get("requestStatus");
         if (
                 searchMap.containsKey("requestStatus") &&
                         searchCriteria.get(0).getValue().toString().equalsIgnoreCase("P")
@@ -141,8 +141,10 @@ public class LeaveRequestController {
                                 new SearchCriteria("leaveRequestStatus", LeaveRequestStatus.PENDING, SearchOperation.EQUAL)
                         ));
             }
-        }
+        }*/
+        log.debug("Calling DB.");
         Page<LeaveRequest> leaveRequestPage = leaveRequestService.findAllBySpecification(leaveRequestSpecification, pageable);
+        log.debug("DB call finished.");
         leaveRequestPage
                 .get()
                 .map(leaveRequestMapper::entityToDTO)
@@ -261,20 +263,18 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/history/graph")
-    public CollectionModel<LeaveHistoryDTO.GraphData> graph(@RequestParam(required = false) String[] search) {
-        Map<String, Integer> graph = new HashMap<>();
+    public CollectionModel<LeaveHistoryDTO.GraphData> receivedLeaveGraph(@RequestParam(required = false) String[] search
+            , @RequestParam(required = false) Period period) {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 
         Specification<LeaveRequest> specification = LeaveRequestSpecification
                 .leaveRequestByApprovesId(userContext.getUserId());
-        Map<String, List<SearchCriteria>> searchCriteriaMap = FilterService.createSearchMap(search);
 
-        if (searchCriteriaMap.containsKey("user")) {
-            //single user id
-            Long userId = Long.parseLong(searchCriteriaMap.get("user").get(0).getValue().toString());
-            specification = specification.and(LeaveRequestSpecification.leaveRequestByUserId(userId));
-        }
+        Map<String, List<SearchCriteria>> searchCriteriaMap = FilterService.createSearchMap(search);
+        specification = specification.and(LeaveRequestSpecification.filterLeaveRequests(searchCriteriaMap));
+
         specification = specification.and(LeaveRequestSpecification.leaveRequestByNotUserId(userContext.getUserId()));
+
         log.debug("Calling DB.");
         List<LeaveRequest> leaveRequests = leaveRequestService.findAllBySpecification(specification);
         log.debug("DB Call finished");
@@ -282,7 +282,7 @@ public class LeaveRequestController {
         leaveRequests.stream().map(leaveRequestMapper::getLeavesDates).forEach(allLeavesDates::addAll);
 
         List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
-                .getMonthlyLeaveCount(allLeavesDates)
+                .getLeaveCount(allLeavesDates, period)
                 .entrySet()
                 .stream()
                 .map(leaveRequestMapper::getGraphDataFromMapEntry)
@@ -292,17 +292,25 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/graph")
-    public CollectionModel<LeaveHistoryDTO.GraphData> graph() {
-        Map<String, Integer> graph = new HashMap<>();
+    public CollectionModel<LeaveHistoryDTO.GraphData> appliedLeaveGraph(@RequestParam(required = false) String[] search
+            , @RequestParam(required = false) Period period) {
+        if (period == null) {
+            period = Period.DAY;
+        }
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
+        Map<String, List<SearchCriteria>> searchCriteriaMap = FilterService.createSearchMap(search);
+
         Specification<LeaveRequest> specification = LeaveRequestSpecification.leaveRequestByUserId(userContext.getUserId());
+
+        specification = specification.and(LeaveRequestSpecification.filterLeaveRequests(searchCriteriaMap));
+
         List<LeaveRequest> leaveRequests = leaveRequestService.findAllBySpecification(specification);
 
         List<Date> allLeavesDates = new ArrayList<>();
         leaveRequests.stream().map(leaveRequestMapper::getLeavesDates).forEach(allLeavesDates::addAll);
 
         List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
-                .getMonthlyLeaveCount(allLeavesDates)
+                .getLeaveCount(allLeavesDates, period)
                 .entrySet()
                 .stream()
                 .map(leaveRequestMapper::getGraphDataFromMapEntry)

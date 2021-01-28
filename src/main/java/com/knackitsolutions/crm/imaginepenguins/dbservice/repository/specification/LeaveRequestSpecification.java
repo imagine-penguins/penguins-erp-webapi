@@ -53,6 +53,15 @@ public class LeaveRequestSpecification {
         };
     }
 
+    public static final Specification<LeaveRequest> leaveRequestByUserIds(Stream<Long> userIds) {
+        return (root, query, criteriaBuilder) -> {
+            CriteriaBuilder.In<Long> userTypeIn = criteriaBuilder.in(
+                    root.join("user").get("id"));
+            userIds.forEach(userTypeIn::value);
+            return userTypeIn;
+        };
+    }
+
     public static final Specification<LeaveRequest> leaveRequestByDepartmentId(Stream<Integer> departments) {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inDepartment = criteriaBuilder
@@ -102,8 +111,10 @@ public class LeaveRequestSpecification {
                 leaveRequestSpecification = leaveRequestSpecification.and(new GenericSpecification<>(new SearchCriteria(
                         key, firstValue.getValue(), firstValue.getOperation()
                 )));
+            } else if (key.equalsIgnoreCase("user")) {
+                Stream<Long> userIds = value.map(Long::parseLong);
+                leaveRequestSpecification = leaveRequestSpecification.and(LeaveRequestSpecification.leaveRequestByUserIds(userIds));
             }
-
         }
         return leaveRequestSpecification;
     }

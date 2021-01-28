@@ -93,7 +93,7 @@ public class UserFacade {
                 linkTo(methodOn(DashboardController.class).webDashboardDTO(departmentId))
                         .withRel("web-dashboard"),
                 linkTo(methodOn(DashboardController.class)
-                        .appDashboardDTO(departmentId)).withRel("app-dashboard"),
+                        .appDashboardDTO()).withRel("app-dashboard"),
                 linkTo(methodOn(UserControllerImpl.class).myInstitute()).withRel("institute")
                 ,                linkTo(methodOn(DepartmentController.class).myDepartments()).withRel("departments")
         ).collect(Collectors.toList());

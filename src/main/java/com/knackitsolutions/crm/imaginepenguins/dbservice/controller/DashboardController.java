@@ -28,17 +28,17 @@ public class DashboardController {
 
     private final IAuthenticationFacade authenticationFacade;
 
-    @GetMapping("/web/department/{departmentId}")
-    public EntityModel<WebDashboardDTO> webDashboardDTO(@PathVariable("departmentId") Long departmentId){
+    @GetMapping("/web")
+    public EntityModel<WebDashboardDTO> webDashboardDTO(){
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         return null;
     }
 
-    @GetMapping("/app/department/{departmentId}")
-    public EntityModel<AppDashboardDTO> appDashboardDTO(@PathVariable("departmentId") Long departmentId){
+    @GetMapping("/app")
+    public EntityModel<AppDashboardDTO> appDashboardDTO(){
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         List<PrivilegeDTO> privilegeDTOS = appDashboardFacade
-                .getPrivileges(userContext.getUserId(), departmentId);
+                .getPrivileges(userContext.getUserId());
         AppDashboardDTO dto = new AppDashboardDTO(privilegeDTOS);
         return EntityModel.of(dto);
     }

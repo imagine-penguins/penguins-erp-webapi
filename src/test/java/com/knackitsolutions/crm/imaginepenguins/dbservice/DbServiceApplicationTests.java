@@ -591,13 +591,7 @@ class DbServiceApplicationTests {
 			,@Autowired AppDashboardFacade facade){
 
 		List<Student> students = repository.findAll();
-		List<PrivilegeDTO> privilegeDTOS = facade.getPrivileges(students.get(0).getId(), students.get(0)
-				.getUserDepartments()
-				.stream()
-				.findFirst()
-				.get()
-				.getInstituteDepartment()
-				.getId());
+		List<PrivilegeDTO> privilegeDTOS = facade.getPrivileges(students.get(0).getId());
 
 		assertThat(students).isNotNull();
 		assertThat(students).isNotEmpty();
