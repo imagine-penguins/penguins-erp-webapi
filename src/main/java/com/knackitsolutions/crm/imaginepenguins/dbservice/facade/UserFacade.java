@@ -90,7 +90,7 @@ public class UserFacade {
         Long departmentId = userDepartments.get(0).getInstituteDepartment().getId();
         return Stream.of(linkTo(methodOn(UserControllerImpl.class).one(userId)).withSelfRel(),
                 linkTo(methodOn(UserControllerImpl.class).all(0, 10, null, null)).withRel("users"),
-                linkTo(methodOn(DashboardController.class).webDashboardDTO(departmentId))
+                linkTo(methodOn(DashboardController.class).webDashboardDTO())
                         .withRel("web-dashboard"),
                 linkTo(methodOn(DashboardController.class)
                         .appDashboardDTO()).withRel("app-dashboard"),

@@ -23,7 +23,7 @@ public class UserLoginModelAssembler implements RepresentationModelAssembler<Use
         return EntityModel.of(dto,
                     linkTo(methodOn(UserControllerImpl.class).all(0, 10, null, null)).withRel("users"),
                     linkTo(methodOn(DashboardController.class).appDashboardDTO()).withRel("app-dashboard"),
-                    linkTo(methodOn(DashboardController.class).webDashboardDTO( null)).withRel("web-dashboard"),
+                    linkTo(methodOn(DashboardController.class).webDashboardDTO( )).withRel("web-dashboard"),
                     linkTo(methodOn(UserControllerImpl.class).myInstitute()).withRel("institute")
                 );
     }
