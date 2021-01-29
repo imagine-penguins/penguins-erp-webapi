@@ -27,7 +27,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +37,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import java.text.ParseException;
 import java.util.*;
-import java.util.logging.Filter;
 import java.util.stream.Collectors;
 
 
@@ -275,7 +273,7 @@ public class AttendanceController {
                     return null;
                 })
                 .map(userAttendanceResponseDTO -> {
-                    if (leaveRequestService.isOnLeave(userAttendanceResponseDTO.getUserId(), DatesConfig.now())) {
+                    if (leaveRequestService.leaves(userAttendanceResponseDTO.getUserId(), DatesConfig.now())) {
                         userAttendanceResponseDTO.setStatus(Optional.of(AttendanceStatus.LEAVE));
                     } else {
                         userAttendanceResponseDTO.setStatus(Optional.of(AttendanceStatus.PRESENT));

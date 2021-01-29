@@ -48,7 +48,7 @@ public class LeaveRequest {
     @Column(name = "request_status")
     private LeaveRequestStatus leaveRequestStatus;
 
-    @JoinColumn(name = "approved_by_user_id")
+    @JoinColumn(name = "approver_user_id")
     @ManyToOne
     private User approvedBy;
 

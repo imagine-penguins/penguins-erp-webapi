@@ -92,17 +92,18 @@ public class LeaveRequestMapper {
         dates.stream().forEach(date -> {
             String key = null;
             if (period == Period.MONTH)
-                key = String.valueOf(date.toInstant().atZone(ZoneId.systemDefault()).getMonth().getValue());
+                key = String.valueOf(date.toInstant().atZone(ZoneId.systemDefault()).getMonth().toString()  );
             else if(period == Period.DAY)
                 key = new SimpleDateFormat("dd-MM-yyyy").format(date);
             Integer count = 0;
             if (leaveCount.containsKey(key))
                 count = leaveCount.get(key);
+
             leaveCount.put(key, count + 1);
         });
         leaveCount.entrySet()
                 .stream()
-                .forEach(entry -> log.info("monthly count key: {}, value:{}", entry.getKey(), entry.getValue()));
+                .forEach(entry -> log.info("key: {}, value:{}", entry.getKey(), entry.getValue()));
         return leaveCount;
     }
 
@@ -126,13 +127,14 @@ public class LeaveRequestMapper {
         log.info("Starting getLeavesDates method.");
         List<Date> dates = new ArrayList<>();
         Date startDate = leaveRequest.getStartDate();
+        dates.add(startDate);
         while (!leaveRequest.getEndDate().before(startDate)) {
             log.info("next start date: {}", startDate);
-            dates.add(startDate);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(startDate);
             calendar.add(Calendar.DATE, 1);
             startDate = calendar.getTime();
+            dates.add(startDate);
         }
         return dates;
     }

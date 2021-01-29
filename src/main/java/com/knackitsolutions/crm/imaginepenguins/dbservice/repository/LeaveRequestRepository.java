@@ -15,4 +15,5 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     @Query("select count(lr.id) from LeaveRequest lr where (lr.user.id = :userid) and (lr.startDate <= :mydate and lr.endDate >= :mydate)")
     Long isOnLeave(@Param("userid")Long userId, @Param("mydate") Date date);
 
+
 }

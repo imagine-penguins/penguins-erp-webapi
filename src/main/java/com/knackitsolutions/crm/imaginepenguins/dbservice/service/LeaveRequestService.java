@@ -3,17 +3,17 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
@@ -21,8 +21,25 @@ public class LeaveRequestService {
         return leaveRequestRepository.save(leaveRequest);
     }
 
-    public Boolean isOnLeave(Long userId, Date date) {
+    public Boolean leaves(Long userId, Date date) {
         return leaveRequestRepository.isOnLeave(userId, date) != null && leaveRequestRepository.isOnLeave(userId, date) != 0;
+    }
+    public List<Date> leaves(Long userId, Date startDate, Date endDate) {
+        List<Date> dates = new ArrayList<>();
+        while (startDate.before(endDate)) {
+            log.debug("LastDate: {}", startDate);
+            if (leaves(userId, startDate)) {
+                dates.add(startDate);
+            }
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(startDate);
+            calendar.add(Calendar.DATE, 1);
+            startDate = calendar.getTime();
+        }
+        if (leaves(userId, endDate)) {
+            dates.add(endDate);
+        }
+        return dates;
     }
 
     public final Page<LeaveRequest> findAllBySpecification(Specification<LeaveRequest> leaveRequestSpecification, Pageable pageable) {

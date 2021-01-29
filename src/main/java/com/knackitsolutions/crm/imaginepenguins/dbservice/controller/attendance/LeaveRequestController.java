@@ -26,7 +26,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +56,13 @@ public class LeaveRequestController {
     public ResponseEntity<String> saveLeaveRequest(@RequestBody LeaveRequestDTO leaveRequestDTO) {
         log.trace("Request for new leave application. Processing...");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
+        //Validate if leave already taken for that day.
+        if (!leaveRequestService.leaves(userContext.getUserId(), leaveRequestDTO.getStartDate(), leaveRequestDTO.getEndDate()).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Leave Already Applied for the given period.");
+        }
+        if (leaveRequestDTO.getEndDate().before(leaveRequestDTO.getStartDate())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date cannot be after end date.");
+        }
         User user = userService
                 .findById(userContext.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
@@ -87,6 +93,7 @@ public class LeaveRequestController {
                         ).get(0).getId());
             }
         }
+
         LeaveRequest newLeaveRequest = leaveRequestMapper.dtoToEntity(leaveRequestDTO);
 
         user.setLeaveRequests(newLeaveRequest);
@@ -209,7 +216,6 @@ public class LeaveRequestController {
             , @RequestParam(name = "period") Optional<Period> period
             , @RequestParam(name = "value") Optional<String> value
     ) {
-        Map<String, Object> objectMap = new HashMap<>();
         log.trace("leave history started...");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
@@ -265,6 +271,9 @@ public class LeaveRequestController {
     @GetMapping("/history/graph")
     public CollectionModel<LeaveHistoryDTO.GraphData> receivedLeaveGraph(@RequestParam(required = false) String[] search
             , @RequestParam(required = false) Period period) {
+        if (period == null) {
+            period = Period.MONTH;
+        }
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 
         Specification<LeaveRequest> specification = LeaveRequestSpecification
@@ -295,7 +304,7 @@ public class LeaveRequestController {
     public CollectionModel<LeaveHistoryDTO.GraphData> appliedLeaveGraph(@RequestParam(required = false) String[] search
             , @RequestParam(required = false) Period period) {
         if (period == null) {
-            period = Period.DAY;
+            period = Period.MONTH;
         }
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Map<String, List<SearchCriteria>> searchCriteriaMap = FilterService.createSearchMap(search);
