@@ -3,9 +3,11 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specificat
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.JoinType;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class LeaveRequestSpecification {
     public static final Specification<LeaveRequest> leaveRequestByUserId(Long userId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(
@@ -62,6 +65,26 @@ public class LeaveRequestSpecification {
         };
     }
 
+    public static final Specification<LeaveRequest> leaveRequestsByStartDate(final String key
+            , final Date startDate, final SearchOperation searchOperation) {
+        log.debug("where date is {} {}", searchOperation.getOperation(), startDate);
+        return (root, query, criteriaBuilder) -> {
+            Expression expression = root
+                    .get(key);
+            if (searchOperation == SearchOperation.GREATER_THAN) {
+                return criteriaBuilder.greaterThan(expression, startDate);
+            } else if (searchOperation == SearchOperation.GREATER_THAN_EQUAL) {
+                return criteriaBuilder.greaterThanOrEqualTo(expression, startDate);
+            } else if (searchOperation == SearchOperation.LESS_THAN) {
+                return criteriaBuilder.lessThan(expression, startDate);
+            } else if (searchOperation == SearchOperation.LESS_THAN_EQUAL) {
+                return criteriaBuilder.lessThanOrEqualTo(expression, startDate);
+            } else {
+                return criteriaBuilder.equal(expression, startDate);
+            }
+        };
+    }
+
     public static final Specification<LeaveRequest> leaveRequestByDepartmentId(Stream<Integer> departments) {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inDepartment = criteriaBuilder
@@ -89,28 +112,33 @@ public class LeaveRequestSpecification {
                 Stream<Integer> departments = value.map(Integer::parseInt);
                 leaveRequestSpecification = leaveRequestSpecification.and(leaveRequestByDepartmentId(departments));
             } else if (key.equalsIgnoreCase("requestStatus")) {
+                log.debug("Setting Request Status");
                 List<LeaveRequestStatus> leaveRequestStatusStream = value.map(LeaveRequestStatus::of).collect(Collectors.toList());
                 leaveRequestSpecification = leaveRequestSpecification.and(new GenericSpecification<>(new SearchCriteria(
                         "leaveRequestStatus", leaveRequestStatusStream, SearchOperation.IN
                 )));
             } else if (key.equalsIgnoreCase("startDate")) {
                 try {
-                    Date startDate = new SimpleDateFormat("dd-MM-yyyy").parse(firstValue.getValue().toString());
+                    log.debug("Setting startDate: {}", firstValue.getValue());
+                    Date startDate = new SimpleDateFormat("dd_MM_yyyy").parse(firstValue.getValue().toString());
+                    /*leaveRequestSpecification = leaveRequestSpecification.and(new GenericSpecification<>(new SearchCriteria(
+                            "startDate", startDate, firstValue.getOperation()
+                    )));*/
+                    leaveRequestSpecification = leaveRequestSpecification
+                            .and(leaveRequestsByStartDate("startDate", startDate, firstValue.getOperation()));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                leaveRequestSpecification = leaveRequestSpecification.and(new GenericSpecification<>(new SearchCriteria(
-                        key, firstValue.getValue(), firstValue.getOperation()
-                )));
             } else if (key.equalsIgnoreCase("endDate")) {
                 try {
-                    Date startDate = new SimpleDateFormat("dd-MM-yyyy").parse(firstValue.getValue().toString());
+                    log.debug("Setting endDate: {}", firstValue.getValue());
+                    Date endDate = new SimpleDateFormat("dd_MM_yyyy").parse(firstValue.getValue().toString());
+                    leaveRequestSpecification = leaveRequestSpecification
+                            .and(leaveRequestsByStartDate("endDate", endDate, firstValue.getOperation()));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                leaveRequestSpecification = leaveRequestSpecification.and(new GenericSpecification<>(new SearchCriteria(
-                        key, firstValue.getValue(), firstValue.getOperation()
-                )));
+
             } else if (key.equalsIgnoreCase("user")) {
                 Stream<Long> userIds = value.map(Long::parseLong);
                 leaveRequestSpecification = leaveRequestSpecification.and(LeaveRequestSpecification.leaveRequestByUserIds(userIds));

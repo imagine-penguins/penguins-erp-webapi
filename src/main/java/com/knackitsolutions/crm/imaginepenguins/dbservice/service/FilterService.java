@@ -22,18 +22,22 @@ public class FilterService {
     private static final Pattern SEARCH_PATTERN = Pattern.compile("(\\w+?)(:|<|>|>:|<:|!:|%|%>)(\\w+?),");
 
     public static Map<String, List<SearchCriteria>> createSearchMap(String[] search) {
+        log.debug("Creating Search Map");
         Map<String, List<SearchCriteria>> searchCriteriaMap = new HashMap<>();
         Map<String, List<String>> searchMap = new HashMap<>();
         if (search == null) {
             return searchCriteriaMap;
         }
         for (String s : search) {
+            log.debug("Search: {}", s);
             Matcher matcher = SEARCH_PATTERN.matcher(s + ",");
+//            log.debug("Pattern Found: {}", matcher.find());
             while (matcher.find()) {
                 String key = matcher.group(1);
                 SearchOperation searchOperation = SearchOperation.of(matcher.group(2));
                 String val = matcher.group(3);
                 SearchCriteria searchCriteria = new SearchCriteria(key, val, searchOperation);
+                log.debug("Criteria is: {}", searchCriteria );
                 if (searchMap.containsKey(key)) {
                     searchMap.get(key).add(val);
                     searchCriteriaMap.get(key).add(searchCriteria);
@@ -43,6 +47,7 @@ public class FilterService {
                 }
             }
         }
+        log.debug("Search Map Created.");
         return searchCriteriaMap;
     }
 

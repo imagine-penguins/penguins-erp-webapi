@@ -115,7 +115,7 @@ public class LeaveRequestController {
     @GetMapping
     public PagedModel<LeaveResponseDTO> all(
             @RequestParam(required = false) String[] search
-            , @RequestParam(defaultValue = "id") String[] sort
+            , @RequestParam(defaultValue = "id,desc") String[] sort
             , @RequestParam(defaultValue = "0") @Min(0) int page
             , @RequestParam(defaultValue = "10") @Min(1) int size
             , @RequestParam Optional<Period> period
@@ -160,7 +160,8 @@ public class LeaveRequestController {
                                 .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
                                 .withRel(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode())))
                 .forEach(responseDTOS::add);
-        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, responseDTOS.size(), leaveRequestPage.getTotalPages());
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, leaveRequestPage.getTotalElements()
+                , leaveRequestPage.getTotalPages());
         return PagedModel.of(responseDTOS, pageMetadata, linkTo(methodOn(LeaveRequestController.class).leaveRequestHistory(
                 search, sort, page, size, period, value
         )).withSelfRel());
@@ -210,7 +211,7 @@ public class LeaveRequestController {
     @GetMapping("/history")
     public PagedModel<LeaveResponseDTO> leaveRequestHistory(
             @RequestParam(required = false) String[] search
-            , @RequestParam(defaultValue = "id") String[] sort
+            , @RequestParam(defaultValue = "id,desc") String[] sort
             , @RequestParam(defaultValue = "0") @Min(0) int page
             , @RequestParam(defaultValue = "10") @Min(1) int size
             , @RequestParam(name = "period") Optional<Period> period
@@ -270,10 +271,8 @@ public class LeaveRequestController {
 
     @GetMapping("/history/graph")
     public CollectionModel<LeaveHistoryDTO.GraphData> receivedLeaveGraph(@RequestParam(required = false) String[] search
-            , @RequestParam(required = false) Period period) {
-        if (period == null) {
-            period = Period.MONTH;
-        }
+            , @RequestParam(defaultValue = "M") Period period) {
+        log.debug("/leave-requests/history/graph");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 
         Specification<LeaveRequest> specification = LeaveRequestSpecification
@@ -302,10 +301,8 @@ public class LeaveRequestController {
 
     @GetMapping("/graph")
     public CollectionModel<LeaveHistoryDTO.GraphData> appliedLeaveGraph(@RequestParam(required = false) String[] search
-            , @RequestParam(required = false) Period period) {
-        if (period == null) {
-            period = Period.MONTH;
-        }
+            , @RequestParam(defaultValue = "M") Period period) {
+        log.debug("/leave-requests/graph");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Map<String, List<SearchCriteria>> searchCriteriaMap = FilterService.createSearchMap(search);
 
