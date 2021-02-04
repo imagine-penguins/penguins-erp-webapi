@@ -87,7 +87,7 @@ public class AttendanceController {
     }
 
     private ResponseEntity<String> updateStudentAttendance(Long attendanceId, Long studentId
-            , StudentAttendanceUpdateRequestDTO studentAttendanceUpdateRequestDTO) {
+            , AttendanceStatus attendanceStatus) {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         StudentAttendanceKey key = new StudentAttendanceKey(studentId, attendanceId);
         StudentAttendance studentAttendance = attendanceService.getStudentAttendanceById(key);
@@ -98,8 +98,8 @@ public class AttendanceController {
                         .findById(userContext.getUserId())
                         .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()))
         );
-        attendance.setAttendanceStatus(studentAttendanceUpdateRequestDTO.getStatus());
-        attendance.setAttendanceDate(studentAttendanceUpdateRequestDTO.getAttendanceDate());
+        attendance.setAttendanceStatus(attendanceStatus);
+        attendance.setAttendanceDate(DatesConfig.now());
         attendance = attendanceRepository.save(attendance);
 
         studentAttendance.setAttendance(attendance);
@@ -110,7 +110,7 @@ public class AttendanceController {
     }
 
     private ResponseEntity<String> updateEmployeeAttendance(Long attendanceId, Long employeeId
-            , UserAttendanceUpdateRequestDTO userAttendanceUpdateRequestDTO) {
+            , AttendanceStatus attendanceStatus) {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         EmployeeAttendanceKey key = new EmployeeAttendanceKey(employeeId, attendanceId);
 
@@ -122,8 +122,8 @@ public class AttendanceController {
                         .findById(userContext.getUserId())
                         .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()))
         );
-        attendance.setAttendanceStatus(userAttendanceUpdateRequestDTO.getStatus());
-        attendance.setAttendanceDate(userAttendanceUpdateRequestDTO.getAttendanceDate());
+        attendance.setAttendanceStatus(attendanceStatus);
+        attendance.setAttendanceDate(DatesConfig.now());
         attendance = attendanceRepository.save(attendance);
 
         employeeAttendance.setAttendance(attendance);
@@ -133,17 +133,18 @@ public class AttendanceController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Attendance is updated");
     }
 
-    @PutMapping(value = "/{attendanceId}/users/{userId}")
+    @PutMapping(value = "/{attendanceId}/users/{userId}/status/{status}")
     public ResponseEntity<String> updateAttendance(@PathVariable("attendanceId") Long attendanceId
             , @PathVariable("userId") Long userId
-            , @RequestBody UserAttendanceUpdateRequestDTO userAttendanceUpdateRequestDTO) {
-        if (userAttendanceUpdateRequestDTO instanceof StudentAttendanceUpdateRequestDTO) {
+            , @PathVariable("status") AttendanceStatus attendanceStatus) {
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        if (user.getUserType() == UserType.STUDENT) {
             log.info("Updating Student Attendance");
-            return updateStudentAttendance(attendanceId, userId, (StudentAttendanceUpdateRequestDTO) userAttendanceUpdateRequestDTO);
+            return updateStudentAttendance(attendanceId, userId, attendanceStatus);
         }
 
         log.info("Updating Employee Attendance");
-        return updateEmployeeAttendance(attendanceId, userId, userAttendanceUpdateRequestDTO);
+        return updateEmployeeAttendance(attendanceId, userId, attendanceStatus);
     }
 
     //View Self Attendance
