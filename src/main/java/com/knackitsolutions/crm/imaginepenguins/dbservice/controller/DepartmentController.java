@@ -1,9 +1,12 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteDepartmentMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.PrivilegeMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.InstituteDepartmentDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.UserDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.DepartmentRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +27,20 @@ public class DepartmentController {
     private final UserDepartmentRepository userDepartmentRepository;
     private final IAuthenticationFacade authenticationFacade;
     private final PrivilegeMapper privilegeMapper;
+    private final InstituteDepartmentRepository instituteDepartmentRepository;
+    private final InstituteDepartmentMapper instituteDepartmentMapper;
 
     @GetMapping
+    public CollectionModel<EntityModel<InstituteDepartmentDTO>> all() {
+        return CollectionModel.of(instituteDepartmentRepository
+                .findAll()
+                .stream()
+                .map(instituteDepartmentMapper::entityToDTO)
+                .map(EntityModel::of)
+                .collect(Collectors.toList()));
+    }
+
+    @GetMapping("/users")
     public CollectionModel<EntityModel<InstituteDepartmentDTO>> myDepartments(){
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 

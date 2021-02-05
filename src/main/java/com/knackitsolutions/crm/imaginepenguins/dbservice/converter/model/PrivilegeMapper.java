@@ -1,6 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.PrivilegeDTO;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteDepartment;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Privilege;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

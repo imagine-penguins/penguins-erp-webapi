@@ -199,7 +199,7 @@ public class AttendanceHistoryController {
                     .findAll(studentAttendanceSpecification, SortingService.sort(sort));
             studentAttendances
                     .stream()
-                    .map(studentAttendance -> attendanceResponseMapper.mapUserAttendanceToStudent(studentAttendance))
+                    .map(attendanceResponseMapper::mapUserAttendanceToStudent)
                     .map(o -> this.addLinks(o, sort, period, value, 0, Integer.MAX_VALUE, privilegeCodes))
                     .forEach(users::add);
         }

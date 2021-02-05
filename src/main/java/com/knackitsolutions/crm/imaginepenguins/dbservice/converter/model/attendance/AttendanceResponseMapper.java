@@ -74,6 +74,7 @@ public class AttendanceResponseMapper {
         dto.setFirstName(studentAttendance.getStudent().getUserProfile().getFirstName());
         dto.setLastName(studentAttendance.getStudent().getUserProfile().getLastName());
         dto.setAttendanceDate(studentAttendance.getAttendance().getAttendanceDate());
+        log.debug("Attendance Date: {}", dto.getAttendanceDate());
         return dto;
     }
 
@@ -112,7 +113,9 @@ public class AttendanceResponseMapper {
         dto.setFirstName(entity.getEmployee().getUserProfile().getFirstName());
         dto.setLastName(entity.getEmployee().getUserProfile().getLastName());
         dto.setAttendanceDate(entity.getAttendance().getAttendanceDate());
+        log.debug("Attendance Date: {}", dto.getAttendanceDate());
         dto.setEmployeeId(entity.getEmployee().getEmployeeOrgId());
+
         return dto;
     }
 

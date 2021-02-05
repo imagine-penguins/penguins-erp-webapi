@@ -99,7 +99,7 @@ public class AttendanceController {
                         .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()))
         );
         attendance.setAttendanceStatus(attendanceStatus);
-        attendance.setAttendanceDate(DatesConfig.now());
+        attendance.setUpdateTime(DatesConfig.now());
         attendance = attendanceRepository.save(attendance);
 
         studentAttendance.setAttendance(attendance);
@@ -123,7 +123,7 @@ public class AttendanceController {
                         .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()))
         );
         attendance.setAttendanceStatus(attendanceStatus);
-        attendance.setAttendanceDate(DatesConfig.now());
+        attendance.setUpdateTime(DatesConfig.now());
         attendance = attendanceRepository.save(attendance);
 
         employeeAttendance.setAttendance(attendance);
