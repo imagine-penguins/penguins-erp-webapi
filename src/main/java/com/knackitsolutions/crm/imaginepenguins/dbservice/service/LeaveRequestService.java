@@ -54,4 +54,8 @@ public class LeaveRequestService {
     public final Long count(Specification<LeaveRequest> leaveRequestSpecification) {
         return leaveRequestRepository.count(leaveRequestSpecification);
     }
+
+    public final LeaveRequest findByUserIdAndDate(Long userId, Date date) {
+        return leaveRequestRepository.findByUserIdAndDate(userId, date);
+    }
 }

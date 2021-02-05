@@ -273,13 +273,17 @@ public class AttendanceController {
                     }
                     return null;
                 })
-                .map(userAttendanceResponseDTO -> {
-                    if (leaveRequestService.leaves(userAttendanceResponseDTO.getUserId(), DatesConfig.now())) {
-                        userAttendanceResponseDTO.setStatus(Optional.of(AttendanceStatus.LEAVE));
-                    } else {
-                        userAttendanceResponseDTO.setStatus(Optional.of(AttendanceStatus.PRESENT));
+                .map(dto -> {
+                    log.info("UserId: {}", dto.getUserId());
+                    LeaveRequest leaveRequest = leaveRequestService
+                            .findByUserIdAndDate(dto.getUserId(), DatesConfig.now());
+                    if (leaveRequest == null || leaveRequest.getLeaveRequestStatus() != LeaveRequestStatus.APPROVED) {
+                        dto.setStatus(Optional.of(AttendanceStatus.PRESENT));
+                    }else {
+                        dto.setLeaveRequestId(leaveRequest.getId());
+                        dto.setStatus(Optional.of(AttendanceStatus.LEAVE));
                     }
-                    return userAttendanceResponseDTO;
+                    return dto;
                 })
                 .forEach(userAttendanceResponseDTOS::add);
         log.trace("loadUsers Request Completed.");

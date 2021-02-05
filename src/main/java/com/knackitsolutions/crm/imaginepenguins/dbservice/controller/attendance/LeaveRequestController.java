@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
@@ -57,11 +58,18 @@ public class LeaveRequestController {
         log.trace("Request for new leave application. Processing...");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         //Validate if leave already taken for that day.
-        if (!leaveRequestService.leaves(userContext.getUserId(), leaveRequestDTO.getStartDate(), leaveRequestDTO.getEndDate()).isEmpty()) {
+        if (!leaveRequestService.leaves(userContext.getUserId(), leaveRequestDTO.getStartDate()
+                , leaveRequestDTO.getEndDate()).isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Leave Already Applied for the given period.");
         }
         if (leaveRequestDTO.getEndDate().before(leaveRequestDTO.getStartDate())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date cannot be after end date.");
+        }
+        if (leaveRequestDTO.getEndDate().equals(leaveRequestDTO.getStartDate())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date cannot be equal to end date.");
+        }
+        if (leaveRequestDTO.getStartDate().before(DatesConfig.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date time cannot be before to Now.");
         }
         User user = userService
                 .findById(userContext.getUserId())
@@ -126,31 +134,14 @@ public class LeaveRequestController {
         final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
 
         List<LeaveResponseDTO> responseDTOS = new ArrayList<>();
-        Specification<LeaveRequest> leaveRequestSpecification = LeaveRequestSpecification.filterLeaveRequests(searchMap);
-        if (userContext.getAuthorities().contains(
-                new SimpleGrantedAuthority(PrivilegeCode.VIEW_APPLIED_LEAVE_REQUEST.getPrivilegeCode())
-        )) {
-            log.debug("view received leaves");
-            leaveRequestSpecification = leaveRequestSpecification
-                    .and(LeaveRequestSpecification.leaveRequestByUserId(userContext.getUserId()));
-        }
-        /*List<SearchCriteria> searchCriteria = searchMap.get("requestStatus");
-        if (
-                searchMap.containsKey("requestStatus") &&
-                        searchCriteria.get(0).getValue().toString().equalsIgnoreCase("P")
-        ) {
-            if (searchCriteria.get(0).getOperation() == SearchOperation.NOT_EQUAL) {
-                leaveRequestSpecification = leaveRequestSpecification
-                        .and(LeaveRequestSpecification.leaveRequestByApprovedBy(userContext.getUserId()));
-            } else {
-                leaveRequestSpecification = leaveRequestSpecification
-                        .and(new GenericSpecification<>(
-                                new SearchCriteria("leaveRequestStatus", LeaveRequestStatus.PENDING, SearchOperation.EQUAL)
-                        ));
-            }
-        }*/
+        Specification<LeaveRequest> leaveRequestSpecification
+                = LeaveRequestSpecification.filterLeaveRequests(searchMap);
+        log.debug("view received leaves");
+        leaveRequestSpecification = leaveRequestSpecification
+                .and(LeaveRequestSpecification.leaveRequestByUserId(userContext.getUserId()));
         log.debug("Calling DB.");
-        Page<LeaveRequest> leaveRequestPage = leaveRequestService.findAllBySpecification(leaveRequestSpecification, pageable);
+        Page<LeaveRequest> leaveRequestPage = leaveRequestService
+                .findAllBySpecification(leaveRequestSpecification, pageable);
         log.debug("DB call finished.");
         leaveRequestPage
                 .get()

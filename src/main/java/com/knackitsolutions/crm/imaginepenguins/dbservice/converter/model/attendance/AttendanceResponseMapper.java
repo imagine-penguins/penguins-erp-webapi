@@ -62,6 +62,7 @@ public class AttendanceResponseMapper {
     }
 
     public UserAttendanceResponseDTO mapUserAttendanceToStudent(StudentAttendance studentAttendance) {
+        log.trace("Mapping Student Attendance to DTO");
         if (studentAttendance == null) {
             return null;
         }
@@ -79,6 +80,7 @@ public class AttendanceResponseMapper {
     }
 
     public UserAttendanceResponseDTO mapUserAttendanceToStudent(Student student) {
+        log.trace("Mapping Student to DTO");
         if (student == null) {
             return null;
         }
@@ -92,6 +94,7 @@ public class AttendanceResponseMapper {
     }
 
     public UserAttendanceResponseDTO mapUserAttendanceToEmployee(Employee employee) {
+        log.trace("Mapping Employee to DTO");
         if (employee == null) {
             return null;
         }
@@ -105,7 +108,10 @@ public class AttendanceResponseMapper {
     }
 
     public UserAttendanceResponseDTO mapUserAttendanceToEmployee(EmployeeAttendance entity) {
-
+        log.trace("Mapping Employee Attendance to DTO");
+        if (entity == null) {
+            return null;
+        }
         UserAttendanceResponseDTO dto = new UserAttendanceResponseDTO();
         dto.setAttendanceId(Optional.ofNullable(entity.getEmployeeAttendanceKey().getAttendanceId()));
         dto.setUserId(entity.getEmployeeAttendanceKey().getEmployeeId());

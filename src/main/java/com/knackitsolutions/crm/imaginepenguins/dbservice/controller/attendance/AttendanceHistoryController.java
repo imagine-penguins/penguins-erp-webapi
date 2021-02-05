@@ -1,15 +1,13 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.EmployeeController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
@@ -56,6 +54,7 @@ public class AttendanceHistoryController {
     private final AttendanceService attendanceService;
     private final StudentAttendanceRepository studentAttendanceRepository;
     private final EmployeeAttendanceRepository employeeAttendanceRepository;
+    private final LeaveRequestService leaveRequestService;
 
     private UserAttendanceResponseDTO addLinks(UserAttendanceResponseDTO user
             , String[] sort, Optional<Period> period, Optional<String> value
@@ -200,6 +199,18 @@ public class AttendanceHistoryController {
             studentAttendances
                     .stream()
                     .map(attendanceResponseMapper::mapUserAttendanceToStudent)
+                    .map(dto -> {
+                        if (dto.getStatus().get() == AttendanceStatus.LEAVE) {
+                            LeaveRequest leaveRequest = leaveRequestService
+                                    .findByUserIdAndDate(dto.getUserId(), dto.getAttendanceDate());
+                            if (leaveRequest == null || leaveRequest.getLeaveRequestStatus() != LeaveRequestStatus.APPROVED){
+                                dto.setStatus(Optional.of(AttendanceStatus.ABSENT));
+                            }else {
+                                dto.setLeaveRequestId(leaveRequest.getId());
+                            }
+                        }
+                        return dto;
+                    })
                     .map(o -> this.addLinks(o, sort, period, value, 0, Integer.MAX_VALUE, privilegeCodes))
                     .forEach(users::add);
         }

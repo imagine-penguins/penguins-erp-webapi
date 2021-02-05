@@ -27,7 +27,7 @@ public class UserAttendanceResponseDTO extends RepresentationModel<UserAttendanc
     private Date attendanceDate;
 
     private Optional<AttendanceStatus> status;
-
+    private Long leaveRequestId;
     private String employeeId;
 
     private String rollNumber;
