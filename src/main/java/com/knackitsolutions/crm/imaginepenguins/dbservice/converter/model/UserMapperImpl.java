@@ -113,6 +113,7 @@ public class UserMapperImpl {
         dto.setUserId(entity.getId());
         dto.setProfilePic(getDocTypeFrom(entity, UserDocumentType.DISPLAY_PICTURE));
         dto.setPassportPic(getDocTypeFrom(entity, UserDocumentType.PASSPORT_PICTURE));
+        dto.setUserType(entity.getUserType());
 
     }
     private String getDocTypeFrom(User entity, UserDocumentType userDocumentType) {
@@ -169,7 +170,7 @@ public class UserMapperImpl {
         personalInformation.setGuardianRelation(userProfile.getGuardianRelation());
         personalInformation.setGuardianMobileNo(userProfile.getGuardianPhoneNo());
         dto.setPersonalInformation(personalInformation);
-
+        
         return dto;
     }
 

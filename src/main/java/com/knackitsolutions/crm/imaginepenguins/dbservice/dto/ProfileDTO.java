@@ -1,6 +1,7 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class ProfileDTO {
     private Long userId;
     private String passportPic;
     private String profilePic;
+    private UserType userType;
     private GeneralInformation generalInformation;
     private PersonalInformation personalInformation;
 
