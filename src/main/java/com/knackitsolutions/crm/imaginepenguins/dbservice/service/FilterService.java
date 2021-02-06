@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,8 +52,8 @@ public class FilterService {
         return searchCriteriaMap;
     }
 
-    public static Optional<Date> periodStartDateValue(Period period, Optional<String> value) {
-        Date date = null;
+    public static Optional<LocalDate> periodStartDateValue(Period period, Optional<String> value) {
+        LocalDate date = null;
         String v = value.orElseThrow(() -> new IllegalArgumentException("value of the period is not found"));
         try {
             date = period.startDate(v);
@@ -63,8 +64,8 @@ public class FilterService {
         }
         return Optional.ofNullable(date);
     }
-    public static Optional<Date> periodEndDateValue(Period period, Optional<String> value) {
-        Date date = null;
+    public static Optional<LocalDate> periodEndDateValue(Period period, Optional<String> value) {
+        LocalDate date = null;
         String v = value.orElseThrow(() -> new IllegalArgumentException("value of the period is not found"));
         try {
             date = period.endDate(v);

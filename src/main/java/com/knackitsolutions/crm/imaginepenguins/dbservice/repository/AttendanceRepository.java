@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -20,5 +21,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long>, J
     List<Attendance> findAll(Specification<Attendance> spec, Sort sort);
 
     @Query("SELECT MAX(a.attendanceDate) FROM Attendance a")
-    Date findLastAttendanceDate();
+    LocalDate findLastAttendanceDate();
 }

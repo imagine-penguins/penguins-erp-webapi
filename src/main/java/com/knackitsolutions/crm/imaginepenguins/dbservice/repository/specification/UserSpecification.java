@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class UserSpecification {
         };
     }
 
-    public static Specification<User> studentWithAttendanceDate(Date startDate, SearchOperation searchOperation) {
+    public static Specification<User> studentWithAttendanceDate(LocalDate startDate, SearchOperation searchOperation) {
         return (root, query, criteriaBuilder) -> {
             Root<Student> employeeRoot = criteriaBuilder.treat(root, Student.class);
             Expression expression = employeeRoot

@@ -31,6 +31,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -807,7 +810,7 @@ class DbServiceApplicationTests {
 			, @Autowired AttendanceService attendanceService
 			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
 		Student student = studentService.all().get(0);
-		Attendance attendance = new Attendance(1l, new Date(System.currentTimeMillis()), AttendanceStatus.PRESENT);
+		Attendance attendance = new Attendance(1l, LocalDate.now(), AttendanceStatus.PRESENT);
 		attendance.setSupervisor(
 				teacherRepository
 						.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
@@ -846,7 +849,7 @@ class DbServiceApplicationTests {
 			, @Autowired StudentService studentService
 			, @Autowired TeacherRepository teacherRepository) {
 		Student student = studentService.all().get(0);
-		Attendance attendance = new Attendance(1l, new Date(System.currentTimeMillis()), AttendanceStatus.PRESENT);
+		Attendance attendance = new Attendance(1l, LocalDate.now(), AttendanceStatus.PRESENT);
 		attendance.setSupervisor(
 				teacherRepository
 						.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
@@ -873,11 +876,11 @@ class DbServiceApplicationTests {
 
 	}
 
-	private Attendance createAndSaveAttendance(Date date, AttendanceStatus status, User supervisor
+	private Attendance createAndSaveAttendance(LocalDate date, AttendanceStatus status, User supervisor
 			, AttendanceRepository attendanceRepository) {
 		Attendance attendance1 = new Attendance(1l, date, status);
 		attendance1.setSupervisor(supervisor);
-		attendance1.setUpdateTime(date);
+		attendance1.setUpdateTime(LocalDateTime.now());
 		return attendanceRepository.save(attendance1);
 	}
 
@@ -901,14 +904,14 @@ class DbServiceApplicationTests {
 
 	private void createStudentAttendances(AttendanceService attendanceService, AttendanceRepository attendanceRepository
 			,Student student, Teacher teacher) throws ParseException {
-		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
-		Attendance attendance1 = createAndSaveAttendance(format.parse("26-09-2020")
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		Attendance attendance1 = createAndSaveAttendance(LocalDate.parse("26-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
-		Attendance attendance2 = createAndSaveAttendance(format.parse("20-09-2020")
+		Attendance attendance2 = createAndSaveAttendance(LocalDate.parse("20-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
-		Attendance attendance3 = createAndSaveAttendance(format.parse("21-09-2020")
+		Attendance attendance3 = createAndSaveAttendance(LocalDate.parse("21-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
-		Attendance attendance4 = createAndSaveAttendance(format.parse("23-09-2020")
+		Attendance attendance4 = createAndSaveAttendance(LocalDate.parse("23-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
 
 		StudentAttendanceKey studentAttendanceKey1 = getStudentAttendanceKey(student.getId(), attendance1.getId());
@@ -932,11 +935,11 @@ class DbServiceApplicationTests {
 				.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
 				.get(0);
 		createStudentAttendances(attendanceService, attendanceRepository, student, teacher);
-		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		List<StudentAttendance> studentAttendances = attendanceService.getStudentAttendancesByStudentId(
 				student.getId()
-				, Optional.of(format.parse("21-09-2020"))
-				, Optional.of(format.parse("21-09-2020"))
+				, Optional.of(LocalDate.parse("21-09-2020", format))
+				, Optional.of(LocalDate.parse("21-09-2020", format))
 		);
 		studentAttendances
 				.stream()

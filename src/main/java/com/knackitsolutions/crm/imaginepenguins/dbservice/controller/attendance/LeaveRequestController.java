@@ -22,6 +22,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserCon
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,19 +61,19 @@ public class LeaveRequestController {
         log.trace("Request for new leave application. Processing...");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         //Validate if leave already taken for that day.
-        if (!leaveRequestService.leaves(userContext.getUserId(), leaveRequestDTO.getStartDate()
+        if (!leaveRequestService.isOnLeave(userContext.getUserId(), leaveRequestDTO.getStartDate()
                 , leaveRequestDTO.getEndDate()).isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Leave Already Applied for the given period.");
         }
-        if (leaveRequestDTO.getEndDate().before(leaveRequestDTO.getStartDate())) {
+        if (leaveRequestDTO.getEndDate().isBefore(leaveRequestDTO.getStartDate())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date cannot be after end date.");
         }
         if (leaveRequestDTO.getEndDate().equals(leaveRequestDTO.getStartDate())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date cannot be equal to end date.");
         }
-        if (leaveRequestDTO.getStartDate().before(DatesConfig.now())) {
+        /*if (leaveRequestDTO.getStartDate().isBefore(LocalDateTime.now())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date time cannot be before to Now.");
-        }
+        }*/
         User user = userService
                 .findById(userContext.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
@@ -212,10 +215,10 @@ public class LeaveRequestController {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
         final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
-        Optional<Date> startDate = period
+        Optional<LocalDate> startDate = period
                 .map(p -> FilterService.periodStartDateValue(p, value))
                 .orElse(Optional.empty());
-        Optional<Date> endDate = period
+        Optional<LocalDate> endDate = period
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         List<LeaveResponseDTO> responseDTOS = new ArrayList<>();
@@ -277,7 +280,7 @@ public class LeaveRequestController {
         log.debug("Calling DB.");
         List<LeaveRequest> leaveRequests = leaveRequestService.findAllBySpecification(specification);
         log.debug("DB Call finished");
-        List<Date> allLeavesDates = new ArrayList<>();
+        List<LocalDateTime> allLeavesDates = new ArrayList<>();
         leaveRequests.stream().map(leaveRequestMapper::getLeavesDates).forEach(allLeavesDates::addAll);
 
         List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper
@@ -303,7 +306,7 @@ public class LeaveRequestController {
 
         List<LeaveRequest> leaveRequests = leaveRequestService.findAllBySpecification(specification);
 
-        List<Date> allLeavesDates = new ArrayList<>();
+        List<LocalDateTime> allLeavesDates = new ArrayList<>();
         leaveRequests.stream().map(leaveRequestMapper::getLeavesDates).forEach(allLeavesDates::addAll);
 
         List<LeaveHistoryDTO.GraphData> graphData = leaveRequestMapper

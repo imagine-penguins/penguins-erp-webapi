@@ -19,6 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -588,7 +590,7 @@ public class LoadDatabase {
             , StudentAttendanceRepository studentAttendanceRepository
             , EmployeeAttendanceRepository employeeAttendanceRepository
             , UserRepository userRepository) {
-        Attendance attendance = new Attendance(new Date(), AttendanceStatus.PRESENT);
+        Attendance attendance = new Attendance(LocalDate.now(), AttendanceStatus.PRESENT);
         userRepository.findByUsername("nishi").get().setAttendances(attendance);
 
         attendance = attendanceRepository.save(attendance);
@@ -613,8 +615,9 @@ public class LoadDatabase {
         leaveRequest.setLeaveReason("Sick with Corona.");
         leaveRequest.setLeaveRequestStatus(LeaveRequestStatus.PENDING);
         leaveRequest.setLeaveType(LeaveType.SICK_LEAVE);
-        leaveRequest.setStartDate(new Date(System.currentTimeMillis() + (1 * 24 * 60 * 60 * 1000)));
-        leaveRequest.setEndDate(new Date(System.currentTimeMillis() + (5 * 24 * 60 * 60 * 1000)));
+//        leaveRequest.setStartDate(new Date(System.currentTimeMillis() + (1 * 24 * 60 * 60 * 1000)));
+        leaveRequest.setStartDate(LocalDateTime.now().plusDays(1));
+        leaveRequest.setEndDate(LocalDateTime.now().plusDays(5));
 
         userRepository.findByUsername("nishi").get().setLeaveRequestsApprover(leaveRequest);
 

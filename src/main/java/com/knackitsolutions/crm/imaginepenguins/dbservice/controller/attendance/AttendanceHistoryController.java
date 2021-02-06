@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.EmployeeController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -89,8 +91,8 @@ public class AttendanceHistoryController {
         log.debug("/history");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 
-        Optional<Date> startDate = period.flatMap(p -> FilterService.periodStartDateValue(p, value));
-        Optional<Date> endDate = period.flatMap(p -> FilterService.periodEndDateValue(p, value));
+        Optional<LocalDate> startDate = period.flatMap(p -> FilterService.periodStartDateValue(p, value));
+        Optional<LocalDate> endDate = period.flatMap(p -> FilterService.periodEndDateValue(p, value));
 
         List<PrivilegeCode> privilegeCodes = userContext
                 .getAuthorities()
@@ -184,7 +186,7 @@ public class AttendanceHistoryController {
         }else{
             //get the last attendance date.
             log.debug("Getting last day of attendance");
-            Date lastAttendanceDate = attendanceService.lastAttendanceDate();
+            LocalDate lastAttendanceDate = attendanceService.lastAttendanceDate();
             studentAttendanceSpecification =  studentAttendanceSpecification
                     .and(AttendanceSpecification.studentAttendanceWithAttendanceDate(lastAttendanceDate, SearchOperation.EQUAL));
             employeeAttendanceSpecification =  employeeAttendanceSpecification
@@ -202,7 +204,7 @@ public class AttendanceHistoryController {
                     .map(dto -> {
                         if (dto.getStatus().get() == AttendanceStatus.LEAVE) {
                             LeaveRequest leaveRequest = leaveRequestService
-                                    .findByUserIdAndDate(dto.getUserId(), dto.getAttendanceDate());
+                                    .findByUserIdAndDate(dto.getUserId(), dto.getAttendanceDate().atStartOfDay());
                             if (leaveRequest == null || leaveRequest.getLeaveRequestStatus() != LeaveRequestStatus.APPROVED){
                                 dto.setStatus(Optional.of(AttendanceStatus.ABSENT));
                             }else {
@@ -238,10 +240,10 @@ public class AttendanceHistoryController {
         log.debug("/history/graph");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Map<String, Long> graphData = new HashMap<>();
-        Optional<Date> startDate = period
+        Optional<LocalDate> startDate = period
                 .map(p -> FilterService.periodStartDateValue(p, value))
                 .orElse(Optional.empty());
-        Optional<Date> endDate = period
+        Optional<LocalDate> endDate = period
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);

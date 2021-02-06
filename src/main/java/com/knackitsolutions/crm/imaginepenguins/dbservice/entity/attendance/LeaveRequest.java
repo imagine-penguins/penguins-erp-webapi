@@ -3,10 +3,11 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "leave_requests")
@@ -24,16 +25,19 @@ public class LeaveRequest {
     private User user;
 
     @Column(name = "start_date")
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date startDate;
+    @Setter
+    @Getter
+    private LocalDateTime startDate;
 
     @Column(name = "end_date")
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date endDate;
+    @Setter
+    @Getter
+    private LocalDateTime endDate;
 
     @Column(name = "update_dt_tm")
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date updateDateTime;
+    @Setter
+    @Getter
+    private LocalDateTime updateDateTime;
 
     @Column(name = "leave_type")
     private LeaveType leaveType;
@@ -56,7 +60,7 @@ public class LeaveRequest {
     private String rejectedReason;
 
     public LeaveRequest() {
-        this.updateDateTime = Calendar.getInstance().getTime();
+        this.updateDateTime = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -73,30 +77,6 @@ public class LeaveRequest {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-    public Date getUpdateDateTime() {
-        return updateDateTime;
-    }
-
-    public void setUpdateDateTime(Date updateDateTime) {
-        this.updateDateTime = updateDateTime;
     }
 
     public LeaveType getLeaveType() {
@@ -145,5 +125,23 @@ public class LeaveRequest {
 
     public void setRejectedReason(String rejectedReason) {
         this.rejectedReason = rejectedReason;
+    }
+
+    @Override
+    public String toString() {
+        return "LeaveRequest{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", user=" + ((user != null) ? user.getId() : "null") +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", updateDateTime=" + updateDateTime +
+                ", leaveType=" + leaveType +
+                ", leaveReason='" + leaveReason + '\'' +
+                ", approves=" + ((approves != null) ? approves.getId() : "null") +
+                ", leaveRequestStatus=" + leaveRequestStatus +
+                ", approvedBy=" + ((approvedBy != null) ? approvedBy.getId() : "null") +
+                ", rejectedReason='" + rejectedReason + '\'' +
+                '}';
     }
 }

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @NoArgsConstructor
@@ -14,9 +15,9 @@ import java.util.Date;
 @Data
 public class LeaveRequestUpdateDTO {
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
-    private Date startDate;
+    private LocalDateTime startDate;
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
-    private Date endDate;
+    private LocalDateTime endDate;
     private LeaveType leaveType;
     private String leaveReason;
     private String rejectedReason;

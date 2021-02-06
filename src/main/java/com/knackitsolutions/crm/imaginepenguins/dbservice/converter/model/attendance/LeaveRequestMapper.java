@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
@@ -84,7 +85,7 @@ public class LeaveRequestMapper {
         return gData;
     }
 
-    public Map<String, Integer> getLeaveCount(List<Date> dates, Period period) {
+    public Map<String, Integer> getLeaveCount(List<LocalDateTime> dates, Period period) {
         log.info("Starting getLeaveCount method.");
 
         Map<String, Integer> leaveCount = new HashMap<>();
@@ -92,7 +93,7 @@ public class LeaveRequestMapper {
         dates.stream().forEach(date -> {
             String key = null;
             if (period == Period.MONTH)
-                key = String.valueOf(date.toInstant().atZone(ZoneId.systemDefault()).getMonth().toString()  );
+                key = String.valueOf( date.getMonth()  );
             else if(period == Period.DAY)
                 key = new SimpleDateFormat("dd-MM-yyyy").format(date);
             Integer count = 0;
@@ -123,17 +124,18 @@ public class LeaveRequestMapper {
         return monthlyCount;
     }*/
 
-    public List<Date> getLeavesDates(LeaveRequest leaveRequest) {
+    public List<LocalDateTime> getLeavesDates(LeaveRequest leaveRequest) {
         log.info("Starting getLeavesDates method.");
-        List<Date> dates = new ArrayList<>();
-        Date startDate = leaveRequest.getStartDate();
+        List<LocalDateTime> dates = new ArrayList<>();
+        LocalDateTime startDate = leaveRequest.getStartDate();
         dates.add(startDate);
-        while (!leaveRequest.getEndDate().before(startDate)) {
+        while (!leaveRequest.getEndDate().isBefore(startDate)) {
             log.info("next start date: {}", startDate);
-            Calendar calendar = Calendar.getInstance();
+            /*Calendar calendar = Calendar.getInstance();
             calendar.setTime(startDate);
             calendar.add(Calendar.DATE, 1);
-            startDate = calendar.getTime();
+            startDate = calendar.getTime();*/
+            startDate = startDate.plusDays(1);
             dates.add(startDate);
         }
         return dates;

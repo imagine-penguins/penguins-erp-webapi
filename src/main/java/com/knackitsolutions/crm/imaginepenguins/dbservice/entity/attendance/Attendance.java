@@ -2,8 +2,12 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance;
 
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,8 +22,9 @@ public class Attendance {
     private Long id;
 
     @Column(name = "load_dt_tm", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date attendanceDate;
+    @Setter
+    @Getter
+    private LocalDate attendanceDate;
 
     @Column(name = "status", nullable = false)
     private AttendanceStatus attendanceStatus;
@@ -35,27 +40,28 @@ public class Attendance {
     private Set<EmployeeAttendance> employeeAttendances = new HashSet<>();
 
     @Column(name = "update_dt_tm", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updateTime;
+    @Setter
+    @Getter
+    private LocalDateTime updateTime;
 
     public Attendance() {
-        updateTime = new Date(System.currentTimeMillis());
+        updateTime = LocalDateTime.now();
     }
 
-    public Attendance(Date attendanceDate, AttendanceStatus attendanceStatus) {
+    public Attendance(LocalDate attendanceDate, AttendanceStatus attendanceStatus) {
         this();
         this.attendanceDate = attendanceDate;
         this.attendanceStatus = attendanceStatus;
     }
 
-    public Attendance(Long id, Date attendanceDate, AttendanceStatus attendanceStatus) {
+    public Attendance(Long id, LocalDate attendanceDate, AttendanceStatus attendanceStatus) {
         this();
         this.id = id;
         this.attendanceDate = attendanceDate;
         this.attendanceStatus = attendanceStatus;
     }
 
-    public Attendance(Long id, Date attendanceDate, AttendanceStatus attendanceStatus, User supervisor) {
+    public Attendance(Long id, LocalDate attendanceDate, AttendanceStatus attendanceStatus, User supervisor) {
         this(id, attendanceDate, attendanceStatus);
         this.supervisor = supervisor;
     }
@@ -68,13 +74,6 @@ public class Attendance {
         this.id = id;
     }
 
-    public Date getAttendanceDate() {
-        return attendanceDate;
-    }
-
-    public void setAttendanceDate(Date attendanceDate) {
-        this.attendanceDate = attendanceDate;
-    }
 
     public AttendanceStatus getAttendanceStatus() {
         return attendanceStatus;
@@ -108,14 +107,6 @@ public class Attendance {
     public void setStudentAttendance(StudentAttendance studentAttendance) {
         this.studentAttendances.add(studentAttendance);
         studentAttendance.setAttendance(this);
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
     }
 
     public Set<EmployeeAttendance> getEmployeeAttendances() {

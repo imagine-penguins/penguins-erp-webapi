@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -21,13 +22,13 @@ public class LeaveResponseDTO extends RepresentationModel<LeaveResponseDTO> {
     private String lastName;
     private Long approvesId;
 
-    @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
-    private Date startDate;
-    @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
-    private Date endDate;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
+    private LocalDateTime startDate;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
+    private LocalDateTime endDate;
 
-    @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
-    private Date appliedOn;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
+    private LocalDateTime appliedOn;
     private LeaveType leaveType;
     private String leaveReason;
     private LeaveRequestStatus status;

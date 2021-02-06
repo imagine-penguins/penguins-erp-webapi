@@ -36,6 +36,8 @@ import javax.validation.constraints.Min;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,7 +67,7 @@ public class AttendanceController {
                 .findById(userContext.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
         for (UserAttendanceRequestDTO dto : dtos) {
-            Attendance attendance = new Attendance(DatesConfig.now(), dto.getStatus());
+            Attendance attendance = new Attendance(LocalDate.now(), dto.getStatus());
             supervisor.setAttendances(attendance);
             attendance = attendanceService.saveAttendance(attendance);
             User attendant = userService
@@ -99,7 +101,7 @@ public class AttendanceController {
                         .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()))
         );
         attendance.setAttendanceStatus(attendanceStatus);
-        attendance.setUpdateTime(DatesConfig.now());
+        attendance.setUpdateTime(LocalDateTime.now());
         attendance = attendanceRepository.save(attendance);
 
         studentAttendance.setAttendance(attendance);
@@ -123,7 +125,7 @@ public class AttendanceController {
                         .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()))
         );
         attendance.setAttendanceStatus(attendanceStatus);
-        attendance.setUpdateTime(DatesConfig.now());
+        attendance.setUpdateTime(LocalDateTime.now());
         attendance = attendanceRepository.save(attendance);
 
         employeeAttendance.setAttendance(attendance);
@@ -155,10 +157,10 @@ public class AttendanceController {
         log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, userContext.getUserId());
 //        User user = userService.findById(userContext.getUserId())
 //                .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
-        Optional<Date> startDate = period
+        Optional<LocalDate> startDate = period
                 .map(p -> FilterService.periodStartDateValue(p, value))
                 .orElse(Optional.empty());
-        Optional<Date> endDate = period
+        Optional<LocalDate> endDate = period
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         List<UserAttendanceResponseDTO> attendanceResponseDTOS = new ArrayList<>();
@@ -274,9 +276,9 @@ public class AttendanceController {
                     return null;
                 })
                 .map(dto -> {
-                    log.info("UserId: {}", dto.getUserId());
                     LeaveRequest leaveRequest = leaveRequestService
-                            .findByUserIdAndDate(dto.getUserId(), DatesConfig.now());
+                            .findByUserIdAndDate(dto.getUserId(), LocalDateTime.now());
+                    log.debug("Leave Request: {}", leaveRequest);
                     if (leaveRequest == null || leaveRequest.getLeaveRequestStatus() != LeaveRequestStatus.APPROVED) {
                         dto.setStatus(Optional.of(AttendanceStatus.PRESENT));
                     }else {

@@ -170,7 +170,7 @@ public class UserMapperImpl {
         personalInformation.setGuardianRelation(userProfile.getGuardianRelation());
         personalInformation.setGuardianMobileNo(userProfile.getGuardianPhoneNo());
         dto.setPersonalInformation(personalInformation);
-        
+
         return dto;
     }
 

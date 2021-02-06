@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +61,7 @@ public class AttendanceService {
     }
 
     public List<StudentAttendance> getStudentAttendancesByStudentId(Long studentId
-            , Optional<Date> updateTimeStart, Optional<Date> updateTimeEnd) {
+            , Optional<LocalDate> updateTimeStart, Optional<LocalDate> updateTimeEnd) {
         if (updateTimeStart.isPresent() && updateTimeEnd.isPresent())
             return studentAttendanceRepository.findByStudentAttendanceKeyStudentIdAndAttendanceAttendanceDateBetween(studentId
                     , updateTimeStart.get(), updateTimeEnd.get());
@@ -82,7 +83,7 @@ public class AttendanceService {
                 , updateTimeStart, updateTimeEnd);
     }
 
-    public List<EmployeeAttendance> getEmployeeAttendancesByEmployeeId(Long employeeId, Optional<Date> startDate, Optional<Date> endDate) {
+    public List<EmployeeAttendance> getEmployeeAttendancesByEmployeeId(Long employeeId, Optional<LocalDate> startDate, Optional<LocalDate> endDate) {
         if (startDate.isPresent() && endDate.isPresent()) {
             return employeeAttendanceRepository.findByEmployeeAttendanceKeyEmployeeIdAndAttendanceAttendanceDateBetween(employeeId, startDate.get(), endDate.get());
         }
@@ -114,7 +115,7 @@ public class AttendanceService {
         return attendanceRepository.findAll(attendanceSpecification, sort);
     }
 
-    public Date lastAttendanceDate() {
+    public LocalDate lastAttendanceDate() {
         return attendanceRepository.findLastAttendanceDate();
     }
 }

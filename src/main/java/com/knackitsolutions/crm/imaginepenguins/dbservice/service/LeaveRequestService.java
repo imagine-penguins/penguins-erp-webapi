@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.service;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -21,22 +25,19 @@ public class LeaveRequestService {
         return leaveRequestRepository.save(leaveRequest);
     }
 
-    public Boolean leaves(Long userId, Date date) {
-        return leaveRequestRepository.isOnLeave(userId, date) != null && leaveRequestRepository.isOnLeave(userId, date) != 0;
+    public Boolean isOnLeave(Long userId, LocalDateTime date) {
+        return leaveRequestRepository.isOnLeave(userId, date, LeaveRequestStatus.APPROVED) != null && leaveRequestRepository.isOnLeave(userId, date, LeaveRequestStatus.APPROVED) != 0;
     }
-    public List<Date> leaves(Long userId, Date startDate, Date endDate) {
-        List<Date> dates = new ArrayList<>();
-        while (startDate.before(endDate)) {
+    public List<LocalDateTime> isOnLeave(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+        List<LocalDateTime> dates = new ArrayList<>();
+        while (startDate.isBefore(endDate)) {
             log.debug("LastDate: {}", startDate);
-            if (leaves(userId, startDate)) {
+            if (isOnLeave(userId, startDate)) {
                 dates.add(startDate);
             }
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(startDate);
-            calendar.add(Calendar.DATE, 1);
-            startDate = calendar.getTime();
+            startDate = startDate.plusDays(1);
         }
-        if (leaves(userId, endDate)) {
+        if (isOnLeave(userId, endDate)) {
             dates.add(endDate);
         }
         return dates;
@@ -55,7 +56,12 @@ public class LeaveRequestService {
         return leaveRequestRepository.count(leaveRequestSpecification);
     }
 
-    public final LeaveRequest findByUserIdAndDate(Long userId, Date date) {
+    public final LeaveRequest findByUserIdAndDate(Long userId, LocalDateTime date) {
         return leaveRequestRepository.findByUserIdAndDate(userId, date);
     }
+
+//    public final LeaveRequest nativeFindByUserIdAndDate(Long userId, LocalDateTime date) {
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        return leaveRequestRepository.nativeFindByUserIdAndDate(userId, simpleDateFormat.format(date));
+//    }
 }
