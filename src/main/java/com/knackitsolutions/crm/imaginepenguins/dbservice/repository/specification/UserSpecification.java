@@ -5,6 +5,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceSta
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
@@ -14,6 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Log4j2
 public class UserSpecification {
 
     public static Specification<User> usersByDepartmentIdIn(List<Integer> departmentIds) {
@@ -210,11 +212,20 @@ public class UserSpecification {
 
     public static Specification<User> userByNameStartsWith(String name) {
         return ((root, query, criteriaBuilder) -> {
-            Expression<String> exp1 = criteriaBuilder.concat(root.join("userProfile").get("firstName"), " ");
-            exp1 = criteriaBuilder.concat(exp1, root.join("userProfile").get("middleName"));
-            exp1 = criteriaBuilder.concat(exp1, root.join("userProfile").get("lastName"));
+
+            Expression<String> exp1 = root.join("userProfile").get("firstName");
+            Expression<String> exp2 = criteriaBuilder.coalesce(root.join("userProfile").get("middleName"), "");
+            Expression<String> exp3 = root.join("userProfile").get("lastName");
+
+            Expression<String> exp = criteriaBuilder.concat(exp1, " ");
+            exp = criteriaBuilder.concat(exp, exp2);
+
+            exp = criteriaBuilder
+                    .concat(exp, criteriaBuilder.<String>selectCase().when(criteriaBuilder.notEqual(exp2, ""), " ").otherwise(""));
+
+            exp = criteriaBuilder.concat(exp, exp3);
             return criteriaBuilder
-                    .like(criteriaBuilder.lower(exp1), "%" + name.toLowerCase(Locale.ROOT) + "%");
+                    .like(criteriaBuilder.lower(exp), "%" + name.toLowerCase(Locale.ROOT) + "%");
         });
     }
 
@@ -296,6 +307,7 @@ public class UserSpecification {
             else if (entry.getKey().equalsIgnoreCase("userId")) {
                 result = result.and(new GenericSpecification<>(new SearchCriteria("id", entry.getValue(), SearchOperation.IN)));
             } else if (entry.getKey().equalsIgnoreCase("name")) {
+                log.debug("Searching with name equals to: {}.", firstValue.getValue().toString());
                 result = result.and(UserSpecification.userByNameStartsWith(firstValue.getValue().toString()));
             }
         }
