@@ -24,7 +24,7 @@ public class Attendance {
     @Column(name = "load_dt_tm", nullable = false)
     @Setter
     @Getter
-    private LocalDate attendanceDate;
+    private LocalDateTime attendanceDate;
 
     @Column(name = "status", nullable = false)
     private AttendanceStatus attendanceStatus;
@@ -48,20 +48,20 @@ public class Attendance {
         updateTime = LocalDateTime.now();
     }
 
-    public Attendance(LocalDate attendanceDate, AttendanceStatus attendanceStatus) {
+    public Attendance(LocalDateTime attendanceDate, AttendanceStatus attendanceStatus) {
         this();
         this.attendanceDate = attendanceDate;
         this.attendanceStatus = attendanceStatus;
     }
 
-    public Attendance(Long id, LocalDate attendanceDate, AttendanceStatus attendanceStatus) {
+    public Attendance(Long id, LocalDateTime attendanceDate, AttendanceStatus attendanceStatus) {
         this();
         this.id = id;
         this.attendanceDate = attendanceDate;
         this.attendanceStatus = attendanceStatus;
     }
 
-    public Attendance(Long id, LocalDate attendanceDate, AttendanceStatus attendanceStatus, User supervisor) {
+    public Attendance(Long id, LocalDateTime attendanceDate, AttendanceStatus attendanceStatus, User supervisor) {
         this(id, attendanceDate, attendanceStatus);
         this.supervisor = supervisor;
     }

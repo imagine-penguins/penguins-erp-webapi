@@ -41,6 +41,7 @@ public class ProfileDTO {
         private Boolean activeStatus;
         @JsonFormat(pattern = "dd-MM-yyyy")
         private Date dateOfJoining;
+        private String designation;
     }
 
     @Data

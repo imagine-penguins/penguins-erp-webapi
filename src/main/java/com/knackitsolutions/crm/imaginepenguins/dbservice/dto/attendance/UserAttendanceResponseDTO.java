@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -24,8 +25,8 @@ public class UserAttendanceResponseDTO extends RepresentationModel<UserAttendanc
     private String lastName;
     private String profilePic;
 
-    @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDate attendanceDate;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
+    private LocalDateTime attendanceDate;
 
     private Optional<AttendanceStatus> status;
     private Long leaveRequestId;

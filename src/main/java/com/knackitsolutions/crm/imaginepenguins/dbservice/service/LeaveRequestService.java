@@ -60,8 +60,4 @@ public class LeaveRequestService {
         return leaveRequestRepository.findByUserIdAndDate(userId, date);
     }
 
-//    public final LeaveRequest nativeFindByUserIdAndDate(Long userId, LocalDateTime date) {
-//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        return leaveRequestRepository.nativeFindByUserIdAndDate(userId, simpleDateFormat.format(date));
-//    }
 }

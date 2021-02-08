@@ -1,6 +1,5 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.StudentController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceRequestMapper;
@@ -67,7 +66,7 @@ public class AttendanceController {
                 .findById(userContext.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
         for (UserAttendanceRequestDTO dto : dtos) {
-            Attendance attendance = new Attendance(LocalDate.now(), dto.getStatus());
+            Attendance attendance = new Attendance(LocalDateTime.now(), dto.getStatus());
             supervisor.setAttendances(attendance);
             attendance = attendanceService.saveAttendance(attendance);
             User attendant = userService
@@ -262,7 +261,7 @@ public class AttendanceController {
         userSpecification = userSpecification.and(specBasedOnPrivilege);
         //Not Himself
         userSpecification = userSpecification
-                .and(new GenericSpecification<User>(new SearchCriteria("id", userContext.getUserId(), SearchOperation.NOT_EQUAL)));
+                .and(new GenericSpecification(new SearchCriteria("id", userContext.getUserId(), SearchOperation.NOT_EQUAL)));
         log.debug("Calling database to fetch attendance history");
         Page<User> users = userService.findAll(userSpecification, pageable);
         log.debug("DB call completed.");

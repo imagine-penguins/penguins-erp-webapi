@@ -157,8 +157,10 @@ public class UserMapperImpl {
             Employee manager = employee.getManager();
             generalInformation.setReportingManagerId(manager.getId());
             generalInformation.setReportingManagerName(manager.getUserProfile().getFirstName() + " " + manager.getUserProfile().getLastName());
+            generalInformation.setDesignation(employee.getDesignation());
         }
         generalInformation.setDateOfJoining(userProfile.getDateOfJoining());
+
         dto.setGeneralInformation(generalInformation);
 
         ProfileDTO.PersonalInformation personalInformation = new ProfileDTO.PersonalInformation();

@@ -810,7 +810,7 @@ class DbServiceApplicationTests {
 			, @Autowired AttendanceService attendanceService
 			, @Autowired AttendanceRepository attendanceRepository, @Autowired TeacherRepository teacherRepository) {
 		Student student = studentService.all().get(0);
-		Attendance attendance = new Attendance(1l, LocalDate.now(), AttendanceStatus.PRESENT);
+		Attendance attendance = new Attendance(1l, LocalDateTime.now(), AttendanceStatus.PRESENT);
 		attendance.setSupervisor(
 				teacherRepository
 						.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
@@ -849,7 +849,7 @@ class DbServiceApplicationTests {
 			, @Autowired StudentService studentService
 			, @Autowired TeacherRepository teacherRepository) {
 		Student student = studentService.all().get(0);
-		Attendance attendance = new Attendance(1l, LocalDate.now(), AttendanceStatus.PRESENT);
+		Attendance attendance = new Attendance(1l, LocalDateTime.now(), AttendanceStatus.PRESENT);
 		attendance.setSupervisor(
 				teacherRepository
 						.findByInstituteClassSectionsId(student.getInstituteClassSection().getId())
@@ -876,7 +876,7 @@ class DbServiceApplicationTests {
 
 	}
 
-	private Attendance createAndSaveAttendance(LocalDate date, AttendanceStatus status, User supervisor
+	private Attendance createAndSaveAttendance(LocalDateTime date, AttendanceStatus status, User supervisor
 			, AttendanceRepository attendanceRepository) {
 		Attendance attendance1 = new Attendance(1l, date, status);
 		attendance1.setSupervisor(supervisor);
@@ -904,14 +904,14 @@ class DbServiceApplicationTests {
 
 	private void createStudentAttendances(AttendanceService attendanceService, AttendanceRepository attendanceRepository
 			,Student student, Teacher teacher) throws ParseException {
-		DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-		Attendance attendance1 = createAndSaveAttendance(LocalDate.parse("26-09-2020", format)
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+		Attendance attendance1 = createAndSaveAttendance(LocalDateTime.parse("26-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
-		Attendance attendance2 = createAndSaveAttendance(LocalDate.parse("20-09-2020", format)
+		Attendance attendance2 = createAndSaveAttendance(LocalDateTime.parse("20-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
-		Attendance attendance3 = createAndSaveAttendance(LocalDate.parse("21-09-2020", format)
+		Attendance attendance3 = createAndSaveAttendance(LocalDateTime.parse("21-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
-		Attendance attendance4 = createAndSaveAttendance(LocalDate.parse("23-09-2020", format)
+		Attendance attendance4 = createAndSaveAttendance(LocalDateTime.parse("23-09-2020", format)
 				, AttendanceStatus.PRESENT, teacher, attendanceRepository);
 
 		StudentAttendanceKey studentAttendanceKey1 = getStudentAttendanceKey(student.getId(), attendance1.getId());

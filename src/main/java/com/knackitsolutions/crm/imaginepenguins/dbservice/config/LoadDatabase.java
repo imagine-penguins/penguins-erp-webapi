@@ -590,7 +590,7 @@ public class LoadDatabase {
             , StudentAttendanceRepository studentAttendanceRepository
             , EmployeeAttendanceRepository employeeAttendanceRepository
             , UserRepository userRepository) {
-        Attendance attendance = new Attendance(LocalDate.now(), AttendanceStatus.PRESENT);
+        Attendance attendance = new Attendance(LocalDateTime.now(), AttendanceStatus.PRESENT);
         userRepository.findByUsername("nishi").get().setAttendances(attendance);
 
         attendance = attendanceRepository.save(attendance);

@@ -10,10 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import javax.persistence.criteria.*;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -211,6 +208,16 @@ public class UserSpecification {
         return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get("id"), userId);
     }
 
+    public static Specification<User> userByNameStartsWith(String name) {
+        return ((root, query, criteriaBuilder) -> {
+            Expression<String> exp1 = criteriaBuilder.concat(root.join("userProfile").get("firstName"), " ");
+            exp1 = criteriaBuilder.concat(exp1, root.join("userProfile").get("middleName"));
+            exp1 = criteriaBuilder.concat(exp1, root.join("userProfile").get("lastName"));
+            return criteriaBuilder
+                    .like(criteriaBuilder.lower(exp1), "%" + name.toLowerCase(Locale.ROOT) + "%");
+        });
+    }
+
     /*public static Specification<User> filter(Map<String, List<SearchCriteria>> searchMap) {
         Specification<User> userSpecification = Specification.where(null);
         for (Map.Entry<String, List<SearchCriteria>> entry : searchMap.entrySet()) {
@@ -286,8 +293,10 @@ public class UserSpecification {
                         new GenericSpecification<>(new SearchCriteria("userType", userTypes, SearchOperation.IN))
                 );
             }
-            if (entry.getKey().equalsIgnoreCase("userId")) {
+            else if (entry.getKey().equalsIgnoreCase("userId")) {
                 result = result.and(new GenericSpecification<>(new SearchCriteria("id", entry.getValue(), SearchOperation.IN)));
+            } else if (entry.getKey().equalsIgnoreCase("name")) {
+                result = result.and(UserSpecification.userByNameStartsWith(firstValue.getValue().toString()));
             }
         }
         return result;

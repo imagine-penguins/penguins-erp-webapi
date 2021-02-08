@@ -36,6 +36,10 @@ public class InstituteDepartment {
     @Getter@Setter
     private User user;
 
+    @Column(name = "is_primary", length = 1)
+    @Setter@Getter
+    private Boolean primary;
+
     @OneToMany(mappedBy = "instituteDepartment")
     @Getter
     private Set<InstituteDepartmentPrivilege> privileges = new HashSet<>();

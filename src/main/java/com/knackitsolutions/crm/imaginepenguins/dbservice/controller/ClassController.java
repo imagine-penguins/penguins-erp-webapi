@@ -1,5 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.InstituteClassSectionMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.InstituteClassSectionDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Institute;
@@ -10,10 +11,12 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteCl
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.EmployeeService;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.InstituteService;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +38,7 @@ public class ClassController {
     private final InstituteClassSectionMapper instituteClassSectionMapper;
     private final IAuthenticationFacade authenticationFacade;
     private final EmployeeService employeeService;
+    private final StudentService studentService;
 
     @GetMapping("/{classSectionId}")
     public EntityModel<InstituteClassSectionDTO> one(@PathVariable Long classSectionId) {
@@ -49,7 +53,13 @@ public class ClassController {
     public CollectionModel<EntityModel<InstituteClassSectionDTO>> all() {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 
-        Institute institute = employeeService.findInstituteById(userContext.getUserId());
+        Institute institute = null;
+        if (userContext.getUserType() == UserType.EMPLOYEE)
+            institute = employeeService.findInstituteById(userContext.getUserId());
+        else if(userContext.getUserType() == UserType.STUDENT)
+            institute = studentService.one(userContext.getUserId()).getInstituteClassSection().getInstituteClass().getInstitute();
+        else
+            throw new RuntimeException("User does not have enough privileges.");
         List<EntityModel<InstituteClassSectionDTO>> collect = institute
                 .getClasses()
                 .stream()

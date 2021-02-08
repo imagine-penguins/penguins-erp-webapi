@@ -203,8 +203,10 @@ public class AttendanceHistoryController {
                     .map(attendanceResponseMapper::mapUserAttendanceToStudent)
                     .map(dto -> {
                         if (dto.getStatus().get() == AttendanceStatus.LEAVE) {
+                            log.debug("Checking if leave is approved or not.");
                             LeaveRequest leaveRequest = leaveRequestService
-                                    .findByUserIdAndDate(dto.getUserId(), dto.getAttendanceDate().atStartOfDay());
+                                    .findByUserIdAndDate(dto.getUserId(), dto.getAttendanceDate());
+                            log.debug("leave requests: {}", leaveRequest);
                             if (leaveRequest == null || leaveRequest.getLeaveRequestStatus() != LeaveRequestStatus.APPROVED){
                                 dto.setStatus(Optional.of(AttendanceStatus.ABSENT));
                             }else {

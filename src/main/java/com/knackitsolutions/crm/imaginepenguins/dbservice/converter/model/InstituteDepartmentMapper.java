@@ -11,6 +11,7 @@ public class InstituteDepartmentMapper {
             return;
         dto.setDepartmentName(entity.getDepartmentName());
         dto.setId(entity.getId());
+        dto.setPrimary(entity.getPrimary());
     }
 
     public InstituteDepartmentDTO entityToDTO(InstituteDepartment entity) {

@@ -2,16 +2,14 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.InstituteDocumentType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.AddressMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ContactMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.common.filter.DataFilter;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.InstituteNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
@@ -19,7 +17,9 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteCl
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserProfileRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.GenericSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchOperation;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.UserSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
@@ -101,6 +101,7 @@ public class UserControllerImpl {
     @Autowired
     private StudentService studentService;
 
+
     @Autowired
     @Qualifier("userMapperImpl")
     UserMapperImpl userMapper;
@@ -163,6 +164,14 @@ public class UserControllerImpl {
     @PostMapping("/{userType}")
     public ResponseEntity<String> newUser(@PathVariable("userType") UserType userType, @RequestBody ProfileDTO dto){
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
+        List<PrivilegeCode> privilegeCodes = userContext
+                .getAuthorities()
+                .stream()
+                .map(grantedAuthority -> PrivilegeCode.of(grantedAuthority.getAuthority()))
+                .collect(Collectors.toList());
+        if (!privilegeCodes.contains(PrivilegeCode.ADD_NEW_USER)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User does not has permission to add new User");
+        }
         User newUser = null;
         if (userType == UserType.STUDENT) {
             Optional<InstituteClassSection> classSection = classSectionRepository.findById(
@@ -180,6 +189,7 @@ public class UserControllerImpl {
                     .ifPresent(institute -> institute.setEmployee(newEmployee));
             Optional<Employee> manager = employeeService.findById(dto.getGeneralInformation().getReportingManagerId());
             manager.ifPresent(m -> m.setSubordinates(newEmployee));
+            newEmployee.setDesignation(dto.getGeneralInformation().getDesignation());
             newUser = newEmployee;
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid UserType Selected. Valid values are S -> Student, E -> Employee");
@@ -362,5 +372,32 @@ public class UserControllerImpl {
         return CollectionModel.of(institutes,
                 linkTo(methodOn(InstituteController.class).all()).withRel("institutes"));
 
+    }
+
+    @GetMapping("/employees")
+    public List<Map<String, String>> searchUsers(@RequestParam(required = false) String[] search) {
+        UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
+        Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
+        Specification<User> userSpecification = null;
+        try {
+            userSpecification = UserSpecification.filterUsers(searchMap);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unable to parse date from search parameters.");
+        }
+        userSpecification = userSpecification
+                .and(new GenericSpecification<>(new SearchCriteria("userType", UserType.EMPLOYEE, SearchOperation.EQUAL)));
+
+
+        return userRepository.findAll(userSpecification).stream().map(user -> {
+            Employee employee = (Employee) user;
+            Map<String, String> objectMap = new HashMap<>();
+            objectMap.put("id", employee.getId().toString());
+            objectMap.put("employeeOrgId", employee.getEmployeeOrgId());
+            objectMap.put("designation", employee.getDesignation());
+            objectMap.put("name", employee.getUserProfile().getFirstName()
+                    + " " + employee.getUserProfile().getMiddleName() + " " + employee.getUserProfile().getLastName());
+            return objectMap;
+        }).collect(Collectors.toList());
     }
 }
