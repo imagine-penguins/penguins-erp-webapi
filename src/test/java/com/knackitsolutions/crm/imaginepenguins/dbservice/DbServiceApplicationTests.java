@@ -938,8 +938,8 @@ class DbServiceApplicationTests {
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		List<StudentAttendance> studentAttendances = attendanceService.getStudentAttendancesByStudentId(
 				student.getId()
-				, Optional.of(LocalDate.parse("21-09-2020", format))
-				, Optional.of(LocalDate.parse("21-09-2020", format))
+				, Optional.of(LocalDateTime.parse("21-09-2020", format))
+				, Optional.of(LocalDateTime.parse("21-09-2020", format))
 		);
 		studentAttendances
 				.stream()

@@ -215,10 +215,10 @@ public class LeaveRequestController {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
         final Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
-        Optional<LocalDate> startDate = period
+        Optional<LocalDateTime> startDate = period
                 .map(p -> FilterService.periodStartDateValue(p, value))
                 .orElse(Optional.empty());
-        Optional<LocalDate> endDate = period
+        Optional<LocalDateTime> endDate = period
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         List<LeaveResponseDTO> responseDTOS = new ArrayList<>();

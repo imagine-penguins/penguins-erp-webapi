@@ -156,10 +156,10 @@ public class AttendanceController {
         log.debug("Student attendance history for period: {}, value: {}, studentId: {}", period, value, userContext.getUserId());
 //        User user = userService.findById(userContext.getUserId())
 //                .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
-        Optional<LocalDate> startDate = period
+        Optional<LocalDateTime> startDate = period
                 .map(p -> FilterService.periodStartDateValue(p, value))
                 .orElse(Optional.empty());
-        Optional<LocalDate> endDate = period
+        Optional<LocalDateTime> endDate = period
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         List<UserAttendanceResponseDTO> attendanceResponseDTOS = new ArrayList<>();

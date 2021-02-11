@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -16,6 +17,6 @@ public interface EmployeeAttendanceRepository extends JpaRepository<EmployeeAtte
 
     List<EmployeeAttendance> findByEmployeeAttendanceKeyEmployeeId(Long employeeId);
     List<EmployeeAttendance> findByEmployeeAttendanceKeyEmployeeIdAndAttendanceAttendanceDateBetween(Long employeeId
-            , LocalDate updateTimeStart, LocalDate updateTimeEnd);
+            , LocalDateTime updateTimeStart, LocalDateTime updateTimeEnd);
     List<EmployeeAttendance> findByEmployeeUserDepartmentsInstituteDepartmentId(Long departmentId);
 }

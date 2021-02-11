@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,8 +92,8 @@ public class AttendanceHistoryController {
         log.debug("/history");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
 
-        Optional<LocalDate> startDate = period.flatMap(p -> FilterService.periodStartDateValue(p, value));
-        Optional<LocalDate> endDate = period.flatMap(p -> FilterService.periodEndDateValue(p, value));
+        Optional<LocalDateTime> startDate = period.flatMap(p -> FilterService.periodStartDateValue(p, value));
+        Optional<LocalDateTime> endDate = period.flatMap(p -> FilterService.periodEndDateValue(p, value));
 
         List<PrivilegeCode> privilegeCodes = userContext
                 .getAuthorities()
@@ -186,7 +187,7 @@ public class AttendanceHistoryController {
         }else{
             //get the last attendance date.
             log.debug("Getting last day of attendance");
-            LocalDate lastAttendanceDate = attendanceService.lastAttendanceDate();
+            LocalDateTime lastAttendanceDate = attendanceService.lastAttendanceDate();
             studentAttendanceSpecification =  studentAttendanceSpecification
                     .and(AttendanceSpecification.studentAttendanceWithAttendanceDate(lastAttendanceDate, SearchOperation.EQUAL));
             employeeAttendanceSpecification =  employeeAttendanceSpecification
@@ -242,10 +243,10 @@ public class AttendanceHistoryController {
         log.debug("/history/graph");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Map<String, Long> graphData = new HashMap<>();
-        Optional<LocalDate> startDate = period
+        Optional<LocalDateTime> startDate = period
                 .map(p -> FilterService.periodStartDateValue(p, value))
                 .orElse(Optional.empty());
-        Optional<LocalDate> endDate = period
+        Optional<LocalDateTime> endDate = period
                 .map(p -> FilterService.periodEndDateValue(p, value))
                 .orElse(Optional.empty());
         Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);

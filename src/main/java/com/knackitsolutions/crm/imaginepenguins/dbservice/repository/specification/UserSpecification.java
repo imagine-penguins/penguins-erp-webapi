@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.Specification;
 import javax.persistence.criteria.*;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,7 +70,7 @@ public class UserSpecification {
         };
     }
 
-    public static Specification<User> studentWithAttendanceDate(LocalDate startDate, SearchOperation searchOperation) {
+    public static Specification<User> studentWithAttendanceDate(LocalDateTime startDate, SearchOperation searchOperation) {
         return (root, query, criteriaBuilder) -> {
             Root<Student> employeeRoot = criteriaBuilder.treat(root, Student.class);
             Expression expression = employeeRoot
@@ -295,7 +296,7 @@ public class UserSpecification {
                 List<Long> managerIds = valueStream.map(Long::parseLong).collect(Collectors.toList());
                 result = result.and(UserSpecification.employeeByManagerId(managerIds));
             } else if (key.equalsIgnoreCase("attendanceDate")) {
-                result = result.and(UserSpecification.studentWithAttendanceDate(DatesConfig.format(firstValue.getValue().toString())
+                result = result.and(UserSpecification.studentWithAttendanceDate(DatesConfig.formatLocalDateTime(firstValue.getValue().toString())
                         , firstValue.getOperation()));
             }else if (entry.getKey().equalsIgnoreCase("userType")) {
                 List<UserType> userTypes = valueStream

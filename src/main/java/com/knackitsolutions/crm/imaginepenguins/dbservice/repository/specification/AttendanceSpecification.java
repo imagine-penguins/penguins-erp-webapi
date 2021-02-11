@@ -12,7 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import javax.persistence.criteria.*;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -164,7 +164,7 @@ public class AttendanceSpecification {
         };
     }
 
-    public static Specification<StudentAttendance> studentAttendanceWithAttendanceDate(LocalDate startDate, SearchOperation searchOperation) {
+    public static Specification<StudentAttendance> studentAttendanceWithAttendanceDate(LocalDateTime startDate, SearchOperation searchOperation) {
         log.debug("where attendanceDate is {} {}", searchOperation.getOperation(), startDate);
         return (root, query, criteriaBuilder) -> {
             Expression expression = root
@@ -184,7 +184,7 @@ public class AttendanceSpecification {
         };
     }
 
-    public static Specification<EmployeeAttendance> employeeAttendanceWithAttendanceDate(LocalDate startDate, SearchOperation searchOperation) {
+    public static Specification<EmployeeAttendance> employeeAttendanceWithAttendanceDate(LocalDateTime startDate, SearchOperation searchOperation) {
         log.debug("where attendanceDate is {} {}", searchOperation.getOperation(), startDate);
         return (root, query, criteriaBuilder) -> {
             Expression expression = root
@@ -249,7 +249,7 @@ public class AttendanceSpecification {
                         .map(AttendanceStatus::of);
                 result = result.and(AttendanceSpecification.studentAttendanceByAttendanceStatusIn(attendanceStatuses));
             } else if (key.equalsIgnoreCase("attendanceDate")) {
-                result = result.and(AttendanceSpecification.studentAttendanceWithAttendanceDate(DatesConfig.format(firstValue.getValue().toString())
+                result = result.and(AttendanceSpecification.studentAttendanceWithAttendanceDate(DatesConfig.formatLocalDateTime(firstValue.getValue().toString())
                         , firstValue.getOperation()));
             }else if (entry.getKey().equalsIgnoreCase("userId")) {
                 result = result.and(new GenericSpecification<>(new SearchCriteria("id", entry.getValue(), SearchOperation.IN)));
@@ -279,7 +279,7 @@ public class AttendanceSpecification {
                         .map(AttendanceStatus::of);
                 result = result.and(AttendanceSpecification.employeeAttendanceByAttendanceStatusIn(attendanceStatuses));
             } else if (key.equalsIgnoreCase("attendanceDate")) {
-                result = result.and(AttendanceSpecification.employeeAttendanceWithAttendanceDate(DatesConfig.format(firstValue.getValue().toString())
+                result = result.and(AttendanceSpecification.employeeAttendanceWithAttendanceDate(DatesConfig.formatLocalDateTime(firstValue.getValue().toString())
                         , firstValue.getOperation()));
             }else if (entry.getKey().equalsIgnoreCase("userId")) {
                 result = result

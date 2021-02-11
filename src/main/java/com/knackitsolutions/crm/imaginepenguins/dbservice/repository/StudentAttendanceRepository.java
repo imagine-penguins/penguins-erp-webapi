@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
     List<StudentAttendance> findByStudentAttendanceKeyStudentId(Long studentId);
 
     List<StudentAttendance> findByStudentAttendanceKeyStudentIdAndAttendanceAttendanceDateBetween(Long studentId
-            , LocalDate updateTimeStart, LocalDate updateTimeEnd);
+            , LocalDateTime updateTimeStart, LocalDateTime updateTimeEnd);
 
     @Override
     Page<StudentAttendance> findAll(Specification<StudentAttendance> spec, Pageable pageable);

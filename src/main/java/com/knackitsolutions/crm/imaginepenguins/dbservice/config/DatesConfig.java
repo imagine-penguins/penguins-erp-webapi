@@ -30,8 +30,12 @@ public class DatesConfig {
         DatesConfig.attendanceDateFormat = attendanceDateFormat;
     }
 
-    public static LocalDate format(String date) throws ParseException {
-        return LocalDate.parse(date, attendanceDateFormatter);
+    public static LocalDateTime formatLocalDateTime(String date) throws ParseException {
+        return LocalDateTime.parse(date, attendanceDateFormatter);
+    }
+
+    public static LocalDateTime formatLocalDate(String date) throws ParseException {
+        return LocalDateTime.parse(date, attendanceDateFormatter);
     }
 
     public static Date now(){
