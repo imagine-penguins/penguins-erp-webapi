@@ -24,6 +24,8 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specificati
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.document.AmazonDocumentStorageClient;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -59,52 +61,22 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping(value = "/users")
 @Validated
-@Slf4j
+@Log4j2
+@RequiredArgsConstructor
 public class UserControllerImpl {
 
-    @Autowired
-    private IAuthenticationFacade authenticationFacade;
-
-    @Autowired
-    private UserFacade userFacade;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private EmployeeService employeeService;
-
-    @Autowired
-    private AmazonDocumentStorageClient storageClient;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ContactMapperImpl contactMapper;
-
-    @Autowired
-    private AddressMapperImpl addressMapper;
-
-    @Autowired
-    private UserProfileRepository userProfileRepository;
-
-    @Autowired
-    private InstituteClassSectionRepository classSectionRepository;
-
-    @Autowired
-    private UserDepartmentRepository userDepartmentRepository;
-
-    @Autowired
-    private InstituteService instituteService;
-
-    @Autowired
-    private StudentService studentService;
-
-
-    @Autowired
-    @Qualifier("userMapperImpl")
-    UserMapperImpl userMapper;
+    final private IAuthenticationFacade authenticationFacade;
+    final private UserFacade userFacade;
+    final private UserService userService;
+    final private EmployeeService employeeService;
+    final private AmazonDocumentStorageClient storageClient;
+    final private UserRepository userRepository;
+    final private UserProfileRepository userProfileRepository;
+    final private InstituteClassSectionRepository classSectionRepository;
+    final private UserDepartmentRepository userDepartmentRepository;
+    final private InstituteService instituteService;
+    final private StudentService studentService;
+    final private UserMapperImpl userMapper;
 
     @GetMapping("/{id}")
     public EntityModel<Map<String, Object>> one(@PathVariable("id") Long id){
@@ -202,7 +174,6 @@ public class UserControllerImpl {
         newUser.setPassword(userService.generateRandomPassword(newUserProfile.getContact().getEmail()));
         newUser.setUserType(userType);
 
-//        newUser.setUserProfile(newUserProfile);
         newUserProfile.setUser(newUser);
         newUserProfile = userProfileRepository.save(newUserProfile);
 
@@ -215,37 +186,14 @@ public class UserControllerImpl {
         } else if (userType == UserType.STUDENT) {
             newUser = studentService.save((Student) newUser);
         }
-        return ResponseEntity.created(linkTo(methodOn(UserControllerImpl.class).myProfile(newUser.getId())).toUri()).body("Successfully Created New User.");
+        return ResponseEntity
+                .created(linkTo(methodOn(UserControllerImpl.class).profile(newUser.getId())).toUri())
+                .header("user-id", newUser.getId().toString())
+                .body("Successfully Created New User.");
     }
-
-    /*
-
-    @Override
-    public ResponseEntity<?> replaceUser(UserDTO newUser, Long id) {
-        UserDTO replacedUser = userRepository.findById(id)
-                .map(user -> {
-                    user.setUserType(newUser.getUserType());
-                    user.setAdmin(newUser.getAdmin());
-                    return userRepository.save(user);
-                })
-                .orElseThrow(() -> new UserNotFoundException(id));
-        EntityModel<UserDTO> entityModel = userModelAssembler.toModel(replacedUser);
-
-        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
-    }
-
-    @Override
-    public ResponseEntity<?> deleteUser(Long id) {
-        userRepository.delete(
-                userRepository.findById(id)
-                        .orElseThrow(() -> new UserNotFoundException(id)));
-        return ResponseEntity.noContent().build();
-    }
-*/
 
     @GetMapping
-    public EntityModel<ProfileDTO> myProfile() {
+    public EntityModel<ProfileDTO> profile() {
         UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
         User user = userService
                 .findById(userContext.getUserId()).orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
@@ -254,7 +202,7 @@ public class UserControllerImpl {
     }
 
     @GetMapping("/{userId}")
-    public EntityModel<ProfileDTO> myProfile(@PathVariable Long userId) {
+    public EntityModel<ProfileDTO> profile(@PathVariable Long userId) {
         UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
         User user = userService
                 .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));

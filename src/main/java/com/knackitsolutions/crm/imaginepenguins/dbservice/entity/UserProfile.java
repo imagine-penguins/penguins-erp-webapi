@@ -14,6 +14,7 @@ import java.util.Objects;
 public class UserProfile {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(name = "first_name")
