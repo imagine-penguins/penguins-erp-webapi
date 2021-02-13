@@ -4,6 +4,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.LeaveRequestMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveHistoryDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.LeaveRequestDTO;
@@ -17,6 +18,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFound
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.LeaveRequestRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.document.UserDocumentStoreRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
@@ -55,7 +57,7 @@ public class LeaveRequestController {
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveRequestService leaveRequestService;
     private final InstituteDepartmentRepository departmentRepository;
-
+    private final UserDocumentStoreRepository userDocumentStoreRepository;
     @PostMapping
     public ResponseEntity<String> saveLeaveRequest(@RequestBody LeaveRequestDTO leaveRequestDTO) {
         log.trace("Request for new leave application. Processing...");
@@ -149,6 +151,10 @@ public class LeaveRequestController {
         leaveRequestPage
                 .get()
                 .map(leaveRequestMapper::entityToDTO)
+                .map(dto -> {
+                    dto.setProfilePic(userDocumentStoreRepository.findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE).getStoreURL());
+                    return dto;
+                })
                 .map(leaveResponseDTO -> leaveResponseDTO.add(
                         linkTo(methodOn(LeaveRequestController.class)
                                 .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
@@ -256,6 +262,14 @@ public class LeaveRequestController {
                         linkTo(methodOn(LeaveRequestController.class)
                                 .updateLeaveRequestStatus(leaveResponseDTO.getId(), null, null))
                                 .withRel(PrivilegeCode.UPDATE_LEAVE_REQUEST_STATUS.getPrivilegeCode())))
+                .map(dto -> {
+                    dto.setProfilePic(
+                            userDocumentStoreRepository
+                                    .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE)
+                            .getStoreURL()
+                    );
+                    return dto;
+                })
                 .forEach(responseDTOS::add);
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page
                 , leaveRequestPage.getTotalElements(), leaveRequestPage.getTotalPages());

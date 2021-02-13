@@ -14,6 +14,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFound
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.EmployeeAttendanceRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.StudentAttendanceRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.document.UserDocumentStoreRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
@@ -58,6 +59,7 @@ public class AttendanceHistoryController {
     private final StudentAttendanceRepository studentAttendanceRepository;
     private final EmployeeAttendanceRepository employeeAttendanceRepository;
     private final LeaveRequestService leaveRequestService;
+    private final UserDocumentStoreRepository userDocumentStoreRepository;
 
     private UserAttendanceResponseDTO addLinks(UserAttendanceResponseDTO user
             , String[] sort, Optional<Period> period, Optional<String> value
@@ -214,6 +216,14 @@ public class AttendanceHistoryController {
                                 dto.setLeaveRequestId(leaveRequest.getId());
                             }
                         }
+                        return dto;
+                    })
+                    .map(dto -> {
+                        dto.setProfilePic(
+                                userDocumentStoreRepository
+                                        .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE)
+                                        .getStoreURL()
+                        );
                         return dto;
                     })
                     .map(o -> this.addLinks(o, sort, period, value, 0, Integer.MAX_VALUE, privilegeCodes))

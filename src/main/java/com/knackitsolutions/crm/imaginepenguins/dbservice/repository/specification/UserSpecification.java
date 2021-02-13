@@ -285,27 +285,20 @@ public class UserSpecification {
                 result = result.and(UserSpecification.usersByPrivilegeIn(privileges));
             }else if (key.equalsIgnoreCase("designation")) {
                 result = result.and(
-                        new GenericSpecification<>(new SearchCriteria(key, valueStream.collect(Collectors.toList()), SearchOperation.IN))
+                        new GenericSpecification<>(new SearchCriteria(key, valueStream
+                                .collect(Collectors.toList()), SearchOperation.IN))
                 );
-            }else if (key.equalsIgnoreCase("attendanceStatus")) {
-                List<AttendanceStatus> attendanceStatuses = valueStream
-                        .map(AttendanceStatus::of)
-                        .collect(Collectors.toList());
-                result = result.and(UserSpecification.studentsByAttendanceStatusIn(attendanceStatuses));
             } else if (key.equalsIgnoreCase("reportingManager")) {
                 List<Long> managerIds = valueStream.map(Long::parseLong).collect(Collectors.toList());
                 result = result.and(UserSpecification.employeeByManagerId(managerIds));
-            } else if (key.equalsIgnoreCase("attendanceDate")) {
-                result = result.and(UserSpecification.studentWithAttendanceDate(DatesConfig.formatLocalDateTime(firstValue.getValue().toString())
-                        , firstValue.getOperation()));
-            }else if (entry.getKey().equalsIgnoreCase("userType")) {
+            } else if (entry.getKey().equalsIgnoreCase("userType")) {
                 List<UserType> userTypes = valueStream
                         .map(UserType::of).collect(Collectors.toList());
                 result = result.and(
                         new GenericSpecification<>(new SearchCriteria("userType", userTypes, SearchOperation.IN))
                 );
             }
-            else if (entry.getKey().equalsIgnoreCase("userId")) {
+            else if (entry.getKey().equalsIgnoreCase("user")) {
                 result = result.and(new GenericSpecification<>(new SearchCriteria("id", entry.getValue(), SearchOperation.IN)));
             } else if (entry.getKey().equalsIgnoreCase("name")) {
                 log.debug("Searching with name equals to: {}.", firstValue.getValue().toString());

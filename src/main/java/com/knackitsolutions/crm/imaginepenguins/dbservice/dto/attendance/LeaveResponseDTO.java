@@ -21,6 +21,7 @@ public class LeaveResponseDTO extends RepresentationModel<LeaveResponseDTO> {
     private String firstName;
     private String lastName;
     private Long approvesId;
+    private String profilePic;
 
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
     private LocalDateTime startDate;

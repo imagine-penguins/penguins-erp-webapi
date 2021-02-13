@@ -21,7 +21,9 @@ public class SearchCriteria {
         if (this == o) return true;
         if (!(o instanceof SearchCriteria)) return false;
         SearchCriteria that = (SearchCriteria) o;
-        return Objects.equals(getKey(), that.getKey()) && getOperation() == that.getOperation();
+        return Objects.equals(getKey(), that.getKey())
+                && getOperation() == that.getOperation()
+                && value.toString().equalsIgnoreCase((that.getValue().toString()));
     }
 
     @Override

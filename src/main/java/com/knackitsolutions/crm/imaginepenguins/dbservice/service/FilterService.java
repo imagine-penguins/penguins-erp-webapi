@@ -24,32 +24,35 @@ public class FilterService {
     private static final Pattern SEARCH_PATTERN = Pattern.compile("(\\w+?)(:|<|>|>:|<:|!:|%|%>)(\\w+?),");
 
     public static Map<String, List<SearchCriteria>> createSearchMap(String[] search) {
-        log.debug("Creating Search Map");
+        log.trace("Creating Search Map");
         Map<String, List<SearchCriteria>> searchCriteriaMap = new HashMap<>();
         Map<String, List<String>> searchMap = new HashMap<>();
         if (search == null) {
             return searchCriteriaMap;
         }
         for (String s : search) {
-            log.debug("Search: {}", s);
+            log.trace("Search: {}", s);
             Matcher matcher = SEARCH_PATTERN.matcher(s + ",");
-//            log.debug("Pattern Found: {}", matcher.find());
             while (matcher.find()) {
                 String key = matcher.group(1);
                 SearchOperation searchOperation = SearchOperation.of(matcher.group(2));
                 String val = matcher.group(3);
                 SearchCriteria searchCriteria = new SearchCriteria(key, val, searchOperation);
-                log.debug("Criteria is: {}", searchCriteria );
+                log.trace("Criteria is: {}", searchCriteria);
+                key = key.toLowerCase(Locale.ROOT);
                 if (searchMap.containsKey(key)) {
+                    log.trace("key is present just adding the new criteria in the list");
                     searchMap.get(key).add(val);
                     searchCriteriaMap.get(key).add(searchCriteria);
                 } else {
-                    searchMap.put(key.toLowerCase(Locale.ROOT), new ArrayList<>(Arrays.asList(val)));
-                    searchCriteriaMap.put(key.toLowerCase(Locale.ROOT), new ArrayList<>(Arrays.asList(searchCriteria)));
+                    log.trace("key is absent creating a new criteria list.");
+                    searchMap.put(key, new ArrayList<>(Arrays.asList(val)));
+                    searchCriteriaMap.put(key, new ArrayList<>(Arrays.asList(searchCriteria)));
                 }
             }
         }
-        log.debug("Search Map Created.");
+        log.debug("Search Map Created: ");
+        searchCriteriaMap.entrySet().forEach(entry -> log.debug("key: {}, value: {}", entry.getKey(), entry.getValue()));
         return searchCriteriaMap;
     }
 

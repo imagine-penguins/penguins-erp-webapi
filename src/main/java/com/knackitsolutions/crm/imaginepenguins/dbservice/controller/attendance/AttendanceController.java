@@ -10,6 +10,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.AttendanceRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.document.UserDocumentStoreRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserContext;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
@@ -52,7 +53,7 @@ public class AttendanceController {
     private final StudentService studentService;
     private final UserService userService;
     private final AttendanceRepository attendanceRepository;
-    private final EmployeeService employeeService;
+    private final UserDocumentStoreRepository userDocumentStoreRepository;
     private final AttendanceResponseMapper attendanceResponseMapper;
     private final IAuthenticationFacade authenticationFacade;
     private final AttendanceService attendanceService;
@@ -273,6 +274,14 @@ public class AttendanceController {
                         return attendanceResponseMapper.mapUserAttendanceToEmployee((Employee) user);
                     }
                     return null;
+                })
+                .map(dto -> {
+                    dto.setProfilePic(
+                            userDocumentStoreRepository
+                                    .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE)
+                                    .getStoreURL()
+                    );
+                    return dto;
                 })
                 .map(dto -> {
                     LeaveRequest leaveRequest = leaveRequestService

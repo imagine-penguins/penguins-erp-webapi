@@ -84,7 +84,7 @@ public enum Period {
     }
 
     public LocalDateTime getDate(String value) throws ParseException {
-        return LocalDateTime.parse(value, dateFormat);
+        return LocalDate.parse(value, dateFormat).atStartOfDay();
     }
     abstract public LocalDateTime startDate(String value) throws DateTimeException, ParseException;
     abstract public LocalDateTime endDate(String value) throws DateTimeException, ParseException;
