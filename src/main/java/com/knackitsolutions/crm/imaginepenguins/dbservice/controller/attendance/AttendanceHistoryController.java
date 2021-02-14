@@ -1,15 +1,16 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.EmployeeController;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attendance.AttendanceResponseMapper;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.UserAttendanceResponseDTO;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.Attendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.InstituteClassSection;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Teacher;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.EmployeeAttendance;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.EmployeeAttendanceRepository;
@@ -20,13 +21,9 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserCon
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.validation.annotation.Validated;
@@ -36,11 +33,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -218,14 +213,6 @@ public class AttendanceHistoryController {
                         }
                         return dto;
                     })
-                    .map(dto -> {
-                        dto.setProfilePic(
-                                userDocumentStoreRepository
-                                        .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE)
-                                        .getStoreURL()
-                        );
-                        return dto;
-                    })
                     .map(o -> this.addLinks(o, sort, period, value, 0, Integer.MAX_VALUE, privilegeCodes))
                     .forEach(users::add);
         }
@@ -239,6 +226,15 @@ public class AttendanceHistoryController {
                     .map(o -> this.addLinks(o, sort, period, value, 0, Integer.MAX_VALUE, privilegeCodes))
                     .forEach(users::add);
         }
+        users
+                .stream()
+                .map(dto -> {
+                    UserDocumentStore docStore = userDocumentStoreRepository
+                            .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE);
+                    if (docStore != null)
+                        dto.setProfilePic(docStore.getStoreURL());
+                    return dto;
+                });
         log.debug("Fetching completed.");
         return CollectionModel.of(users, linkTo(methodOn(AttendanceHistoryController.class)
                 .userAttendanceHistory(search, sort, period, value))

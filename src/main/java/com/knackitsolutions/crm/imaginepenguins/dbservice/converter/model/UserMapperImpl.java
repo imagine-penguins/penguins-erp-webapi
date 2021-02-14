@@ -1,13 +1,10 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.controller.UserControllerImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.ProfileDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserListDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +25,6 @@ public class UserMapperImpl {
         if ( user == null || userCreationDTO == null) {
             return ;
         }
-
         userCreationDTO.setPrivileges( userPrivilegesToPrivileges( user.getUserPrivileges() ) );
         userCreationDTO.setProfile( userProfileMapper.userProfileToDTO( user.getUserProfile() ) );
         userCreationDTO.setUsername( user.getUsername() );
@@ -80,26 +76,7 @@ public class UserMapperImpl {
         dto.setFirstName(entity.getUserProfile().getFirstName());
         dto.setLastName(entity.getUserProfile().getLastName());
         dto.setId(entity.getId());
-        dto.setProfilePic(entity
-                .getUserDocumentStores()
-                .stream()
-                .filter(userDocumentStore -> userDocumentStore.getDocumentType() == UserDocumentType.DISPLAY_PICTURE)
-                .findFirst()
-                .orElseGet(UserDocumentStore::new)
-                .getStoreURL()
-        );
-        dto.setPassportPic(
-                entity
-                        .getUserDocumentStores()
-                        .stream()
-                        .filter(userDocumentStore -> userDocumentStore.getDocumentType() == UserDocumentType.PASSPORT_PICTURE)
-                        .findFirst()
-                        .orElseGet(UserDocumentStore::new)
-                        .getStoreURL()
-        );
-
         dto.setUserType(entity.getUserType());
-
         return dto;
     }
 
@@ -108,19 +85,7 @@ public class UserMapperImpl {
             return;
         }
         dto.setUserId(entity.getId());
-        dto.setProfilePic(getDocTypeFrom(entity, UserDocumentType.DISPLAY_PICTURE));
-        dto.setPassportPic(getDocTypeFrom(entity, UserDocumentType.PASSPORT_PICTURE));
         dto.setUserType(entity.getUserType());
-
-    }
-    private String getDocTypeFrom(User entity, UserDocumentType userDocumentType) {
-        return entity
-                .getUserDocumentStores()
-                .stream()
-                .filter(userDocumentStore -> userDocumentStore.getDocumentType() == userDocumentType)
-                .findFirst()
-                .orElseGet(UserDocumentStore::new)
-                .getStoreURL();
     }
 
     public ProfileDTO entityToDTO(User user) {
@@ -140,26 +105,31 @@ public class UserMapperImpl {
             generalInformation.setClassName(student.getInstituteClassSection().getInstituteClass().getClasss().getClassName());
             generalInformation.setSectionName(student.getInstituteClassSection().getSection().getSectionName());
             generalInformation.setRollNumber(student.getRollNumber());
-
         }
         UserProfile userProfile = user.getUserProfile();
         generalInformation.setContactDTO(contactMapper.contactToContactDTO(userProfile.getContact()));
         generalInformation.setFirstName(userProfile.getFirstName());
         generalInformation.setLastName(userProfile.getLastName());
         generalInformation.setMiddleName(userProfile.getMiddleName());
-        generalInformation.setDepartments(user.getUserDepartments().stream().map(userDepartment -> userDepartment.getInstituteDepartment().getId()).collect(Collectors.toList()));
+        generalInformation
+                .setDepartments(
+                        user
+                                .getUserDepartments()
+                                .stream()
+                                .map(userDepartment -> userDepartment.getInstituteDepartment().getId())
+                                .collect(Collectors.toList())
+                );
         generalInformation.setCommunicationAddress(addressMapper.addressToAddressDTO(userProfile.getCommunicationAddress()));
         if (user.getUserType() == UserType.EMPLOYEE) {
             Employee employee = (Employee) user;
             Employee manager = employee.getManager();
             generalInformation.setReportingManagerId(manager.getId());
-            generalInformation.setReportingManagerName(manager.getUserProfile().getFirstName() + " " + manager.getUserProfile().getLastName());
+            generalInformation
+                    .setReportingManagerName(manager.getUserProfile().getFirstName() + " " + manager.getUserProfile().getLastName());
             generalInformation.setDesignation(employee.getDesignation());
         }
         generalInformation.setDateOfJoining(userProfile.getDateOfJoining());
-
         dto.setGeneralInformation(generalInformation);
-
         ProfileDTO.PersonalInformation personalInformation = new ProfileDTO.PersonalInformation();
         personalInformation.setDob(userProfile.getDob());
         personalInformation.setBloodGroup(userProfile.getBloodGroup());
@@ -180,7 +150,6 @@ public class UserMapperImpl {
         ProfileDTO.GeneralInformation generalInformation = dto.getGeneralInformation();
         user.setActive(generalInformation.getActiveStatus());
         user.setUserType(userType);
-        //TODO
         return user;
     }
 
@@ -188,7 +157,9 @@ public class UserMapperImpl {
         UserProfile newUserProfile = new UserProfile();
         newUserProfile.setContact(contactMapper.contactDTOtoContact(dto.getGeneralInformation().getContactDTO()));
         newUserProfile.setPersonalAddress(addressMapper.addressDTOToAddress(dto.getPersonalInformation().getHomeAddress()));
-        newUserProfile.setCommunicationAddress(addressMapper.addressDTOToAddress(dto.getGeneralInformation().getCommunicationAddress()));
+        newUserProfile
+                .setCommunicationAddress(addressMapper
+                        .addressDTOToAddress(dto.getGeneralInformation().getCommunicationAddress()));
         newUserProfile.setFirstName(dto.getGeneralInformation().getFirstName());
         newUserProfile.setLastName(dto.getGeneralInformation().getLastName());
         newUserProfile.setMiddleName(dto.getGeneralInformation().getMiddleName());

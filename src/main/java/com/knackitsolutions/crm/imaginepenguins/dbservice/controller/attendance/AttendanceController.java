@@ -7,6 +7,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.attend
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.AttendanceRepository;
@@ -276,11 +277,10 @@ public class AttendanceController {
                     return null;
                 })
                 .map(dto -> {
-                    dto.setProfilePic(
-                            userDocumentStoreRepository
-                                    .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE)
-                                    .getStoreURL()
-                    );
+                    UserDocumentStore docStore = userDocumentStoreRepository
+                            .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE);
+                    if (docStore != null)
+                        dto.setProfilePic(docStore.getStoreURL());
                     return dto;
                 })
                 .map(dto -> {

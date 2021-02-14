@@ -14,6 +14,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Employee;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.Student;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.User;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.LeaveRequest;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteDepartmentRepository;
@@ -152,7 +153,10 @@ public class LeaveRequestController {
                 .get()
                 .map(leaveRequestMapper::entityToDTO)
                 .map(dto -> {
-                    dto.setProfilePic(userDocumentStoreRepository.findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE).getStoreURL());
+                    UserDocumentStore docStore = userDocumentStoreRepository
+                            .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE);
+                    if (docStore != null)
+                        dto.setProfilePic(docStore.getStoreURL());
                     return dto;
                 })
                 .map(leaveResponseDTO -> leaveResponseDTO.add(

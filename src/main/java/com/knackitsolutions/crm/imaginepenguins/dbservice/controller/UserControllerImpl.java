@@ -10,6 +10,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.Contac
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDocumentStore;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
@@ -17,6 +18,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteCl
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserProfileRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.document.UserDocumentStoreRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.GenericSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchOperation;
@@ -74,6 +76,7 @@ public class UserControllerImpl {
     final private UserProfileRepository userProfileRepository;
     final private InstituteClassSectionRepository classSectionRepository;
     final private UserDepartmentRepository userDepartmentRepository;
+    final private UserDocumentStoreRepository userDocumentStoreRepository;
     final private InstituteService instituteService;
     final private StudentService studentService;
     final private UserMapperImpl userMapper;
@@ -198,6 +201,12 @@ public class UserControllerImpl {
         User user = userService
                 .findById(userContext.getUserId()).orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
         ProfileDTO profileDTO = userMapper.entityToDTO(user);
+        UserDocumentStore displayStore = userDocumentStoreRepository
+                .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.DISPLAY_PICTURE);
+        UserDocumentStore passportStore = userDocumentStoreRepository
+                .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.PASSPORT_PICTURE);
+        profileDTO.setProfilePic(displayStore.getStoreURL());
+        profileDTO.setPassportPic(passportStore.getStoreURL());
         return EntityModel.of(profileDTO);
     }
 
@@ -207,6 +216,12 @@ public class UserControllerImpl {
         User user = userService
                 .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         ProfileDTO profileDTO = userMapper.entityToDTO(user);
+        UserDocumentStore displayStore = userDocumentStoreRepository
+                .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.DISPLAY_PICTURE);
+        UserDocumentStore passportStore = userDocumentStoreRepository
+                .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.PASSPORT_PICTURE);
+        profileDTO.setProfilePic(displayStore.getStoreURL());
+        profileDTO.setPassportPic(passportStore.getStoreURL());
         return EntityModel.of(profileDTO);
     }
 
@@ -242,6 +257,20 @@ public class UserControllerImpl {
                         linkTo(methodOn(UserControllerImpl.class)
                                 .one(dto.getId()))
                                 .withRel("profile")))
+                .map(dto -> {
+                    UserDocumentStore docStore = userDocumentStoreRepository
+                            .findByUserIdAndDocumentType(dto.getId(), UserDocumentType.DISPLAY_PICTURE);
+                    if (docStore != null)
+                        dto.setProfilePic(docStore.getStoreURL());
+                    return dto;
+                })
+                .map(dto -> {
+                    UserDocumentStore docStore = userDocumentStoreRepository
+                            .findByUserIdAndDocumentType(dto.getId(), UserDocumentType.PASSPORT_PICTURE);
+                    if (docStore != null)
+                        dto.setProfilePic(docStore.getStoreURL());
+                    return dto;
+                })
                 .collect(Collectors.toList());
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(size, page, all.getTotalElements(), all.getTotalPages());
         PagedModel<UserListDTO.UserDTO> userDTOS = PagedModel.of(collect, pageMetadata);
