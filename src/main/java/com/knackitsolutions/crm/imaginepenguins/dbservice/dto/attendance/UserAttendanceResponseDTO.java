@@ -1,29 +1,28 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.attendance.StudentAttendance;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class UserAttendanceResponseDTO extends RepresentationModel<UserAttendanceResponseDTO> {
+
     private Long userId;
     private String firstName;
+    private String getLastName;
+    private String middleName;
     private String lastName;
     private String profilePic;
+    private String passportPic;
 
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
     private LocalDateTime attendanceDate;

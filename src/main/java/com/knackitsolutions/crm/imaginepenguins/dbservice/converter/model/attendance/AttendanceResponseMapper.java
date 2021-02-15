@@ -101,7 +101,7 @@ public class AttendanceResponseMapper {
 
         UserAttendanceResponseDTO dto = new UserAttendanceResponseDTO();
         dto.setUserId(employee.getId());
-        dto.setRollNumber(employee.getEmployeeOrgId());
+        dto.setEmployeeId(employee.getEmployeeOrgId());
         dto.setFirstName(employee.getUserProfile().getFirstName());
         dto.setLastName(employee.getUserProfile().getLastName());
         return dto;

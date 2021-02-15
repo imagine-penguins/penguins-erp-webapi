@@ -5,8 +5,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.AddressMapperImpl;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.ContactMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.converter.model.UserMapperImpl;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
@@ -28,9 +26,6 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.document.AmazonDocumentStorageClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -138,6 +133,7 @@ public class UserControllerImpl {
 
     @PostMapping("/{userType}")
     public ResponseEntity<String> newUser(@PathVariable("userType") UserType userType, @RequestBody ProfileDTO dto){
+        log.trace("Creating new user. /users/{}", userType.getUserType());
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         List<PrivilegeCode> privilegeCodes = userContext
                 .getAuthorities()
@@ -205,8 +201,10 @@ public class UserControllerImpl {
                 .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.DISPLAY_PICTURE);
         UserDocumentStore passportStore = userDocumentStoreRepository
                 .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.PASSPORT_PICTURE);
-        profileDTO.setProfilePic(displayStore.getStoreURL());
-        profileDTO.setPassportPic(passportStore.getStoreURL());
+        if (displayStore != null)
+            profileDTO.setProfilePic(displayStore.getStoreURL());
+        if (passportStore != null)
+            profileDTO.setPassportPic(passportStore.getStoreURL());
         return EntityModel.of(profileDTO);
     }
 
@@ -251,22 +249,22 @@ public class UserControllerImpl {
                 .map(userMapper::userToUserDTO)
                 .map(dto -> dto.add(
                         linkTo(methodOn(UserControllerImpl.class)
-                                .updateActiveStatus(dto.getId(), !dto.getActive()))
+                                .updateActiveStatus(dto.getUserId(), !dto.getActive()))
                                 .withRel("update-active-status")))
                 .map(dto -> dto.add(
                         linkTo(methodOn(UserControllerImpl.class)
-                                .one(dto.getId()))
+                                .one(dto.getUserId()))
                                 .withRel("profile")))
                 .map(dto -> {
                     UserDocumentStore docStore = userDocumentStoreRepository
-                            .findByUserIdAndDocumentType(dto.getId(), UserDocumentType.DISPLAY_PICTURE);
+                            .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.DISPLAY_PICTURE);
                     if (docStore != null)
                         dto.setProfilePic(docStore.getStoreURL());
                     return dto;
                 })
                 .map(dto -> {
                     UserDocumentStore docStore = userDocumentStoreRepository
-                            .findByUserIdAndDocumentType(dto.getId(), UserDocumentType.PASSPORT_PICTURE);
+                            .findByUserIdAndDocumentType(dto.getUserId(), UserDocumentType.PASSPORT_PICTURE);
                     if (docStore != null)
                         dto.setProfilePic(docStore.getStoreURL());
                     return dto;
@@ -303,7 +301,7 @@ public class UserControllerImpl {
     }
 
     @GetMapping("/hierarchy")
-    public ResponseEntity<EntityModel<EmployeeHierarchy>> hierarchy(@RequestParam Optional<Long> userId) {
+    public ResponseEntity<EntityModel<UserHierarchy>> hierarchy(@RequestParam Optional<Long> userId) {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         User user = userService.findById(userContext.getUserId()).orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
         log.debug("User type is: {}", user.getUserType());
@@ -316,8 +314,8 @@ public class UserControllerImpl {
                 .map(aLong -> employeeService.findById(aLong).orElseThrow(() -> new UserNotFoundException(userId.get())))
                 .orElse((Employee)user);
 
-        EntityModel<EmployeeHierarchy> manager = EntityModel
-                .of(new EmployeeHierarchy(employee));
+        EntityModel<UserHierarchy> manager = EntityModel
+                .of(new UserHierarchy(employee, userDocumentStoreRepository.findByUserIdAndDocumentType(employee.getId(), UserDocumentType.DISPLAY_PICTURE)));
 
         Optional<Employee> managersManager = Optional.ofNullable(employee.getManager());
 

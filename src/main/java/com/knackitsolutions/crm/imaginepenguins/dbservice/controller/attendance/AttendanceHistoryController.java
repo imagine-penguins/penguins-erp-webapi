@@ -100,11 +100,13 @@ public class AttendanceHistoryController {
                 .collect(Collectors.toList());
 
         Map<String, List<SearchCriteria>> searchMap = FilterService.createSearchMap(search);
+        Boolean searchStudent = Boolean.FALSE;
+        Boolean searchEmployee = Boolean.FALSE;
 
         List<UserType> userTypes = new ArrayList<>();
-        if (searchMap.containsKey("userType")) {
+        if (searchMap.containsKey("usertype")) {
             userTypes = searchMap
-                    .get("userType")
+                    .get("usertype")
                     .stream()
                     .map(searchCriteria1 -> searchCriteria1.getValue())
                     .map(o -> o.toString())
@@ -112,45 +114,43 @@ public class AttendanceHistoryController {
                     .collect(Collectors.toList());
         }else{
             userTypes.add(UserType.STUDENT);
+            searchEmployee = Boolean.TRUE;
+            searchStudent = Boolean.TRUE;
             userTypes.add(UserType.EMPLOYEE);
         }
-        Specification<StudentAttendance> studentAttendanceSpecification = null;
-        Specification<EmployeeAttendance> employeeAttendanceSpecification = null;
-
+        if (userTypes.contains(UserType.STUDENT)) {
+            searchStudent = Boolean.TRUE;
+        }
+        if (userTypes.contains(UserType.EMPLOYEE)) {
+            searchEmployee = Boolean.TRUE;
+        }
+        Specification<StudentAttendance> studentAttendanceSpecification = Specification.where(null);
+        Specification<EmployeeAttendance> employeeAttendanceSpecification = Specification.where(null);
         try {
-            if (userTypes.contains(UserType.STUDENT))
+            if (searchEmployee)
                 studentAttendanceSpecification = AttendanceSpecification.filterStudentAttendance(searchMap);
-            if (userTypes.contains(UserType.EMPLOYEE))
+            if (searchStudent)
                 employeeAttendanceSpecification = AttendanceSpecification.filterEmployeeAttendance(searchMap);
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("Parsing Exception", e);
             throw new RuntimeException("Unable to parse date from search parameters.");
         }
 
         Specification<StudentAttendance> studentSpecByPrivileges = Specification.where(null);
         Specification<EmployeeAttendance> employeeSpecByPrivileges = Specification.where(null);
-        if (privilegeCodes.contains(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY)) {
+        if (privilegeCodes.contains(PrivilegeCode.EDIT_STUDENTS_ATTENDANCE_HISTORY) && searchStudent) {
             log.debug("EDIT_STUDENTS_ATTENDANCE_HISTORY: ");
             studentSpecByPrivileges = studentSpecByPrivileges
                     .or(AttendanceSpecification.studentAttendanceByInstituteId(userContext.getInstituteId()));
             studentAttendanceSpecification = studentAttendanceSpecification
                     .and(AttendanceSpecification.studentNotById(userContext.getUserId()));
         }
-        if (privilegeCodes.contains(PrivilegeCode.EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY)) {
+        if (privilegeCodes.contains(PrivilegeCode.EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY) && searchStudent) {
             log.debug("EDIT_CLASS_STUDENTS_ATTENDANCE_HISTORY: ");
-            /*User user = userService
-                    .findById(userContext.getUserId())
-                    .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
-            Set<InstituteClassSection> instituteClassSections = ((Teacher) user).getInstituteClassSections();
-            Stream<Long> instituteClassSectionIds = instituteClassSections
-                    .stream().map(i -> i.getId());
-            studentSpecByPrivileges = studentSpecByPrivileges
-                    .or(AttendanceSpecification.studentAttendanceByInstituteId(instituteClassSectionIds));*/
             studentSpecByPrivileges = studentSpecByPrivileges
                     .or(AttendanceSpecification.studentAttendanceBySupervisorId(userContext.getUserId()));
-
         }
-        if (privilegeCodes.contains(PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode())) {
+        if (privilegeCodes.contains(PrivilegeCode.EDIT_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode()) && searchEmployee) {
             log.debug("EDIT_EMPLOYEE_ATTENDANCE_HISTORY: ");
             employeeSpecByPrivileges = employeeSpecByPrivileges.or(
                     AttendanceSpecification.employeeAttendanceByInstituteId(userContext.getInstituteId())
@@ -158,16 +158,16 @@ public class AttendanceHistoryController {
             employeeAttendanceSpecification = employeeAttendanceSpecification
                     .and(AttendanceSpecification.employeeNotById(userContext.getUserId()));
         }
-        if (privilegeCodes.contains(PrivilegeCode.EDIT_SUBORDINATES_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode())) {
+        if (privilegeCodes.contains(PrivilegeCode.EDIT_SUBORDINATES_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode()) && searchEmployee) {
             log.debug("EDIT_SUBORDINATE_EMPLOYEE_ATTENDANCE_HISTORY: ");
             employeeSpecByPrivileges = employeeSpecByPrivileges.or(
                     AttendanceSpecification.employeeAttendanceBySupervisorId(userContext.getUserId())
             );
         }
-        if (userTypes.contains(UserType.STUDENT)) {
+        if (searchStudent) {
             studentAttendanceSpecification = studentAttendanceSpecification.and(studentSpecByPrivileges);
         }
-        if (userTypes.contains(UserType.EMPLOYEE)) {
+        if (searchEmployee) {
             employeeAttendanceSpecification = employeeAttendanceSpecification.and(employeeSpecByPrivileges);
         }
 
@@ -278,7 +278,7 @@ public class AttendanceHistoryController {
             Set<InstituteClassSection> instituteClassSections = ((Teacher) user).getInstituteClassSections();
             List<Long> instituteClassSectionIds = instituteClassSections
                     .stream().map(i -> i.getId()).collect(Collectors.toList());
-            specByPrivileges = specByPrivileges.or(UserSpecification.studentByClassIn(instituteClassSectionIds));
+            specByPrivileges = specByPrivileges.or(UserSpecification.studentsByClassIn(instituteClassSectionIds));
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.EDIT_SUBORDINATES_EMPLOYEE_ATTENDANCE_HISTORY.getPrivilegeCode())

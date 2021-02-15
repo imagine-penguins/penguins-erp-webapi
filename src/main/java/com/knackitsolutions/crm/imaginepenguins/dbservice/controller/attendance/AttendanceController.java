@@ -37,7 +37,6 @@ import javax.validation.constraints.Min;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import java.text.ParseException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -209,7 +208,7 @@ public class AttendanceController {
             , @RequestParam(defaultValue = "0") @Min(0) int page
             , @RequestParam(defaultValue = "10") @Min(1) int size
     ) {
-        log.trace("/users >> loadUsers started...");
+        log.trace("attendance/users >> loadUsers started...");
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         Pageable pageable = PageRequest.of(page, size, SortingService.sort(sort));
 
@@ -241,7 +240,7 @@ public class AttendanceController {
             Set<InstituteClassSection> instituteClassSections = ((Teacher) user).getInstituteClassSections();
             List<Long> instituteClassSectionIds = instituteClassSections
                     .stream().map(i -> i.getId()).collect(Collectors.toList());
-            specBasedOnPrivilege = specBasedOnPrivilege.or(UserSpecification.studentByClassIn(instituteClassSectionIds));
+            specBasedOnPrivilege = specBasedOnPrivilege.or(UserSpecification.studentsByClassIn(instituteClassSectionIds));
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE.getPrivilegeCode())

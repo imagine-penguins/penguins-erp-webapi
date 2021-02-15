@@ -3,6 +3,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.dto.attendance;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveType;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,11 +18,14 @@ import java.util.Date;
 public class LeaveResponseDTO extends RepresentationModel<LeaveResponseDTO> {
 
     private Long id;
+
     private Long userId;
     private String firstName;
     private String lastName;
-    private Long approvesId;
+    private String middleName;
     private String profilePic;
+    private String passportPic;
+    private Long approvesId;
 
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
     private LocalDateTime startDate;

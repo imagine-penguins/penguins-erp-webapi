@@ -1,8 +1,6 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.AttendanceStatus;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import lombok.extern.log4j.Log4j2;
@@ -10,7 +8,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 import java.text.ParseException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,54 +39,6 @@ public class UserSpecification {
         };
     }
 
-    public static Specification<User> employeeWithAttendanceDateBetween(Date startDate, Date endDate) {
-        return (root, query, criteriaBuilder) -> {
-            Root<Employee> employeeRoot = criteriaBuilder.treat(root, Employee.class);
-            return criteriaBuilder
-                    .between(
-                            employeeRoot
-                                    .joinSet("employeeAttendances", JoinType.INNER)
-                                    .join("attendance", JoinType.LEFT)
-                                    .get("attendanceDate")
-                            , startDate
-                            , endDate);
-        };
-    }
-
-    public static Specification<User> studentWithAttendanceDateBetween(Date startDate, Date endDate) {
-        return (root, query, criteriaBuilder) -> {
-            Root<Student> employeeRoot = criteriaBuilder.treat(root, Student.class);
-            return criteriaBuilder
-                    .between(
-                            employeeRoot
-                                    .joinSet("studentAttendances", JoinType.INNER)
-                                    .join("attendance", JoinType.LEFT)
-                                    .get("attendanceDate")
-                            , startDate
-                            , endDate);
-        };
-    }
-
-    public static Specification<User> studentWithAttendanceDate(LocalDateTime startDate, SearchOperation searchOperation) {
-        return (root, query, criteriaBuilder) -> {
-            Root<Student> employeeRoot = criteriaBuilder.treat(root, Student.class);
-            Expression expression = employeeRoot
-                    .joinSet("studentAttendances", JoinType.INNER)
-                    .join("attendance", JoinType.LEFT)
-                    .get("attendanceDate");
-            if (searchOperation == SearchOperation.GREATER_THAN) {
-                return criteriaBuilder.greaterThan(expression, startDate);
-            } else if (searchOperation == SearchOperation.GREATER_THAN_EQUAL) {
-                return criteriaBuilder.greaterThanOrEqualTo(expression, startDate);
-            } else if (searchOperation == SearchOperation.LESS_THAN) {
-                return criteriaBuilder.lessThan(expression, startDate);
-            } else if (searchOperation == SearchOperation.LESS_THAN_EQUAL) {
-                return criteriaBuilder.lessThanOrEqualTo(expression, startDate);
-            } else {
-                return criteriaBuilder.equal(expression, startDate);
-            }
-        };
-    }
     public static Specification<User> usersByPrivilegeIn(List<Integer> privileges) {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inPrivilege = criteriaBuilder.in(root
@@ -183,7 +132,7 @@ public class UserSpecification {
         };
     }
 
-    public static Specification<User> studentByClassIn(List<Long> classSectionIds) {
+    public static Specification<User> studentsByClassIn(List<Long> classSectionIds) {
         return (root, query, criteriaBuilder) -> {
             Root<Student> studentRoot = criteriaBuilder.treat(root, Student.class);
             CriteriaBuilder.In<Long> inClassSection = criteriaBuilder.in(
@@ -230,33 +179,6 @@ public class UserSpecification {
         });
     }
 
-    /*public static Specification<User> filter(Map<String, List<SearchCriteria>> searchMap) {
-        Specification<User> userSpecification = Specification.where(null);
-        for (Map.Entry<String, List<SearchCriteria>> entry : searchMap.entrySet()) {
-            String key = entry.getKey();
-            SearchCriteria firstValue = entry.getValue().stream().findFirst().get();
-            Stream<String> valueStream = entry
-                    .getValue().stream().map(searchCriteria -> searchCriteria.getValue()).map(o -> o.toString());
-            if (key.equalsIgnoreCase("department")) {
-                userSpecification = userSpecification
-                        .and((Specification<User>) userByDepartmentIdIn(valueStream.map(Integer::parseInt)));
-            } else if (key.equalsIgnoreCase("userType")) {
-                userSpecification = userSpecification.and(
-                        new GenericSpecification<>(
-                                new SearchCriteria("userType", valueStream, SearchOperation.IN)
-                        )
-                );
-
-            } else if (key.equalsIgnoreCase("privilege")) {
-                Stream<Integer> codeStream = valueStream.map(Integer::parseInt);
-                userSpecification = userSpecification.and((Specification<User>) userByPrivileges(codeStream));
-            } else if (key.equalsIgnoreCase("designation")) {
-            }
-
-        }
-        return userSpecification;
-    }*/
-
     public static Specification<User> filterUsers(Map<String, List<SearchCriteria>> searchMap) throws ParseException {
         Map<String, List<SearchCriteria>> search = searchMap;
         Specification<User> result = Specification.where(null);
@@ -277,7 +199,7 @@ public class UserSpecification {
             }else if (key.equalsIgnoreCase("class")) {
                 List<Long> classes = valueStream.map(Long::parseLong)
                         .collect(Collectors.toList());
-                result = result.and(UserSpecification.studentByClassIn(classes));
+                result = result.and(UserSpecification.studentsByClassIn(classes));
             }else if (key.equalsIgnoreCase("role")) {
                 List<Integer> privileges = valueStream
                         .map(Integer::parseInt)

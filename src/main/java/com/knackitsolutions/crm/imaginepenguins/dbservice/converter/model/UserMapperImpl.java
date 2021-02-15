@@ -75,7 +75,7 @@ public class UserMapperImpl {
         dto.setContact(contactMapper.contactToContactDTO(entity.getUserProfile().getContact()));
         dto.setFirstName(entity.getUserProfile().getFirstName());
         dto.setLastName(entity.getUserProfile().getLastName());
-        dto.setId(entity.getId());
+        dto.setUserId(entity.getId());
         dto.setUserType(entity.getUserType());
         return dto;
     }
@@ -127,6 +127,7 @@ public class UserMapperImpl {
             generalInformation
                     .setReportingManagerName(manager.getUserProfile().getFirstName() + " " + manager.getUserProfile().getLastName());
             generalInformation.setDesignation(employee.getDesignation());
+            generalInformation.setEmployeeOrgId(employee.getEmployeeOrgId());
         }
         generalInformation.setDateOfJoining(userProfile.getDateOfJoining());
         dto.setGeneralInformation(generalInformation);

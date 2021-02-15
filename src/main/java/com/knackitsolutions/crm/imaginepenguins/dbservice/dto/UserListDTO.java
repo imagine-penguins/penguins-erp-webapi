@@ -23,12 +23,13 @@ public class UserListDTO extends RepresentationModel<UserListDTO> {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UserDTO extends RepresentationModel<UserDTO> {
+    public static class UserDTO extends RepresentationModel<UserDTO>{
         private String profilePic;
         private String passportPic;
         private String firstName;
         private String lastName;
-        private Long id;
+        private String middleName;
+        private Long userId;
         private ContactDTO contact;
         private UserType userType;
         private Boolean active;
