@@ -40,7 +40,8 @@ public class FormAwareAuthenticationSuccessHandler implements AuthenticationSucc
         dto.add(userFacade.loginLinks(userContext.getUserId()));
 
         response.setHeader("token", accessToken.getToken());
-        response.setHeader("refreshToken", refreshToken.getToken());
+        response.setHeader("refresh-token", refreshToken.getToken());
+        response.setHeader("Access-Control-Expose-Headers", "token, refresh-token");
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 

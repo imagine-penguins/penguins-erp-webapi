@@ -1,6 +1,5 @@
 package com.knackitsolutions.crm.imaginepenguins.dbservice.controller.attendance;
 
-import com.knackitsolutions.crm.imaginepenguins.dbservice.config.DatesConfig;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.LeaveRequestStatus;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.Period;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
@@ -25,7 +24,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.security.model.UserCon
 import com.knackitsolutions.crm.imaginepenguins.dbservice.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.jni.Local;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +37,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +57,7 @@ public class LeaveRequestController {
     private final LeaveRequestService leaveRequestService;
     private final InstituteDepartmentRepository departmentRepository;
     private final UserDocumentStoreRepository userDocumentStoreRepository;
+
     @PostMapping
     public ResponseEntity<String> saveLeaveRequest(@RequestBody LeaveRequestDTO leaveRequestDTO) {
         log.trace("Request for new leave application. Processing...");
@@ -176,8 +175,8 @@ public class LeaveRequestController {
         return null;
     }
 */
-    @PutMapping("/{leaveRequestId}")
-    public ResponseEntity<String> updateLeaveRequest(@PathVariable("leaveRequestId") Long leaveRequestId
+    @PutMapping("/{leave-request-id}")
+    public ResponseEntity<String> updateLeaveRequest(@PathVariable("leave-request-id") Long leaveRequestId
             , @RequestBody LeaveRequestUpdateDTO dto) {
         LeaveRequest oldLeaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new RuntimeException("Leave Request Not Found With the provided Id"));
@@ -188,8 +187,8 @@ public class LeaveRequestController {
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Leave not Updated.");
     }
 
-    @PutMapping("/{leaveRequestId}/status/{status}")
-    public ResponseEntity<String> updateLeaveRequestStatus(@PathVariable("leaveRequestId") Long leaveRequestId
+    @PutMapping("/{leave-request-id}/status/{status}")
+    public ResponseEntity<String> updateLeaveRequestStatus(@PathVariable("leave-request-id") Long leaveRequestId
             , @PathVariable("status") LeaveRequestStatus status
             , @RequestParam("reason") Optional<String> reason) {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();

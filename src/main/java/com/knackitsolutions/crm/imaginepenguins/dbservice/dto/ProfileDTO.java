@@ -31,6 +31,8 @@ public class ProfileDTO {
         private ContactDTO contactDTO;
         private String reportingManagerName;
         private Long reportingManagerId;
+        private String reportingManagerProfilePic;
+        private String reportingManagerDesignation;
         private AddressDTO communicationAddress;
         private List<Long> departments;
         private Long classSectionId;

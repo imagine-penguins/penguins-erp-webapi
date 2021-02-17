@@ -135,9 +135,9 @@ public class AttendanceController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Attendance is updated");
     }
 
-    @PutMapping(value = "/{attendanceId}/users/{userId}/status/{status}")
-    public ResponseEntity<String> updateAttendance(@PathVariable("attendanceId") Long attendanceId
-            , @PathVariable("userId") Long userId
+    @PutMapping(value = "/{attendance-id}/users/{user-id}/status/{status}")
+    public ResponseEntity<String> updateAttendance(@PathVariable("attendance-id") Long attendanceId
+            , @PathVariable("user-id") Long userId
             , @PathVariable("status") AttendanceStatus attendanceStatus) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         if (user.getUserType() == UserType.STUDENT) {
@@ -249,7 +249,6 @@ public class AttendanceController {
             specBasedOnPrivilege = specBasedOnPrivilege.or(
                     UserSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
-
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_SUBORDINATES_EMPLOYEE_ATTENDANCE.getPrivilegeCode())

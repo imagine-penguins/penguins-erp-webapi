@@ -105,6 +105,7 @@ public class UserMapperImpl {
             generalInformation.setClassName(student.getInstituteClassSection().getInstituteClass().getClasss().getClassName());
             generalInformation.setSectionName(student.getInstituteClassSection().getSection().getSectionName());
             generalInformation.setRollNumber(student.getRollNumber());
+            generalInformation.setReportingManagerDesignation(classTeacher.getDesignation());
         }
         UserProfile userProfile = user.getUserProfile();
         generalInformation.setContactDTO(contactMapper.contactToContactDTO(userProfile.getContact()));
@@ -128,6 +129,7 @@ public class UserMapperImpl {
                     .setReportingManagerName(manager.getUserProfile().getFirstName() + " " + manager.getUserProfile().getLastName());
             generalInformation.setDesignation(employee.getDesignation());
             generalInformation.setEmployeeOrgId(employee.getEmployeeOrgId());
+            generalInformation.setReportingManagerDesignation(manager.getDesignation());
         }
         generalInformation.setDateOfJoining(userProfile.getDateOfJoining());
         dto.setGeneralInformation(generalInformation);

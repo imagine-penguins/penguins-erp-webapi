@@ -76,7 +76,7 @@ public class UserControllerImpl {
     final private StudentService studentService;
     final private UserMapperImpl userMapper;
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/fields")
     public EntityModel<Map<String, Object>> one(@PathVariable("id") Long id){
         User user = userService.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         UserLoginResponseDTO dto = userFacade.findById(id);
@@ -87,7 +87,7 @@ public class UserControllerImpl {
         return EntityModel.of(map);
     }
 
-    @PutMapping("/{userId}/upload")
+    @PutMapping("/{user-id}/upload")
     public ResponseEntity<String> uploadDoc(@RequestParam("file") MultipartFile multipartFile
             , @PathVariable Long userId, @RequestParam("doc-type") UserDocumentType userDocumentType) throws URISyntaxException {
         String fileName = storageClient.storeFile(multipartFile
@@ -98,7 +98,7 @@ public class UserControllerImpl {
         return ResponseEntity.created(new URI(fileName)).body("success!!");
     }
 
-    @GetMapping("/{userId}/download")
+    @GetMapping("/{user-id}/download")
     public ResponseEntity<Resource> downloadDoc(@PathVariable Long userId
             , @RequestParam("doc-type") UserDocumentType userDocumentType
             , HttpServletRequest request) {
@@ -131,8 +131,9 @@ public class UserControllerImpl {
     }
 
 
-    @PostMapping("/{userType}")
-    public ResponseEntity<String> newUser(@PathVariable("userType") UserType userType, @RequestBody ProfileDTO dto){
+    @PostMapping(value = "/{user-type}")
+    @CrossOrigin(exposedHeaders = {"user-id"})
+    public ResponseEntity<String> newUser(@PathVariable("user-type") UserType userType, @RequestBody ProfileDTO dto){
         log.trace("Creating new user. /users/{}", userType.getUserType());
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         List<PrivilegeCode> privilegeCodes = userContext
@@ -205,11 +206,19 @@ public class UserControllerImpl {
             profileDTO.setProfilePic(displayStore.getStoreURL());
         if (passportStore != null)
             profileDTO.setPassportPic(passportStore.getStoreURL());
+        UserDocumentStore managerProfile = userDocumentStoreRepository
+                .findByUserIdAndDocumentType(profileDTO.getGeneralInformation().getReportingManagerId()
+                        , UserDocumentType.DISPLAY_PICTURE);
+        if (managerProfile != null) {
+            profileDTO
+                    .getGeneralInformation()
+                    .setReportingManagerProfilePic(managerProfile.getStoreURL());
+        }
         return EntityModel.of(profileDTO);
     }
 
-    @GetMapping("/{userId}")
-    public EntityModel<ProfileDTO> profile(@PathVariable Long userId) {
+    @GetMapping("/{user-id}")
+    public EntityModel<ProfileDTO> profile(@PathVariable("user-id") Long userId) {
         UserContext userContext = (UserContext)authenticationFacade.getAuthentication().getPrincipal();
         User user = userService
                 .findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
@@ -218,8 +227,18 @@ public class UserControllerImpl {
                 .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.DISPLAY_PICTURE);
         UserDocumentStore passportStore = userDocumentStoreRepository
                 .findByUserIdAndDocumentType(profileDTO.getUserId(), UserDocumentType.PASSPORT_PICTURE);
-        profileDTO.setProfilePic(displayStore.getStoreURL());
-        profileDTO.setPassportPic(passportStore.getStoreURL());
+        if (displayStore != null)
+            profileDTO.setProfilePic(displayStore.getStoreURL());
+        if (passportStore != null)
+            profileDTO.setPassportPic(passportStore.getStoreURL());
+        UserDocumentStore managerProfile = userDocumentStoreRepository
+                .findByUserIdAndDocumentType(profileDTO.getGeneralInformation().getReportingManagerId()
+                        , UserDocumentType.DISPLAY_PICTURE);
+        if (managerProfile != null) {
+            profileDTO
+                    .getGeneralInformation()
+                    .setReportingManagerProfilePic(managerProfile.getStoreURL());
+        }
         return EntityModel.of(profileDTO);
     }
 
@@ -276,8 +295,8 @@ public class UserControllerImpl {
         return userDTOS;
     }
 
-    @PutMapping(value = "/{userId}/{status}")
-    public ResponseEntity<EntityModel<String>> updateActiveStatus(@PathVariable(value = "userId") Long userId
+    @PutMapping(value = "/{user-id}/{status}")
+    public ResponseEntity<EntityModel<String>> updateActiveStatus(@PathVariable(value = "user-id") Long userId
             , @PathVariable(value = "status") Boolean active) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         if (active == user.getActive())
@@ -362,8 +381,6 @@ public class UserControllerImpl {
         }
         userSpecification = userSpecification
                 .and(new GenericSpecification<>(new SearchCriteria("userType", UserType.EMPLOYEE, SearchOperation.EQUAL)));
-
-
         return userRepository.findAll(userSpecification).stream().map(user -> {
             Employee employee = (Employee) user;
             Map<String, String> objectMap = new HashMap<>();
