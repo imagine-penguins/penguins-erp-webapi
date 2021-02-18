@@ -53,11 +53,11 @@ public class UserProfile {
 
     @Embedded
     @AttributeOverrides(value = {
-            @AttributeOverride(name = "addressLine1", column = @Column(name = "p_house_number")),
-            @AttributeOverride(name = "addressLine2", column = @Column(name = "p_street")),
-            @AttributeOverride(name = "state", column = @Column(name = "p_state")),
-            @AttributeOverride(name = "country", column = @Column(name = "p_country")),
-            @AttributeOverride(name = "zipcode", column = @Column(name = "p_zipcode"))
+            @AttributeOverride(name = "addressLine1", column = @Column(name = "house_number")),
+            @AttributeOverride(name = "addressLine2", column = @Column(name = "street")),
+            @AttributeOverride(name = "state", column = @Column(name = "state")),
+            @AttributeOverride(name = "country", column = @Column(name = "country")),
+            @AttributeOverride(name = "zipcode", column = @Column(name = "zipcode"))
     })
     private Address personalAddress;
 

@@ -175,7 +175,8 @@ public enum PrivilegeCode {
                     linkTo(methodOn(UserControllerImpl.class)
                             .all(0, 1, null, null))
                             .withRel("users"),
-                    linkTo(methodOn(UserControllerImpl.class).hierarchy(null)).withRel("hierarchy")
+                    linkTo(methodOn(UserControllerImpl.class).profile(null)).withRel("profile"),
+                    linkTo(methodOn(UserControllerImpl.class).newUser(null, null)).withRel("new-user")
             );
         }
     },
@@ -192,10 +193,9 @@ public enum PrivilegeCode {
     VIEW_USER_HIERARCHY("view-user-hierarchy"){
         @Override
         public List<Link> getLinks() {
-            return Arrays.asList(linkTo(methodOn(UserControllerImpl.class).hierarchy(null)).withRel("hierarchy"));
+            return Arrays.asList(linkTo(methodOn(UserControllerImpl.class).profile(null)).withRel("profile"));
         }
-    }
-    ;
+    };
 
     private String privilegeCode;
 

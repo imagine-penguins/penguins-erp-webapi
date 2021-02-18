@@ -13,12 +13,16 @@ public class EmployeeTypeConverter implements AttributeConverter<EmployeeType, S
 
     @Override
     public String convertToDatabaseColumn(EmployeeType attribute) {
+        if (attribute == null)
+            return null;
         log.info("Attribute---:> {}", attribute.getEmployeeTypeValue());
         return attribute.getEmployeeTypeValue();
     }
 
     @Override
     public EmployeeType convertToEntityAttribute(String dbData) {
+        if (dbData == null)
+            return null;
         log.info("DbData---:> {}", dbData);
         return EmployeeType.of(dbData);
     }

@@ -34,11 +34,6 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.findAll();
     }
 
-    public Student newStudent(Student student) {
-        student.setPassword(passwordEncoder.encode(student.getPassword()));
-        return studentRepository.save(student);
-    }
-
     public Long count(Specification<Student> specification) {
         return studentRepository.count(specification);
     }
@@ -62,7 +57,8 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Student save(Student student) {
+    public Student newStudent(Student student) {
+        student.setPassword(passwordEncoder.encode(student.getPassword()));
         return studentRepository.save(student);
     }
 

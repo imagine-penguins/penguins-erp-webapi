@@ -26,5 +26,5 @@ public interface StudentService {
 
     List<Student> findAll(Specification<Student> specification, Sort sort);
 
-    Student save(Student student);
+    Student newStudent(Student student);
 }

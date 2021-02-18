@@ -2,6 +2,7 @@ package com.knackitsolutions.crm.imaginepenguins.dbservice.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
+import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.EmployeeType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.PrivilegeCode;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserDocumentType;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.constant.UserType;
@@ -12,10 +13,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.document.UserDo
 import com.knackitsolutions.crm.imaginepenguins.dbservice.exception.UserNotFoundException;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.IAuthenticationFacade;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.facade.UserFacade;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.InstituteClassSectionRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserDepartmentRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserProfileRepository;
-import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.UserRepository;
+import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.*;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.document.UserDocumentStoreRepository;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.GenericSpecification;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.repository.specification.SearchCriteria;
@@ -38,6 +36,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,10 +70,12 @@ public class UserControllerImpl {
     final private UserProfileRepository userProfileRepository;
     final private InstituteClassSectionRepository classSectionRepository;
     final private UserDepartmentRepository userDepartmentRepository;
+    final private InstituteDepartmentRepository instituteDepartmentRepository;
     final private UserDocumentStoreRepository userDocumentStoreRepository;
     final private InstituteService instituteService;
     final private StudentService studentService;
     final private UserMapperImpl userMapper;
+    final private TeacherService teacherService;
 
     @GetMapping("/{id}/fields")
     public EntityModel<Map<String, Object>> one(@PathVariable("id") Long id){
@@ -133,8 +134,9 @@ public class UserControllerImpl {
 
     @PostMapping(value = "/{user-type}")
     @CrossOrigin(exposedHeaders = {"user-id"})
+    @Transactional
     public ResponseEntity<String> newUser(@PathVariable("user-type") UserType userType, @RequestBody ProfileDTO dto){
-        log.trace("Creating new user. /users/{}", userType.getUserType());
+        log.trace("Creating new user. /users/{}, \n dto: {}", userType.getUserType(), dto);
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
         List<PrivilegeCode> privilegeCodes = userContext
                 .getAuthorities()
@@ -145,6 +147,19 @@ public class UserControllerImpl {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User does not has permission to add new User");
         }
         User newUser = null;
+        EmployeeType employeeType = EmployeeType.NON_TEACHER;
+        List<InstituteDepartment> instituteDepartments = instituteDepartmentRepository.findAllById(dto.getGeneralInformation().getDepartments());
+        List<UserDepartment> userDepartments = new ArrayList<>();
+
+        log.trace("Creating user departments");
+        for (InstituteDepartment instituteDepartment : instituteDepartments) {
+            userDepartments.add(new UserDepartment(newUser, instituteDepartment));
+            if (instituteDepartment.getPrimary()) {
+                if (instituteDepartment.getDepartmentName().equalsIgnoreCase("TEACHER")) {
+                    employeeType = EmployeeType.TEACHER;
+                }
+            }
+        }
         if (userType == UserType.STUDENT) {
             Optional<InstituteClassSection> classSection = classSectionRepository.findById(
                     dto.getGeneralInformation().getClassSectionId()
@@ -154,7 +169,8 @@ public class UserControllerImpl {
             classSection.ifPresent(cs -> cs.setStudent(newStudent));
             newUser = newStudent;
         } else if (userType == UserType.EMPLOYEE) {
-            Employee newEmployee = new Employee();
+            Employee newEmployee = employeeType == EmployeeType.TEACHER ? new Teacher() : new Employee();
+
             newEmployee.setEmployeeOrgId(dto.getGeneralInformation().getEmployeeOrgId());
             instituteService
                     .findById(userContext.getInstituteId())
@@ -166,29 +182,37 @@ public class UserControllerImpl {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid UserType Selected. Valid values are S -> Student, E -> Employee");
         }
-
-        UserProfile newUserProfile = userMapper.dtoToEntity(dto);
-
-        newUser.setActive(dto.getGeneralInformation().getActiveStatus());
-        newUser.setUsername(userService.generateUsername(newUserProfile.getContact().getEmail(), newUserProfile.getId()));
-        newUser.setPassword(userService.generateRandomPassword(newUserProfile.getContact().getEmail()));
         newUser.setUserType(userType);
-
+        log.trace("Creating user profile.");
+        UserProfile newUserProfile = userMapper.dtoToEntity(dto);
         newUserProfile.setUser(newUser);
         newUserProfile = userProfileRepository.save(newUserProfile);
 
-        List<UserDepartment> userDepartments = userDepartmentRepository.findAllById(dto.getGeneralInformation().getDepartments());
+        log.trace("Generating username and password");
+        newUser.setActive(dto.getGeneralInformation().getActiveStatus());
+        newUser.setUsername(userService.generateUsername(newUserProfile.getContact().getEmail(), newUserProfile.getId()));
+        newUser.setPassword(userService.generateRandomPassword(newUserProfile.getContact().getEmail(), newUserProfile.getId()));
 
         newUser.setUserDepartments(userDepartments);
 
+        log.trace("Creating new user.");
         if (userType == UserType.EMPLOYEE) {
-            newUser = employeeService.newEmployee((Employee) newUser);
+            if (employeeType == EmployeeType.TEACHER) {
+                log.trace("Creating new teacher");
+                newUser = teacherService.newTeacher((Teacher) newUser);
+            }else {
+                log.trace("Creating new employee");
+                newUser = employeeService.newEmployee((Employee) newUser);
+            }
         } else if (userType == UserType.STUDENT) {
-            newUser = studentService.save((Student) newUser);
+            log.trace("Creating new student");
+            newUser = studentService.newStudent((Student) newUser);
         }
+        userDepartmentRepository.saveAll(userDepartments);
         return ResponseEntity
                 .created(linkTo(methodOn(UserControllerImpl.class).profile(newUser.getId())).toUri())
                 .header("user-id", newUser.getId().toString())
+                .header("user-type", userType.getUserType())
                 .body("Successfully Created New User.");
     }
 
@@ -318,7 +342,7 @@ public class UserControllerImpl {
         }
         return ResponseEntity.badRequest().build();
     }
-
+/*
     @GetMapping("/hierarchy")
     public ResponseEntity<EntityModel<UserHierarchy>> hierarchy(@RequestParam Optional<Long> userId) {
         UserContext userContext = (UserContext) authenticationFacade.getAuthentication().getPrincipal();
@@ -346,7 +370,7 @@ public class UserControllerImpl {
         );
 
         return ResponseEntity.ok(manager);
-    }
+    }*/
 
     @GetMapping("/institutes")
     public CollectionModel<EntityModel<InstituteDTO>> myInstitute() {

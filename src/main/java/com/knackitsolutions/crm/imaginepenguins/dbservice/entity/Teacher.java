@@ -12,11 +12,6 @@ import java.util.Set;
 @Table(name = "teacher")
 @PrimaryKeyJoinColumn(name = "teacher_id")
 public class Teacher extends Employee{
-
-//    @Id
-//    @Column(name = "teacher_id")
-//    Long id;
-
     @OneToMany(mappedBy = "teacher")
     private Set<TeacherSubject> teacherSubjects = new HashSet<>();
 
@@ -25,11 +20,6 @@ public class Teacher extends Employee{
 
     @OneToMany(mappedBy = "teacher")
     private Set<InstituteClassSectionSubject> instituteClassSectionSubjects = new HashSet<>();
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @MapsId
-//            @JoinColumn(name = "teacher_id", referencedColumnName = "employee_id")
-//    Employee employee;
-
 
     public Teacher() {
     }

@@ -6,6 +6,7 @@ import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserCreationDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.dto.UserListDTO;
 import com.knackitsolutions.crm.imaginepenguins.dbservice.entity.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Log4j2
 public class UserMapperImpl {
 
     private final UserProfileMapperImpl userProfileMapper;
@@ -124,12 +126,14 @@ public class UserMapperImpl {
         if (user.getUserType() == UserType.EMPLOYEE) {
             Employee employee = (Employee) user;
             Employee manager = employee.getManager();
-            generalInformation.setReportingManagerId(manager.getId());
-            generalInformation
-                    .setReportingManagerName(manager.getUserProfile().getFirstName() + " " + manager.getUserProfile().getLastName());
+            if (manager != null) {
+                generalInformation
+                        .setReportingManagerName(manager.getUserProfile().getFirstName() + " " + manager.getUserProfile().getLastName());
+                generalInformation.setReportingManagerId(manager.getId());
+                generalInformation.setReportingManagerDesignation(manager.getDesignation());
+            }
             generalInformation.setDesignation(employee.getDesignation());
             generalInformation.setEmployeeOrgId(employee.getEmployeeOrgId());
-            generalInformation.setReportingManagerDesignation(manager.getDesignation());
         }
         generalInformation.setDateOfJoining(userProfile.getDateOfJoining());
         dto.setGeneralInformation(generalInformation);
@@ -142,7 +146,6 @@ public class UserMapperImpl {
         personalInformation.setGuardianRelation(userProfile.getGuardianRelation());
         personalInformation.setGuardianMobileNo(userProfile.getGuardianPhoneNo());
         dto.setPersonalInformation(personalInformation);
-
         return dto;
     }
 
@@ -159,7 +162,9 @@ public class UserMapperImpl {
     public UserProfile dtoToEntity(ProfileDTO dto) {
         UserProfile newUserProfile = new UserProfile();
         newUserProfile.setContact(contactMapper.contactDTOtoContact(dto.getGeneralInformation().getContactDTO()));
-        newUserProfile.setPersonalAddress(addressMapper.addressDTOToAddress(dto.getPersonalInformation().getHomeAddress()));
+        newUserProfile
+                .setPersonalAddress(addressMapper
+                        .addressDTOToAddress(dto.getPersonalInformation().getHomeAddress()));
         newUserProfile
                 .setCommunicationAddress(addressMapper
                         .addressDTOToAddress(dto.getGeneralInformation().getCommunicationAddress()));
@@ -172,6 +177,7 @@ public class UserMapperImpl {
         newUserProfile.setGuardianName(dto.getPersonalInformation().getGuardianName());
         newUserProfile.setGuardianPhoneNo(dto.getPersonalInformation().getGuardianMobileNo());
         newUserProfile.setGuardianRelation(dto.getPersonalInformation().getGuardianRelation());
+        log.debug("UserProfile: {}", newUserProfile);
         return newUserProfile;
     }
 }

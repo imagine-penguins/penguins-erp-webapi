@@ -48,13 +48,13 @@ public class UserService{
     public List<User> findByDepartmentId(Long departmentId) {
         return userRepository.findByUserDepartmentsInstituteDepartmentId(departmentId);
     }
-
-    public String generateRandomPassword(String email) {
+    public String generateRandomPassword(String email, Long userId) {
         String temp = email.substring(1, email.indexOf('@'));
-        return "" + Character.toUpperCase(email.charAt(0))
+        /*return "" + Character.toUpperCase(email.charAt(0))
                 + shuffle(temp.substring(0, (int)(Math.random() * temp.length()))).toLowerCase(Locale.ROOT)
                 + randomChar()
-                + (int)Math.random() * 1000;
+                + (int)Math.random() * 1000; */
+        return "" + Character.toUpperCase(email.charAt(0)) + temp + "_" + userId;
     }
 
     public Page<User> findAll(Specification<User> userSpecification, Pageable pageable) {
