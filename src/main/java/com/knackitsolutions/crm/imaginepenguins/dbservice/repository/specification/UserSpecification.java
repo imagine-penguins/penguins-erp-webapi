@@ -20,8 +20,8 @@ public class UserSpecification {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inDepartment = criteriaBuilder
                     .in(root
-                            .joinSet("userDepartments", JoinType.INNER)
-                            .join("instituteDepartment", JoinType.INNER)
+                            .joinSet("userDepartments", JoinType.LEFT)
+                            .join("instituteDepartment", JoinType.LEFT)
                             .get("id")
                     );
             departmentIds.forEach(inDepartment::value);
@@ -33,7 +33,7 @@ public class UserSpecification {
         return (root, query, criteriaBuilder) -> {
             Root<Employee> employeeRoot = criteriaBuilder.treat(root, Employee.class);
             CriteriaBuilder.In<Long> inManager = criteriaBuilder
-                    .in(employeeRoot.join("manager").get("id"));
+                    .in(employeeRoot.join("manager", JoinType.LEFT).get("id"));
             managers.forEach(inManager::value);
             return inManager;
         };
@@ -42,9 +42,9 @@ public class UserSpecification {
     public static Specification<User> usersByPrivilegeIn(List<Integer> privileges) {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inPrivilege = criteriaBuilder.in(root
-                    .joinList("userPrivileges", JoinType.INNER)
-                    .join("departmentPrivilege", JoinType.INNER)
-                    .join("privilege", JoinType.INNER)
+                    .joinList("userPrivileges", JoinType.LEFT)
+                    .join("departmentPrivilege", JoinType.LEFT)
+                    .join("privilege", JoinType.LEFT)
                     .get("id"));
             privileges.forEach(inPrivilege::value);
             return inPrivilege;
@@ -55,8 +55,8 @@ public class UserSpecification {
         return (root, query, criteriaBuilder) -> {
             Root<Student> studentRoot = criteriaBuilder.treat(root, Student.class);
             return criteriaBuilder.equal(studentRoot
-                    .joinList("studentAttendances", JoinType.INNER)
-                    .join("attendance", JoinType.INNER)
+                    .joinList("studentAttendances", JoinType.LEFT)
+                    .join("attendance", JoinType.LEFT)
                     .get("attendanceStatus"), status);
         };
     }
@@ -65,8 +65,8 @@ public class UserSpecification {
         return (root, query, criteriaBuilder) -> {
             Root<Student> studentRoot = criteriaBuilder.treat(root, Student.class);
             CriteriaBuilder.In<AttendanceStatus> statusIn = criteriaBuilder.in(studentRoot
-                    .joinList("studentAttendances", JoinType.INNER)
-                    .join("attendance", JoinType.INNER)
+                    .joinList("studentAttendances", JoinType.LEFT)
+                    .join("attendance", JoinType.LEFT)
                     .get("attendanceStatus"));
             statuses.forEach(statusIn::value);
             return statusIn;
@@ -78,7 +78,8 @@ public class UserSpecification {
             Root<Employee> employeeRoot = criteriaBuilder.treat(root, Employee.class);
             CriteriaBuilder.In<AttendanceStatus> attendanceStatusIn = criteriaBuilder.in(employeeRoot
                     .joinSet("employeeAttendances", JoinType.LEFT)
-                    .join("attendance", JoinType.LEFT).get("attendanceStatus"));
+                    .join("attendance", JoinType.LEFT)
+                    .get("attendanceStatus"));
             statuses.forEach(attendanceStatusIn::value);
             return attendanceStatusIn;
         };
@@ -137,7 +138,7 @@ public class UserSpecification {
             Root<Student> studentRoot = criteriaBuilder.treat(root, Student.class);
             CriteriaBuilder.In<Long> inClassSection = criteriaBuilder.in(
                     studentRoot
-                            .join("instituteClassSection")
+                            .join("instituteClassSection", JoinType.LEFT)
                             .get("id"));
             classSectionIds.forEach(inClassSection::value);
             return inClassSection;
@@ -154,6 +155,15 @@ public class UserSpecification {
                             , instituteId
                     );
         };
+    }
+
+    public static Specification<User> studentsByClassTeacherId(Long teacherId) {
+        return ((root, query, criteriaBuilder) -> criteriaBuilder
+                .equal(
+                        criteriaBuilder
+                                .treat(root, Student.class)
+                                .join("instituteClassSection", JoinType.LEFT)
+                                .get("teacher"), teacherId));
     }
 
     public static Specification<User> userNotById(Long userId) {

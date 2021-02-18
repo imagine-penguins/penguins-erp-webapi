@@ -223,30 +223,27 @@ public class AttendanceController {
             throw new RuntimeException("Unable to parse date from search parameters");
         }
 
-        Specification<User> specBasedOnPrivilege = Specification.where(null);
+        Specification<User> specBasedOnPrivilege1 = Specification.where(null);
+        Specification<User> specBasedOnPrivilege2 = Specification.where(null);
+
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_STUDENT_ATTENDANCE.getPrivilegeCode())
         )) {
             log.debug("mark student privilege - marking attendance of all students in school");
-            specBasedOnPrivilege = specBasedOnPrivilege.or(UserSpecification.studentsByInstituteId(userContext.getInstituteId()));
+            specBasedOnPrivilege1 = specBasedOnPrivilege1.and(UserSpecification.studentsByInstituteId(userContext.getInstituteId()));
         }
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_CLASS_STUDENT_ATTENDANCE.getPrivilegeCode())
         )) {
             log.debug("mark only their class students");
-            User user = userService
-                    .findById(userContext.getUserId())
-                    .orElseThrow(() -> new UserNotFoundException(userContext.getUserId()));
-            Set<InstituteClassSection> instituteClassSections = ((Teacher) user).getInstituteClassSections();
-            List<Long> instituteClassSectionIds = instituteClassSections
-                    .stream().map(i -> i.getId()).collect(Collectors.toList());
-            specBasedOnPrivilege = specBasedOnPrivilege.or(UserSpecification.studentsByClassIn(instituteClassSectionIds));
+            specBasedOnPrivilege1 = specBasedOnPrivilege1.and(UserSpecification.studentsByClassTeacherId(userContext.getUserId()));
         }
+
         if (userContext.getAuthorities().contains(
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_EMPLOYEE_ATTENDANCE.getPrivilegeCode())
         )) {
             log.debug("marking all employees present in the institute");
-            specBasedOnPrivilege = specBasedOnPrivilege.or(
+            specBasedOnPrivilege2 = specBasedOnPrivilege2.and(
                     UserSpecification.employeesByInstituteId(userContext.getInstituteId())
             );
         }
@@ -254,11 +251,11 @@ public class AttendanceController {
                 new SimpleGrantedAuthority(PrivilegeCode.MARK_SUBORDINATES_EMPLOYEE_ATTENDANCE.getPrivilegeCode())
         )) {
             log.debug("marking attendance of his subordinates");
-            specBasedOnPrivilege = specBasedOnPrivilege.or(
+            specBasedOnPrivilege2 = specBasedOnPrivilege2.and(
                     UserSpecification.employeeByManagerId(Arrays.asList(userContext.getUserId()))
             );
         }
-        userSpecification = userSpecification.and(specBasedOnPrivilege);
+        userSpecification = userSpecification.and(specBasedOnPrivilege1.or(specBasedOnPrivilege2));
         //Not Himself
         userSpecification = userSpecification
                 .and(new GenericSpecification(new SearchCriteria("id", userContext.getUserId(), SearchOperation.NOT_EQUAL)));

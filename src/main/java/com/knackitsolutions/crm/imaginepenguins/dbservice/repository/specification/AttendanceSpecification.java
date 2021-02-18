@@ -24,8 +24,8 @@ public class AttendanceSpecification {
     public static Specification<?> attendanceBySupervisorId(Long supervisorId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(
                 root
-                        .join("attendance")
-                        .join("supervisor")
+                        .join("attendance", JoinType.LEFT)
+                        .join("supervisor", JoinType.LEFT)
                         .get("id"), supervisorId);
     }
 
@@ -39,7 +39,7 @@ public class AttendanceSpecification {
 
     public static Specification<StudentAttendance> studentNotById(Long userId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(
-                root.join("student").get("id"), userId
+                root.join("student", JoinType.LEFT).get("id"), userId
         );
     }
 
@@ -55,7 +55,7 @@ public class AttendanceSpecification {
                     root
                             .join("student")
                             .joinSet("userDepartments")
-                            .join("instituteDepartment", JoinType.INNER)
+                            .join("instituteDepartment", JoinType.LEFT)
                             .get("id")
             );
             /*CriteriaBuilder.In<Integer> eDepartment = criteriaBuilder.in(
@@ -77,9 +77,9 @@ public class AttendanceSpecification {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> department = criteriaBuilder.in(
                     root
-                            .join("employee")
-                            .joinSet("userDepartments")
-                            .join("instituteDepartment", JoinType.INNER)
+                            .join("employee", JoinType.LEFT)
+                            .joinSet("userDepartments", JoinType.LEFT)
+                            .join("instituteDepartment", JoinType.LEFT)
                             .get("id")
             );
             departmentIds.forEach(department::value);
@@ -90,10 +90,10 @@ public class AttendanceSpecification {
     public static Specification<StudentAttendance> studentAttendanceByPrivilegeIds(List<Integer> privilegeIds) {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> sPrivilege = criteriaBuilder.in(root
-                    .join("student")
-                    .joinList("userPrivileges", JoinType.INNER)
-                    .join("departmentPrivilege", JoinType.INNER)
-                    .join("privilege", JoinType.INNER)
+                    .join("student", JoinType.LEFT)
+                    .joinList("userPrivileges", JoinType.LEFT)
+                    .join("departmentPrivilege", JoinType.LEFT)
+                    .join("privilege", JoinType.LEFT)
                     .get("id"));
             /*CriteriaBuilder.In<Integer> ePrivilege = criteriaBuilder.in(root
                     .joinSet("studentAttendances")
@@ -113,10 +113,10 @@ public class AttendanceSpecification {
     public static Specification<EmployeeAttendance> employeeAttendanceByPrivilegeIds(Stream<Integer> privilegeIds) {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inPrivilege = criteriaBuilder.in(root
-                    .join("employee")
-                    .joinList("userPrivileges", JoinType.INNER)
-                    .join("departmentPrivilege", JoinType.INNER)
-                    .join("privilege", JoinType.INNER)
+                    .join("employee", JoinType.LEFT)
+                    .joinList("userPrivileges", JoinType.LEFT)
+                    .join("departmentPrivilege", JoinType.LEFT)
+                    .join("privilege", JoinType.LEFT)
                     .get("id"));
             privilegeIds.forEach(inPrivilege::value);
             return inPrivilege;
@@ -127,7 +127,7 @@ public class AttendanceSpecification {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<AttendanceStatus> statusIn = criteriaBuilder.in(
                     root
-                            .join("attendance")
+                            .join("attendance", JoinType.LEFT)
                             .get("attendanceStatus"));
             statuses.forEach(statusIn::value);
             return statusIn;
@@ -146,7 +146,7 @@ public class AttendanceSpecification {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Long> inClassSection = criteriaBuilder.in(
                     root
-                            .join("classSection")
+                            .join("classSection", JoinType.LEFT)
                             .get("id"));
             classSectionIds.forEach(inClassSection::value);
             return inClassSection;
@@ -157,7 +157,7 @@ public class AttendanceSpecification {
         return (root, query, criteriaBuilder) -> {
             CriteriaBuilder.In<Integer> inClassSection = criteriaBuilder.in(
                     root
-                            .join("instituteClassSectionSubject")
+                            .join("instituteClassSectionSubject", JoinType.LEFT)
                             .get("id"));
             subjectIds.forEach(inClassSection::value);
             return inClassSection;
@@ -168,7 +168,7 @@ public class AttendanceSpecification {
         log.debug("where attendanceDate is {} {}", searchOperation.getOperation(), startDate);
         return (root, query, criteriaBuilder) -> {
             Expression expression = root
-                    .join("attendance")
+                    .join("attendance", JoinType.LEFT)
                     .get("attendanceDate");
             if (searchOperation == SearchOperation.GREATER_THAN) {
                 return criteriaBuilder.greaterThan(expression, startDate);
@@ -188,7 +188,7 @@ public class AttendanceSpecification {
         log.debug("where attendanceDate is {} {}", searchOperation.getOperation(), startDate);
         return (root, query, criteriaBuilder) -> {
             Expression expression = root
-                    .join("attendance")
+                    .join("attendance", JoinType.LEFT)
                     .get("attendanceDate");
             if (searchOperation == SearchOperation.GREATER_THAN) {
                 return criteriaBuilder.greaterThan(expression, startDate);
@@ -209,9 +209,9 @@ public class AttendanceSpecification {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(
                         root
-                                .join("classSection")
-                                .join("instituteClass")
-                                .join("institute")
+                                .join("classSection", JoinType.LEFT)
+                                .join("instituteClass", JoinType.LEFT)
+                                .join("institute", JoinType.LEFT)
                                 .get("id"), instituteId);
 
     }
@@ -219,7 +219,7 @@ public class AttendanceSpecification {
     public static Specification<EmployeeAttendance> employeeAttendanceByInstituteId(Integer instituteId) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(
                 root
-                        .join("employee")
+                        .join("employee", JoinType.LEFT)
                         .join("institute", JoinType.LEFT)
                         .get("id"), instituteId);
     }
