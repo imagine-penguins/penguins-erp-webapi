@@ -90,7 +90,7 @@ public class UserControllerImpl {
 
     @PutMapping("/{user-id}/upload")
     public ResponseEntity<String> uploadDoc(@RequestParam("file") MultipartFile multipartFile
-            , @PathVariable Long userId, @RequestParam("doc-type") UserDocumentType userDocumentType) throws URISyntaxException {
+            , @PathVariable("user-id") Long userId, @RequestParam("doc-type") UserDocumentType userDocumentType) throws URISyntaxException {
         String fileName = storageClient.storeFile(multipartFile
                 , userService
                         .findById(userId)
@@ -100,7 +100,7 @@ public class UserControllerImpl {
     }
 
     @GetMapping("/{user-id}/download")
-    public ResponseEntity<Resource> downloadDoc(@PathVariable Long userId
+    public ResponseEntity<Resource> downloadDoc(@PathVariable("user-id") Long userId
             , @RequestParam("doc-type") UserDocumentType userDocumentType
             , HttpServletRequest request) {
         String fileName = storageClient.getDocumentName(userId, userDocumentType);
